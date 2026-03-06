@@ -14,11 +14,13 @@ import {
   Home,
   Users,
   Mail,
+  Trash2,
   Phone,
   Loader2,
   CheckCircle,
   Building,
   Clock,
+  Pencil,
 } from "lucide-react";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
@@ -615,11 +617,7 @@ const ListingDetail = () => {
           <div className="lg:col-span-1">
             <div className="sticky top-24 space-y-6">
               {/* Price Card */}
-              {!user ||
-              (user.id !== listing.landlordId &&
-                (user.role == "BOTH" ||
-                  user.role == "ADMIN" ||
-                  user.role == "TENANT")) ? (
+              {!user || user.id !== listing.landlordId ? (
                 <Card className="border-2 border-primary/20">
                   <CardContent className="p-6">
                     <div className="text-center mb-6">
@@ -679,16 +677,23 @@ const ListingDetail = () => {
 
                     <Separator className="mb-6" />
 
-                    <Link to={`/listing/${listing.id}/bookings`}>
+                    <Link to={`/listings/${listing.id}/edit`}>
                       <Button className="w-full" size="lg">
-                        <Calendar className="h-4 w-4 mr-2" />
-                        {t("listingDetail.manageBookings")}
+                        <Pencil className="h-4 w-4 mr-2" />
+                        {t("listingDetail.editListing")}
                       </Button>
                     </Link>
-
-                    <p className="text-xs text-muted-foreground text-center mt-4">
-                      {t("listingDetail.manageBookingsDesc")}
-                    </p>
+                    <Separator className="mb-6" />
+                    <Link to={`/listings/${listing.id}/delete`}>
+                      <Button
+                        className="w-full"
+                        variant="destructive"
+                        size="lg"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                        {t("listingDetail.deleteListing")}
+                      </Button>
+                    </Link>
                   </CardContent>
                 </Card>
               )}

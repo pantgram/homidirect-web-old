@@ -2,6 +2,7 @@ import {
   S3Client,
   PutObjectCommand,
   DeleteObjectCommand,
+  CopyObjectCommand,
 } from "@aws-sdk/client-s3";
 import { config } from "../config/env";
 
@@ -38,6 +39,18 @@ export async function deleteFromR2(key: string): Promise<void> {
       Key: key,
     })
   );
+}
+
+export async function copyInR2(sourceKey: string, destinationKey: string): Promise<string> {
+  await s3Client.send(
+    new CopyObjectCommand({
+      Bucket: config.r2.bucketName,
+      CopySource: `${config.r2.bucketName}/${sourceKey}`,
+      Key: destinationKey,
+    })
+  );
+
+  return `${config.r2.publicUrl}/${destinationKey}`;
 }
 
 export function getKeyFromUrl(url: string): string {
