@@ -1,48 +1,4 @@
-import { env } from "@/config/env";
-
-export interface GeoapifyFeature {
-  type: "Feature";
-  properties: {
-    datasource: {
-      sourcename: string;
-      attribution: string;
-    };
-    country: string;
-    country_code: string;
-    state?: string;
-    county?: string;
-    city?: string;
-    municipality?: string;
-    postcode?: string;
-    suburb?: string;
-    quarter?: string;
-    neighbourhood?: string;
-    street?: string;
-    housenumber?: string;
-    lon: number;
-    lat: number;
-    formatted: string;
-    address_line1: string;
-    address_line2: string;
-    result_type: string;
-    rank: {
-      importance: number;
-      popularity: number;
-      confidence: number;
-      confidence_city_level: number;
-      match_type: string;
-    };
-    place_id: string;
-  };
-  geometry: {
-    type: "Point";
-    coordinates: [number, number];
-  };
-}
-
-export interface GeoapifyAutocompleteResponse {
-  features: GeoapifyFeature[];
-}
+import { apiClient } from "./client";
 
 export interface LocationResult {
   placeId: string;
@@ -58,12 +14,9 @@ export interface LocationResult {
   lon: number;
 }
 
-const GEOAPIFY_BASE_URL = "https://api.geoapify.com/v1/geocode";
-
 export async function searchLocations(
   query: string,
   options?: {
-    type?: "country" | "state" | "city" | "postcode" | "street" | "amenity" | "locality";
     countryCode?: string;
     limit?: number;
     lang?: string;
@@ -73,58 +26,22 @@ export async function searchLocations(
     return [];
   }
 
-  if (!env.geoapifyApiKey) {
-    console.warn("Geoapify API key not configured");
-    return [];
-  }
-
-  const params = new URLSearchParams({
-    text: query,
-    apiKey: env.geoapifyApiKey,
-    limit: String(options?.limit || 10),
-    lang: options?.lang || "el",
-    format: "json",
-  });
-
-  if (options?.type) {
-    params.append("type", options.type);
-  }
-
-  if (options?.countryCode) {
-    params.append("filter", `countrycode:${options.countryCode}`);
-  }
-
   try {
-    const response = await fetch(`${GEOAPIFY_BASE_URL}/autocomplete?${params}`);
+    const params = new URLSearchParams({
+      text: query,
+      limit: String(options?.limit || 10),
+      lang: options?.lang || "el",
+    });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("Geoapify API error:", response.status, errorText);
-      throw new Error(`Geoapify API error: ${response.status}`);
+    if (options?.countryCode) {
+      params.append("countryCode", options.countryCode);
     }
 
-    const data = await response.json();
+    const response = await apiClient.get<{ results: LocationResult[] }>(
+      `/geoapify/search?${params}`
+    );
 
-    // Geoapify returns results in 'results' array when format=json
-    const results = data.results || [];
-
-    if (env.isDev) {
-      console.log("Geoapify response:", data);
-    }
-
-    return results.map((result: any) => ({
-      placeId: result.place_id || `${result.lat}-${result.lon}`,
-      formatted: result.formatted || "",
-      city: result.city || result.municipality || result.county || result.name || "",
-      country: result.country || "",
-      suburb: result.suburb,
-      neighbourhood: result.neighbourhood,
-      quarter: result.quarter,
-      postalCode: result.postcode,
-      resultType: result.result_type || "unknown",
-      lat: result.lat || 0,
-      lon: result.lon || 0,
-    }));
+    return response.data.results || [];
   } catch (error) {
     console.error("Error fetching locations:", error);
     return [];
@@ -136,7 +53,6 @@ export async function searchCities(
   countryCode?: string
 ): Promise<LocationResult[]> {
   return searchLocations(query, {
-    type: "city",
     countryCode,
     limit: 10,
   });

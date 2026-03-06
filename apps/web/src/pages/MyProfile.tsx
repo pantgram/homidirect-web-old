@@ -1,6 +1,16 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Loader2, User, Calendar, Shield, AlertTriangle, Home, Key, Pencil, ArrowRight } from "lucide-react";
+import {
+  Loader2,
+  User,
+  Calendar,
+  Shield,
+  AlertTriangle,
+  Home,
+  Key,
+  Pencil,
+  ArrowRight,
+} from "lucide-react";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -232,14 +242,18 @@ const MyProfile = () => {
         {/* Quick Navigation */}
         <Card className="mb-6">
           <CardHeader>
-            <CardTitle>Quick Navigation</CardTitle>
+            <CardTitle>{t("profile.myBookings")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
             <Link to="/bookings">
-              <Button variant="outline" className="w-full justify-start" asChild>
+              <Button
+                variant="outline"
+                className="w-full justify-start"
+                asChild
+              >
                 <>
                   <Calendar className="h-4 w-4 mr-2" />
-                  My Bookings
+                  {t("profile.myBookings")}
                   <ArrowRight className="ml-auto h-4 w-4" />
                 </>
               </Button>
@@ -315,13 +329,17 @@ const MyProfile = () => {
                     <Checkbox
                       id="role-tenant"
                       checked={isTenant}
-                      onCheckedChange={(checked) => setIsTenant(checked === true)}
+                      onCheckedChange={(checked) =>
+                        setIsTenant(checked === true)
+                      }
                       className="mt-1"
                     />
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
                         <Key className="h-4 w-4 text-blue-500" />
-                        <span className="font-medium">{t("profile.tenant")}</span>
+                        <span className="font-medium">
+                          {t("profile.tenant")}
+                        </span>
                       </div>
                       <p className="text-sm text-muted-foreground mt-1">
                         {t("profile.tenantDesc")}
@@ -339,13 +357,17 @@ const MyProfile = () => {
                     <Checkbox
                       id="role-landlord"
                       checked={isLandlord}
-                      onCheckedChange={(checked) => setIsLandlord(checked === true)}
+                      onCheckedChange={(checked) =>
+                        setIsLandlord(checked === true)
+                      }
                       className="mt-1"
                     />
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
                         <Home className="h-4 w-4 text-green-500" />
-                        <span className="font-medium">{t("profile.landlord")}</span>
+                        <span className="font-medium">
+                          {t("profile.landlord")}
+                        </span>
                       </div>
                       <p className="text-sm text-muted-foreground mt-1">
                         {t("profile.landlordDesc")}

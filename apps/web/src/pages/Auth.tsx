@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 import Navigation from "@/components/Navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,6 +19,7 @@ import { useAuth } from "@/contexts/AuthContext";
 
 const Auth = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
   const { t } = useLanguage();
   const { login, register, isLoading: authLoading } = useAuth();
@@ -39,7 +40,16 @@ const Auth = () => {
         title: t("auth.loginSuccess"),
         description: t("auth.welcomeBackMsg"),
       });
-      navigate("/");
+
+      const state = location.state as {
+        returnTo?: string;
+        action?: string;
+      } | null;
+      if (state?.returnTo) {
+        navigate(state.returnTo, { state: { action: state.action } });
+      } else {
+        navigate("/");
+      }
     } catch (error: any) {
       console.error("Login error:", error);
       const errorMessage =
@@ -123,7 +133,16 @@ const Auth = () => {
         title: t("auth.accountCreated"),
         description: t("auth.welcomeMsg"),
       });
-      navigate("/");
+
+      const state = location.state as {
+        returnTo?: string;
+        action?: string;
+      } | null;
+      if (state?.returnTo) {
+        navigate(state.returnTo, { state: { action: state.action } });
+      } else {
+        navigate("/");
+      }
     } catch (error: any) {
       toast({
         title: t("auth.error") || "Error",

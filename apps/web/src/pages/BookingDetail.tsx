@@ -24,8 +24,22 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { bookingsApi } from "@/api/bookings";
 import { listingsApi } from "@/api/listings";
-import type { Booking } from "@/api/types";
+import type { Booking, Listing, ListingImage } from "@/api/types";
 import placeholderImage from "@/assets/property-1.jpg";
+
+interface ListingWithImages extends Listing {
+  images?: ListingImage[];
+}
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const BookingDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -35,10 +49,11 @@ const BookingDetail = () => {
   const { toast } = useToast();
 
   const [booking, setBooking] = useState<Booking | null>(null);
-  const [listing, setListing] = useState<any>(null);
+  const [listing, setListing] = useState<ListingWithImages | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [updating, setUpdating] = useState(false);
+  const [showCancelDialog, setShowCancelDialog] = useState(false);
 
   useEffect(() => {
     const fetchBooking = async () => {
@@ -53,20 +68,22 @@ const BookingDetail = () => {
 
         try {
           const listingData = await listingsApi.getById(bookingData.listingId);
-          setListing(listingData);
+          const images = await listingsApi.getImages(bookingData.listingId);
+          setListing({ ...listingData, images });
         } catch (listingErr) {
-          console.error("Failed to fetch listing:", listingErr);
+          // Failed to fetch listing details
         }
       } catch (err) {
-        console.error("Failed to fetch booking:", err);
-        setError("Failed to load booking details");
+        // Failed to fetch booking
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        setError(t("bookingDetail.errorLoading" as any));
       } finally {
         setLoading(false);
       }
     };
 
     fetchBooking();
-  }, [id]);
+  }, [id, t]);
 
   const handleUpdateStatus = async (status: "CONFIRMED" | "DECLINED") => {
     if (!booking) return;
@@ -76,12 +93,17 @@ const BookingDetail = () => {
       const updated = await bookingsApi.update(booking.id, { status });
       setBooking(updated);
       toast({
-        title: status === "CONFIRMED" ? "Booking confirmed" : "Booking declined",
+        title:
+          status === "CONFIRMED"
+            ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              t("bookingDetail.bookingConfirmed" as any)
+            : // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              t("bookingDetail.bookingDeclined" as any),
       });
     } catch (err) {
-      console.error("Failed to update booking:", err);
       toast({
-        title: "Failed to update booking",
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        title: t("bookingDetail.updateFailed" as any),
         variant: "destructive",
       });
     } finally {
@@ -92,20 +114,18 @@ const BookingDetail = () => {
   const handleDelete = async () => {
     if (!booking) return;
 
-    if (!confirm("Are you sure you want to cancel this booking?")) {
-      return;
-    }
-
+    setShowCancelDialog(false);
     try {
       await bookingsApi.delete(booking.id);
       toast({
-        title: "Booking cancelled",
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        title: t("bookingDetail.bookingCancelled" as any),
       });
       navigate("/bookings");
     } catch (err) {
-      console.error("Failed to cancel booking:", err);
       toast({
-        title: "Failed to cancel booking",
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        title: t("bookingDetail.cancelFailed" as any),
         variant: "destructive",
       });
     }
@@ -124,7 +144,10 @@ const BookingDetail = () => {
   };
 
   const getStatusBadge = (status: string) => {
-    const statusConfig = {
+    const statusConfig: Record<
+      string,
+      { label: string; icon: React.ReactNode; className: string }
+    > = {
       PENDING: {
         label: "Pending",
         icon: <Clock className="h-3 w-3" />,
@@ -147,11 +170,20 @@ const BookingDetail = () => {
       },
     };
 
-    const config = statusConfig[status as keyof typeof statusConfig];
+    const config =
+      statusConfig[status] ||
+      statusConfig.CANCELLED ||
+      ({
+        label: status,
+        icon: <AlertCircle className="h-3 w-3" />,
+        className: "bg-gray-500/10 text-gray-600",
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } as any);
+
     return (
-      <Badge className={config?.className}>
-        {config?.icon}
-        <span className="ml-1">{config?.label}</span>
+      <Badge className={config.className}>
+        {config.icon}
+        <span className="ml-1">{config.label}</span>
       </Badge>
     );
   };
@@ -212,11 +244,12 @@ const BookingDetail = () => {
             {canCancel && (
               <Button
                 variant="destructive"
-                onClick={handleDelete}
+                onClick={() => setShowCancelDialog(true)}
                 className="flex items-center gap-2"
               >
                 <Trash2 className="h-4 w-4" />
-                Cancel Booking
+                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                {t("bookingDetail.cancelBooking" as any)}
               </Button>
             )}
           </div>
@@ -236,7 +269,8 @@ const BookingDetail = () => {
                       to={`/listing/${listing?.id}`}
                       className="text-xl font-semibold hover:text-primary transition-colors"
                     >
-                      {listing?.title || "Unknown Listing"}
+                      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                      {listing?.title || t("bookingDetail.unknownListing" as any)}
                     </Link>
                     <div className="flex items-center gap-4 mt-2 text-muted-foreground">
                       <div className="flex items-center gap-1">
@@ -318,6 +352,27 @@ const BookingDetail = () => {
           )}
         </div>
       </main>
+
+      <AlertDialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+              {t("bookingDetail.cancelBooking" as any)}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+              {t("bookingDetail.cancelConfirm" as any)}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>No, keep it</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete}>
+              Yes, cancel booking
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <Footer />
     </div>

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
+import { useParams, useNavigate, Link, useLocation } from "react-router-dom";
 import {
   MapPin,
   Bed,
@@ -45,6 +45,7 @@ import placeholderImage from "@/assets/property-1.jpg";
 const ListingDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const { t } = useLanguage();
   const { isAuthenticated, user } = useAuth();
   const { toast } = useToast();
@@ -109,6 +110,23 @@ const ListingDetail = () => {
 
     fetchListing();
   }, [id, t, isAuthenticated]);
+
+  useEffect(() => {
+    const state = location.state as {
+      returnTo?: string;
+      action?: "contact" | "booking";
+    } | null;
+
+    if (isAuthenticated && state?.action && listing) {
+      if (state.action === "contact") {
+        setContactDialogOpen(true);
+      } else if (state.action === "booking") {
+        setBookingDialogOpen(true);
+      }
+
+      window.history.replaceState({}, document.title);
+    }
+  }, [isAuthenticated, location.state, listing]);
 
   const handleToggleFavorite = async () => {
     if (!id) return;
@@ -208,12 +226,27 @@ const ListingDetail = () => {
   };
 
   const handleContactOwner = () => {
+    if (!isAuthenticated) {
+      navigate("/auth", {
+        state: {
+          returnTo: `/listings/${id}`,
+          action: "contact",
+        },
+      });
+      return;
+    }
+
     setContactDialogOpen(true);
   };
 
   const handleRequestViewing = () => {
     if (!isAuthenticated) {
-      navigate("/auth");
+      navigate("/auth", {
+        state: {
+          returnTo: `/listings/${id}`,
+          action: "booking",
+        },
+      });
       return;
     }
     setBookingDialogOpen(true);
@@ -221,7 +254,7 @@ const ListingDetail = () => {
 
   const handleBookingSuccess = () => {
     toast({
-      title: "Booking request sent successfully",
+      title: t("listingDetail.bookingSent"),
     });
   };
 
@@ -234,9 +267,9 @@ const ListingDetail = () => {
     tomorrow.setDate(tomorrow.getDate() + 1);
 
     if (date.toDateString() === today.toDateString()) {
-      return `Today at ${date.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}`;
+      return `${t("listingDetail.today")} ${date.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}`;
     } else if (date.toDateString() === tomorrow.toDateString()) {
-      return `Tomorrow at ${date.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}`;
+      return `${t("listingDetail.tomorrow")} ${date.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}`;
     } else {
       return date.toLocaleDateString("en-US", {
         month: "short",
@@ -582,7 +615,11 @@ const ListingDetail = () => {
           <div className="lg:col-span-1">
             <div className="sticky top-24 space-y-6">
               {/* Price Card */}
-              {!user || user.id !== listing.landlordId ? (
+              {!user ||
+              (user.id !== listing.landlordId &&
+                (user.role == "BOTH" ||
+                  user.role == "ADMIN" ||
+                  user.role == "TENANT")) ? (
                 <Card className="border-2 border-primary/20">
                   <CardContent className="p-6">
                     <div className="text-center mb-6">
@@ -645,12 +682,12 @@ const ListingDetail = () => {
                     <Link to={`/listing/${listing.id}/bookings`}>
                       <Button className="w-full" size="lg">
                         <Calendar className="h-4 w-4 mr-2" />
-                        Manage Bookings
+                        {t("listingDetail.manageBookings")}
                       </Button>
                     </Link>
 
                     <p className="text-xs text-muted-foreground text-center mt-4">
-                      Accept, decline, and manage viewing requests
+                      {t("listingDetail.manageBookingsDesc")}
                     </p>
                   </CardContent>
                 </Card>
@@ -701,7 +738,7 @@ const ListingDetail = () => {
                   <CardContent className="p-6">
                     <h3 className="font-semibold mb-4 flex items-center gap-2">
                       <Calendar className="h-4 w-4" />
-                      Available Viewing Times
+                      {t("listingDetail.availableViewingTimes")}
                     </h3>
                     <div className="space-y-2">
                       {availableSlots.slice(0, 3).map((slot) => (
@@ -720,7 +757,7 @@ const ListingDetail = () => {
                             variant="ghost"
                             onClick={handleRequestViewing}
                           >
-                            Book
+                            {t("listingDetail.book")}
                           </Button>
                         </div>
                       ))}
@@ -731,7 +768,10 @@ const ListingDetail = () => {
                           className="w-full mt-2"
                           onClick={handleRequestViewing}
                         >
-                          View all {availableSlots.length} available slots
+                          {t("listingDetail.viewAllSlots").replace(
+                            "{count}",
+                            availableSlots.length.toString(),
+                          )}
                         </Button>
                       )}
                     </div>
