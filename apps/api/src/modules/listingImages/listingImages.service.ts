@@ -1,7 +1,7 @@
 import { eq, count, isNull, and, lt } from "drizzle-orm";
 import { db } from "config/db";
 import { listingImages } from "./listingImages.model";
-import { uploadToR2, deleteFromR2, getKeyFromUrl } from "../../plugins/r2";
+import { uploadToR2, deleteFromR2, copyInR2, getKeyFromUrl } from "../../plugins/r2";
 import {
   ListingImageResponse,
   PendingImageResponse,
@@ -175,21 +175,26 @@ export const ListingImageService = {
       );
     }
 
-    const result = await db
-      .update(listingImages)
-      .set({
-        listingId,
-        uploadSessionId: null,
-      })
-      .where(
-        and(
-          eq(listingImages.uploadSessionId, sessionId),
-          isNull(listingImages.listingId)
-        )
-      )
-      .returning({ id: listingImages.id });
+    for (const image of pendingImages) {
+      const oldKey = getKeyFromUrl(image.url);
+      const timestamp = Date.now();
+      const filename = oldKey.split("/").pop() || "";
+      const newKey = `listings/${listingId}/${timestamp}-${filename}`;
 
-    return result.length;
+      const newUrl = await copyInR2(oldKey, newKey);
+      await deleteFromR2(oldKey);
+
+      await db
+        .update(listingImages)
+        .set({
+          url: newUrl,
+          listingId,
+          uploadSessionId: null,
+        })
+        .where(eq(listingImages.id, image.id));
+    }
+
+    return pendingImages.length;
   },
 
   async deleteImage(imageId: number): Promise<boolean> {

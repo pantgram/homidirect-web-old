@@ -359,6 +359,8 @@ export const translations = {
     "listingDetail.available": "Available",
     "listingDetail.unavailable": "Not Available",
     "listingDetail.bedrooms": "Bedrooms",
+    "listingDetail.editListing": "Edit Listing",
+    "listingDetail.deleteListing": "Delete Listing",
     "listingDetail.bathrooms": "Bathrooms",
     "listingDetail.area": "Area",
     "listingDetail.type": "Type",
@@ -668,8 +670,7 @@ export const translations = {
     "auth.loginButton": "Σύνδεση",
     "auth.loggingIn": "Γίνεται σύνδεση...",
     "auth.createAccount": "Δημιουργία Λογαριασμού",
-    "auth.signupDesc":
-      "Εγγραφείτε στο HomiDirect",
+    "auth.signupDesc": "Εγγραφείτε στο HomiDirect",
     "auth.fullName": "Ονοματεπώνυμο",
     "auth.confirmPassword": "Επιβεβαίωση Κωδικού",
     "auth.iAmA": "Είμαι:",
@@ -1026,6 +1027,8 @@ export const translations = {
     "listingDetail.linkCopiedDesc":
       "Ο σύνδεσμος του ακινήτου αντιγράφηκε στο πρόχειρο",
     "listingDetail.shareFailed": "Αποτυχία κοινοποίησης",
+    "listingDetail.editListing": "Επεξεργασία Καταχώρησης",
+    "listingDetail.deleteListing": "Διαγραφή Καταχώρησης",
     "listingDetail.manageBookings": "Διαχείριση Κρατήσεων",
     "listingDetail.manageBookingsDesc":
       "Αποδοχή, απόρριψη και διαχείριση αιτημάτων επίσκεψης",
