@@ -164,7 +164,7 @@ const Auth = () => {
                         id="login-email"
                         name="email"
                         type="email"
-                        placeholder="your@email.com"
+                        //placeholder="your@email.com"
                         required
                       />
                     </div>
@@ -184,7 +184,7 @@ const Auth = () => {
                         id="login-password"
                         name="password"
                         type="password"
-                        placeholder="••••••••"
+                        //placeholder="••••••••"
                         required
                       />
                     </div>
@@ -218,7 +218,7 @@ const Auth = () => {
                         id="signup-name"
                         name="fullName"
                         type="text"
-                        placeholder="John Doe"
+                       // placeholder="John Doe"
                         required
                       />
                     </div>
@@ -228,7 +228,7 @@ const Auth = () => {
                         id="signup-email"
                         name="email"
                         type="email"
-                        placeholder="your@email.com"
+                       // placeholder="your@email.com"
                         required
                       />
                     </div>
@@ -240,7 +240,7 @@ const Auth = () => {
                         id="signup-password"
                         name="password"
                         type="password"
-                        placeholder="••••••••"
+                       // placeholder="••••••••"
                         minLength={8}
                         required
                       />
@@ -253,7 +253,7 @@ const Auth = () => {
                         id="signup-confirm"
                         name="confirmPassword"
                         type="password"
-                        placeholder="••••••••"
+                       // placeholder="••••••••"
                         minLength={8}
                         required
                       />
@@ -262,7 +262,7 @@ const Auth = () => {
                       <Label>{t("auth.iAmA")}</Label>
                       <div className="space-y-2">
                         <div className="flex items-center space-x-2">
-                          <Checkbox id="tenant" name="tenant" />
+                          <Checkbox id="tenant" name="tenant" className="rounded-none"/>
                           <label
                             htmlFor="tenant"
                             className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
@@ -271,7 +271,7 @@ const Auth = () => {
                           </label>
                         </div>
                         <div className="flex items-center space-x-2">
-                          <Checkbox id="propertyOwner" name="propertyOwner" />
+                          <Checkbox id="propertyOwner" name="propertyOwner" className="rounded-none"/>
                           <label
                             htmlFor="propertyOwner"
                             className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"

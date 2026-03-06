@@ -641,7 +641,7 @@ export const translations = {
     // Auth
     "auth.login": "Σύνδεση",
     "auth.signup": "Εγγραφή",
-    "auth.welcomeBack": "Καλώς Ήρθατε Πίσω",
+    "auth.welcomeBack": "Καλώς Ήρθατε",
     "auth.loginDesc":
       "Εισάγετε τα στοιχεία σας για πρόσβαση στον λογαριασμό σας",
     "auth.email": "Email",
@@ -650,12 +650,12 @@ export const translations = {
     "auth.loggingIn": "Γίνεται σύνδεση...",
     "auth.createAccount": "Δημιουργία Λογαριασμού",
     "auth.signupDesc":
-      "Εγγραφείτε στο HomiDirect και ξεκινήστε το ταξίδι ενοικίασης",
+      "Εγγραφείτε στο HomiDirect",
     "auth.fullName": "Ονοματεπώνυμο",
     "auth.confirmPassword": "Επιβεβαίωση Κωδικού",
     "auth.iAmA": "Είμαι:",
-    "auth.tenant": "Ενοικιαστής (αναζητώ ακίνητα προς ενοικίαση)",
-    "auth.propertyOwner": "Ιδιοκτήτης Ακινήτου (θέλω να καταχωρήσω ακίνητα)",
+    "auth.tenant": "Ενοικιαστής",
+    "auth.propertyOwner": "Ιδιοκτήτης Ακινήτου",
     "auth.signUpButton": "Εγγραφή",
     "auth.creatingAccount": "Δημιουργία λογαριασμού...",
     "auth.loginSuccess": "Επιτυχής σύνδεση",
