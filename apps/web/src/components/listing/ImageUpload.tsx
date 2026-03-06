@@ -30,8 +30,11 @@ export function ImageUpload({
   const { t } = useLanguage();
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const currentSessionIdRef = useRef<string | null>(sessionId);
   const [isDragging, setIsDragging] = useState(false);
   const [uploadingCount, setUploadingCount] = useState(0);
+
+  currentSessionIdRef.current = sessionId;
 
   const validateFile = (file: File): string | null => {
     if (!ALLOWED_TYPES.includes(file.type)) {
@@ -55,14 +58,15 @@ export function ImageUpload({
     }
 
     try {
-      const currentSessionId = sessionId || "new";
+      const currentSessionId = currentSessionIdRef.current || "new";
       const response = await listingsApi.uploadPendingImage(
         currentSessionId,
         file
       );
 
-      if (!sessionId) {
+      if (!currentSessionIdRef.current) {
         onSessionIdChange(response.uploadSessionId);
+        currentSessionIdRef.current = response.uploadSessionId;
       }
 
       return response.image;
@@ -94,11 +98,14 @@ export function ImageUpload({
 
     setUploadingCount(fileArray.length);
 
-    const uploadPromises = fileArray.map((file) => uploadFile(file));
-    const results = await Promise.all(uploadPromises);
-    const successfulUploads = results.filter(
-      (img): img is PendingImage => img !== null
-    );
+    const successfulUploads: PendingImage[] = [];
+    
+    for (const file of fileArray) {
+      const result = await uploadFile(file);
+      if (result) {
+        successfulUploads.push(result);
+      }
+    }
 
     if (successfulUploads.length > 0) {
       onImagesChange([...images, ...successfulUploads]);

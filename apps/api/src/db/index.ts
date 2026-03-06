@@ -6,6 +6,7 @@ import { listings } from "../modules/listings/listings.model";
 import { tags } from "../modules/tags/tags.model";
 import { interestedListings } from "../models/interestedListings.model";
 import { listingTags } from "../models/listingTags.model";
+import { geoapifyCache } from "../modules/geoapify/geoapify.model";
 import {
   usersRelations,
   listingsRelations,
@@ -25,6 +26,7 @@ export const schema = {
   tags,
   interestedListings,
   listingTags,
+  geoapifyCache,
   usersRelations,
   listingsRelations,
   bookingsRelations,

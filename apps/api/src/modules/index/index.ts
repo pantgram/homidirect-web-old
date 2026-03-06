@@ -14,6 +14,7 @@ import {
 } from "../verificationDocuments/verificationDocuments.routes";
 import { favoritesRoutes } from "../favorites/favorites.routes";
 import { availabilitySlotRoutes } from "../availabilitySlots/availabilitySlots.routes";
+import { geoapifyRoutes } from "../geoapify/geoapify.routes";
 
 export async function apiRoutes(fastify: FastifyInstance) {
   // all auth routes will be under /api/auth
@@ -48,4 +49,7 @@ export async function apiRoutes(fastify: FastifyInstance) {
 
   // availability slot routes under /api/availability-slots
   fastify.register(availabilitySlotRoutes, { prefix: "/availability-slots" });
+
+  // geoapify routes under /api/geoapify
+  fastify.register(geoapifyRoutes, { prefix: "/geoapify" });
 }

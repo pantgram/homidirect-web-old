@@ -11,7 +11,7 @@ interface LanguageContextType {
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(
-  undefined
+  undefined,
 );
 
 export const translations = {
@@ -262,7 +262,7 @@ export const translations = {
     "home.startSearching": "Start Searching",
     "home.listYourProperty": "List Your Property",
     "home.noListingsYet": "No properties available yet. Check back soon!",
-    "home.allRightsReserved": "© 2024 HomiDirect. All rights reserved.",
+    "home.allRightsReserved": "© 2026 HomiDirect. All rights reserved.",
     "home.privacyPolicy": "Privacy Policy",
     "home.termsOfService": "Terms of Service",
     "home.contactUs": "Contact Us",
@@ -309,7 +309,7 @@ export const translations = {
     "howItWorks.quickConnections": "Quick Connections",
     "howItWorks.goToHomepage": "Go to Homepage",
     "howItWorks.footer":
-      "© 2024 HomiDirect. Connecting property owners and tenants directly.",
+      "© 2026 HomiDirect. Connecting property owners and tenants directly.",
 
     // Search Results
     "search.placeholder": "Search by location, property type...",
@@ -347,7 +347,7 @@ export const translations = {
     "common.tryAgain": "Try Again",
     "common.selectType": "Select type",
     "common.select": "Select",
-    "common.footer": "© 2024 HomiDirect. Connect directly, rent confidently.",
+    "common.footer": "© 2026 HomiDirect. Connect directly, rent confidently.",
 
     // Listing Detail
     "listingDetail.back": "Back",
@@ -384,12 +384,22 @@ export const translations = {
       "Always visit the property before making any payments. Never send money without signing a proper rental agreement.",
     "listingDetail.shareText": "Check out this property",
     "listingDetail.linkCopied": "Link Copied",
-    "listingDetail.linkCopiedDesc": "Property link has been copied to your clipboard",
+    "listingDetail.linkCopiedDesc":
+      "Property link has been copied to your clipboard",
     "listingDetail.shareFailed": "Failed to share",
+    "listingDetail.manageBookings": "Manage Bookings",
+    "listingDetail.manageBookingsDesc":
+      "Accept, decline, and manage viewing requests",
+    "listingDetail.bookingSent": "Booking request sent successfully",
+    "listingDetail.today": "Today at",
+    "listingDetail.tomorrow": "Tomorrow at",
+    "listingDetail.availableViewingTimes": "Available Viewing Times",
+    "listingDetail.book": "Book",
+    "listingDetail.viewAllSlots": "View all {count} available slots",
 
     // Privacy Policy
     "privacy.title": "Privacy Policy",
-    "privacy.lastUpdated": "Last updated: November 2024",
+    "privacy.lastUpdated": "Last updated: March 2026",
     "privacy.backToHome": "Back to Home",
     "privacy.section1.title": "1. Information We Collect",
     "privacy.section1.content":
@@ -416,7 +426,7 @@ export const translations = {
 
     // Terms of Service
     "terms.title": "Terms of Service",
-    "terms.lastUpdated": "Last updated: November 2024",
+    "terms.lastUpdated": "Last updated: March 2026",
     "terms.backToHome": "Back to Home",
     "terms.section1.title": "1. Acceptance of Terms",
     "terms.section1.content":
@@ -471,6 +481,7 @@ export const translations = {
     "profile.subtitle": "Manage your account information",
     "profile.personalInfo": "Personal Information",
     "profile.personalInfoDesc": "Update your personal details",
+    "profile.myBookings": "My Bookings",
     "profile.firstName": "First Name",
     "profile.lastName": "Last Name",
     "profile.email": "Email",
@@ -480,7 +491,8 @@ export const translations = {
     "profile.saving": "Saving...",
     "profile.updateSuccess": "Profile updated successfully",
     "profile.updateError": "Failed to update profile. Please try again.",
-    "profile.emailExists": "Email already in use. Please use a different email.",
+    "profile.emailExists":
+      "Email already in use. Please use a different email.",
     "profile.deleteAccount": "Delete Account",
     "profile.deleteAccountDesc":
       "Permanently delete your account and all associated data",
@@ -548,7 +560,8 @@ export const translations = {
     "favorites.added": "Added to favorites",
     "favorites.removeFailed": "Failed to remove from favorites",
     "favorites.removeTitle": "Remove from Favorites",
-    "favorites.confirmRemove": "Are you sure you want to remove this property from your favorites?",
+    "favorites.confirmRemove":
+      "Are you sure you want to remove this property from your favorites?",
     "favorites.remove": "Remove",
     "favorites.errorLoading": "Failed to load favorites. Please try again.",
     "favorites.property": "property",
@@ -566,8 +579,10 @@ export const translations = {
     "locationSearch.noCountriesFound": "No countries found.",
     "locationSearch.typeToSearch": "Type to search...",
     "locationSearch.searching": "Searching...",
-    "locationSearch.validation.invalidCity": "Please select a valid city from the list",
-    "locationSearch.validation.invalidCountry": "Please select a valid country from the list",
+    "locationSearch.validation.invalidCity":
+      "Please select a valid city from the list",
+    "locationSearch.validation.invalidCountry":
+      "Please select a valid country from the list",
 
     // Contact Owner Dialog
     "contactOwner.title": "Contact Property Owner",
@@ -579,21 +594,25 @@ export const translations = {
     "contactOwner.phone": "Phone (optional)",
     "contactOwner.phonePlaceholder": "Your phone number",
     "contactOwner.message": "Message",
-    "contactOwner.messagePlaceholder": "Hi, I'm interested in this property. I would like to know more about...",
+    "contactOwner.messagePlaceholder":
+      "Hi, I'm interested in this property. I would like to know more about...",
     "contactOwner.send": "Send Message",
     "contactOwner.sending": "Sending...",
     "contactOwner.sent": "Message Sent!",
-    "contactOwner.sentDesc": "The property owner will receive your message and contact you soon.",
+    "contactOwner.sentDesc":
+      "The property owner will receive your message and contact you soon.",
     "contactOwner.error": "Error",
     "contactOwner.fillRequired": "Please fill in all required fields.",
     "contactOwner.sendFailed": "Failed to send message. Please try again.",
-    "contactOwner.privacyNote": "Your contact information will only be shared with the property owner.",
+    "contactOwner.privacyNote":
+      "Your contact information will only be shared with the property owner.",
 
     // Availability Slots
     "availabilitySlots.title": "Availability Slots",
     "availabilitySlots.addSlot": "Add Slot",
     "availabilitySlots.noSlots": "No availability slots added yet",
-    "availabilitySlots.noSlotsDesc": "Add time slots when you're available for property viewings",
+    "availabilitySlots.noSlotsDesc":
+      "Add time slots when you're available for property viewings",
     "availabilitySlots.upcoming": "Upcoming Slots",
     "availabilitySlots.past": "Past Slots",
     "availabilitySlots.available": "Available",
@@ -724,8 +743,7 @@ export const translations = {
     "listInfo.subtitle":
       "Συνδεθείτε με ενοικιαστές απευθείας και εξοικονομήστε προμήθειες μεσιτών.",
     "listInfo.noFees": "Χωρίς Προμήθειες Μεσίτη",
-    "listInfo.noFeesDesc":
-      "Κρατήστε το 100% του εισοδήματος από ενοίκια",
+    "listInfo.noFeesDesc": "Κρατήστε το 100% του εισοδήματος από ενοίκια",
     "listInfo.setPrice": "Ορίστε τη τιμή σας",
     "listInfo.setPriceDesc":
       "Εσείς ελέγχετε την τιμολόγηση και τους όρους του ακινήτου σας",
@@ -871,7 +889,8 @@ export const translations = {
     "home.directCommunication": "Άμεση Επικοινωνία",
     "home.directCommunicationDesc":
       "Επικοινωνήστε απευθείας με ιδιοκτήτες, προγραμματίστε συναντήσεις και συμφωνήστε τους όρους χωρίς μεσάζοντες.",
-    "home.readyToFind": "Το επόμενο σπίτι σας είναι πιο κοντά απ’ όσο νομίζετε.",
+    "home.readyToFind":
+      "Το επόμενο σπίτι σας είναι πιο κοντά απ’ όσο νομίζετε.",
     "home.joinThousands":
       "Χιλιάδες ενοικιαστές βρήκαν σπίτι χωρίς μεσάζοντες και προμήθειες, ενώ ιδιοκτήτες μίσθωσαν τα ακίνητά τους γρήγορα και απλά.",
     "home.startSearching": "Αναζήτηση ακινήτων",
@@ -879,7 +898,7 @@ export const translations = {
     "home.noListingsYet":
       "Δεν υπάρχουν ακόμα διαθέσιμα ακίνητα. Ελέγξτε ξανά σύντομα!",
     "home.allRightsReserved":
-      "© 2024 HomiDirect. Όλα τα δικαιώματα διατηρούνται.",
+      "© 2026 HomiDirect. Όλα τα δικαιώματα διατηρούνται.",
     "home.privacyPolicy": "Πολιτική Απορρήτου",
     "home.termsOfService": "Όροι Χρήσης",
     "home.contactUs": "Επικοινωνήστε Μαζί μας",
@@ -926,7 +945,7 @@ export const translations = {
     "howItWorks.quickConnections": "Γρήγορες Συνδέσεις",
     "howItWorks.goToHomepage": "Μετάβαση στην Αρχική",
     "howItWorks.footer":
-      "© 2024 HomiDirect. Συνδέοντας ιδιοκτήτες ακινήτων και ενοικιαστές απευθείας.",
+      "© 2026 HomiDirect. Συνδέοντας ιδιοκτήτες ακινήτων και ενοικιαστές απευθείας.",
 
     // Search Results
     "search.placeholder": "Αναζήτηση...",
@@ -966,7 +985,7 @@ export const translations = {
     "common.selectType": "Επιλογή τύπου",
     "common.select": "Επιλογή",
     "common.footer":
-      "© 2024 HomiDirect. Συνδεθείτε απευθείας, ενοικιάστε με εμπιστοσύνη.",
+      "© 2026 HomiDirect. Συνδεθείτε απευθείας, ενοικιάστε με εμπιστοσύνη.",
 
     // Listing Detail
     "listingDetail.back": "Πίσω",
@@ -1004,12 +1023,23 @@ export const translations = {
       "Πάντα επισκεφθείτε το ακίνητο πριν κάνετε οποιαδήποτε πληρωμή. Ποτέ μην στέλνετε χρήματα χωρίς να υπογράψετε κατάλληλη σύμβαση ενοικίασης.",
     "listingDetail.shareText": "Δείτε αυτό το ακίνητο",
     "listingDetail.linkCopied": "Ο σύνδεσμος αντιγράφηκε",
-    "listingDetail.linkCopiedDesc": "Ο σύνδεσμος του ακινήτου αντιγράφηκε στο πρόχειρο",
+    "listingDetail.linkCopiedDesc":
+      "Ο σύνδεσμος του ακινήτου αντιγράφηκε στο πρόχειρο",
     "listingDetail.shareFailed": "Αποτυχία κοινοποίησης",
+    "listingDetail.manageBookings": "Διαχείριση Κρατήσεων",
+    "listingDetail.manageBookingsDesc":
+      "Αποδοχή, απόρριψη και διαχείριση αιτημάτων επίσκεψης",
+    "listingDetail.bookingSent": "Το αίτημα κράτησης στάλθηκε επιτυχώς",
+    "listingDetail.today": "Σήμερα στις",
+    "listingDetail.tomorrow": "Αύριο στις",
+    "listingDetail.availableViewingTimes": "Διαθέσιμες Ώρες Επίσκεψης",
+    "listingDetail.book": "Κράτηση",
+    "listingDetail.viewAllSlots":
+      "Προβολή όλων των {count} διαθέσιμων διαστημάτων",
 
     // Privacy Policy
     "privacy.title": "Πολιτική Απορρήτου",
-    "privacy.lastUpdated": "Τελευταία ενημέρωση: Νοέμβριος 2024",
+    "privacy.lastUpdated": "Τελευταία ενημέρωση: Μάρτιος 2026",
     "privacy.backToHome": "Επιστροφή στην Αρχική",
     "privacy.section1.title": "1. Πληροφορίες που Συλλέγουμε",
     "privacy.section1.content":
@@ -1039,7 +1069,7 @@ export const translations = {
 
     // Terms of Service
     "terms.title": "Όροι Χρήσης",
-    "terms.lastUpdated": "Τελευταία ενημέρωση: Νοέμβριος 2024",
+    "terms.lastUpdated": "Τελευταία ενημέρωση: Μάρτιος 2026",
     "terms.backToHome": "Επιστροφή στην Αρχική",
     "terms.section1.title": "1. Αποδοχή Όρων",
     "terms.section1.content":
@@ -1096,6 +1126,7 @@ export const translations = {
     "profile.subtitle": "Διαχειριστείτε τα στοιχεία του λογαριασμού σας",
     "profile.personalInfo": "Προσωπικά Στοιχεία",
     "profile.personalInfoDesc": "Ενημερώστε τα προσωπικά σας στοιχεία",
+    "profile.myBookings": "Οι κρατήσεις μου",
     "profile.firstName": "Όνομα",
     "profile.lastName": "Επώνυμο",
     "profile.email": "Email",
@@ -1105,7 +1136,8 @@ export const translations = {
     "profile.saving": "Αποθήκευση...",
     "profile.updateSuccess": "Το προφίλ ενημερώθηκε επιτυχώς",
     "profile.updateError": "Αποτυχία ενημέρωσης προφίλ. Δοκιμάστε ξανά.",
-    "profile.emailExists": "Το email χρησιμοποιείται ήδη. Παρακαλώ χρησιμοποιήστε άλλο email.",
+    "profile.emailExists":
+      "Το email χρησιμοποιείται ήδη. Παρακαλώ χρησιμοποιήστε άλλο email.",
     "profile.deleteAccount": "Διαγραφή Λογαριασμού",
     "profile.deleteAccountDesc":
       "Διαγράψτε μόνιμα τον λογαριασμό σας και όλα τα σχετικά δεδομένα",
@@ -1150,7 +1182,8 @@ export const translations = {
 
     // Edit Listing
     "editListing.title": "Επεξεργασία Καταχώρησης",
-    "editListing.subtitle": "Ενημερώστε τα στοιχεία της καταχώρησής σας παρακάτω.",
+    "editListing.subtitle":
+      "Ενημερώστε τα στοιχεία της καταχώρησής σας παρακάτω.",
     "editListing.backToListings": "Επιστροφή στις Καταχωρήσεις μου",
     "editListing.saveChanges": "Αποθήκευση Αλλαγών",
     "editListing.saving": "Αποθήκευση...",
@@ -1159,7 +1192,8 @@ export const translations = {
     "editListing.error": "Σφάλμα",
     "editListing.errorDesc": "Αποτυχία ενημέρωσης καταχώρησης. Δοκιμάστε ξανά.",
     "editListing.notOwner": "Μη Εξουσιοδοτημένο",
-    "editListing.notOwnerDesc": "Μπορείτε να επεξεργαστείτε μόνο τις δικές σας καταχωρήσεις.",
+    "editListing.notOwnerDesc":
+      "Μπορείτε να επεξεργαστείτε μόνο τις δικές σας καταχωρήσεις.",
     "editListing.availability": "Διαθεσιμότητα",
     "editListing.available": "Διαθέσιμο",
     "editListing.unavailable": "Μη Διαθέσιμο",
@@ -1168,13 +1202,15 @@ export const translations = {
     "favorites.title": "Τα Αγαπημένα μου",
     "favorites.subtitle": "Ακίνητα που έχετε αποθηκεύσει",
     "favorites.noFavorites": "Δεν έχετε αποθηκευμένα ακίνητα ακόμα",
-    "favorites.saveSome": "Ξεκινήστε την εξερεύνηση και αποθηκεύστε ακίνητα που σας αρέσουν",
+    "favorites.saveSome":
+      "Ξεκινήστε την εξερεύνηση και αποθηκεύστε ακίνητα που σας αρέσουν",
     "favorites.browseListings": "Περιήγηση Καταχωρήσεων",
     "favorites.removed": "Αφαιρέθηκε από τα αγαπημένα",
     "favorites.added": "Προστέθηκε στα αγαπημένα",
     "favorites.removeFailed": "Αποτυχία αφαίρεσης από τα αγαπημένα",
     "favorites.removeTitle": "Αφαίρεση από τα Αγαπημένα",
-    "favorites.confirmRemove": "Είστε σίγουροι ότι θέλετε να αφαιρέσετε αυτό το ακίνητο από τα αγαπημένα σας;",
+    "favorites.confirmRemove":
+      "Είστε σίγουροι ότι θέλετε να αφαιρέσετε αυτό το ακίνητο από τα αγαπημένα σας;",
     "favorites.remove": "Αφαίρεση",
     "favorites.errorLoading": "Αποτυχία φόρτωσης αγαπημένων. Δοκιμάστε ξανά.",
     "favorites.property": "ακίνητο",
@@ -1192,8 +1228,10 @@ export const translations = {
     "locationSearch.noCountriesFound": "Δεν βρέθηκαν χώρες.",
     "locationSearch.typeToSearch": "Πληκτρολογήστε για αναζήτηση...",
     "locationSearch.searching": "Αναζήτηση...",
-    "locationSearch.validation.invalidCity": "Παρακαλώ επιλέξτε έγκυρη πόλη από τη λίστα",
-    "locationSearch.validation.invalidCountry": "Παρακαλώ επιλέξτε έγκυρη χώρα από τη λίστα",
+    "locationSearch.validation.invalidCity":
+      "Παρακαλώ επιλέξτε έγκυρη πόλη από τη λίστα",
+    "locationSearch.validation.invalidCountry":
+      "Παρακαλώ επιλέξτε έγκυρη χώρα από τη λίστα",
 
     // Contact Owner Dialog
     "contactOwner.title": "Επικοινωνία με Ιδιοκτήτη",
@@ -1205,21 +1243,27 @@ export const translations = {
     "contactOwner.phone": "Τηλέφωνο (προαιρετικό)",
     "contactOwner.phonePlaceholder": "Ο αριθμός τηλεφώνου σας",
     "contactOwner.message": "Μήνυμα",
-    "contactOwner.messagePlaceholder": "Γεια σας, ενδιαφέρομαι για αυτό το ακίνητο. Θα ήθελα να μάθω περισσότερα για...",
+    "contactOwner.messagePlaceholder":
+      "Γεια σας, ενδιαφέρομαι για αυτό το ακίνητο. Θα ήθελα να μάθω περισσότερα για...",
     "contactOwner.send": "Αποστολή Μηνύματος",
     "contactOwner.sending": "Αποστολή...",
     "contactOwner.sent": "Το Μήνυμα Στάλθηκε!",
-    "contactOwner.sentDesc": "Ο ιδιοκτήτης θα λάβει το μήνυμά σας και θα επικοινωνήσει μαζί σας σύντομα.",
+    "contactOwner.sentDesc":
+      "Ο ιδιοκτήτης θα λάβει το μήνυμά σας και θα επικοινωνήσει μαζί σας σύντομα.",
     "contactOwner.error": "Σφάλμα",
-    "contactOwner.fillRequired": "Παρακαλώ συμπληρώστε όλα τα υποχρεωτικά πεδία.",
+    "contactOwner.fillRequired":
+      "Παρακαλώ συμπληρώστε όλα τα υποχρεωτικά πεδία.",
     "contactOwner.sendFailed": "Αποτυχία αποστολής μηνύματος. Δοκιμάστε ξανά.",
-    "contactOwner.privacyNote": "Τα στοιχεία επικοινωνίας σας θα κοινοποιηθούν μόνο στον ιδιοκτήτη του ακινήτου.",
+    "contactOwner.privacyNote":
+      "Τα στοιχεία επικοινωνίας σας θα κοινοποιηθούν μόνο στον ιδιοκτήτη του ακινήτου.",
 
     // Availability Slots
     "availabilitySlots.title": "Διαθεσιμότητα Επισκέψεων",
     "availabilitySlots.addSlot": "Προσθήκη Χρονικού Διαστήματος",
-    "availabilitySlots.noSlots": "Δεν έχουν προστεθεί διαστήματα διαθεσιμότητας ακόμα",
-    "availabilitySlots.noSlotsDesc": "Προσθέστε χρονικά διαστήματα όταν είστε διαθέσιμος για επισκέψεις ακινήτων",
+    "availabilitySlots.noSlots":
+      "Δεν έχουν προστεθεί διαστήματα διαθεσιμότητας ακόμα",
+    "availabilitySlots.noSlotsDesc":
+      "Προσθέστε χρονικά διαστήματα όταν είστε διαθέσιμος για επισκέψεις ακινήτων",
     "availabilitySlots.upcoming": "Επόμενα Διαστήματα",
     "availabilitySlots.past": "Περασμένα Διαστήματα",
     "availabilitySlots.available": "Διαθέσιμο",
@@ -1232,18 +1276,121 @@ export const translations = {
     "availabilitySlots.startTime": "Ώρα Έναρξης",
     "availabilitySlots.endTime": "Ώρα Λήξης",
     "availabilitySlots.fillAll": "Παρακαλώ συμπληρώστε όλα τα πεδία",
-    "availabilitySlots.endAfterStart": "Η ώρα λήξης πρέπει να είναι μετά την ώρα έναρξης",
+    "availabilitySlots.endAfterStart":
+      "Η ώρα λήξης πρέπει να είναι μετά την ώρα έναρξης",
     "availabilitySlots.added": "Το διάστημα διαθεσιμότητας προστέθηκε",
-    "availabilitySlots.addFailed": "Αποτυχία προσθήκης διαστήματος διαθεσιμότητας",
+    "availabilitySlots.addFailed":
+      "Αποτυχία προσθήκης διαστήματος διαθεσιμότητας",
     "availabilitySlots.selectDate": "Επιλέξτε Ημερομηνία από το Ημερολόγιο",
     "availabilitySlots.existingSlots": "Υπάρχοντα Διαστήματα στις",
     "availabilitySlots.previous": "Προηγούμενο",
     "availabilitySlots.next": "Επόμενο",
-    "availabilitySlots.noSlotsDate": "Δεν υπάρχουν διαθέσιμα διαστήματα σε αυτή την ημερομηνία",
+    "availabilitySlots.noSlotsDate":
+      "Δεν υπάρχουν διαθέσιμα διαστήματα σε αυτή την ημερομηνία",
     "availabilitySlots.selectDateFirst": "Παρακαλώ επιλέξτε ημερομηνία πρώτα",
     "availabilitySlots.deleted": "Το διάστημα διαγράφηκε",
     "availabilitySlots.deleteFailed": "Αποτυχία διαγραφής διαστήματος",
-    "availabilitySlots.loadingSlots": "Αποτυχία φόρτωσης διαστημάτων διαθεσιμότητας",
+    "availabilitySlots.loadingSlots":
+      "Αποτυχία φόρτωσης διαστημάτων διαθεσιμότητας",
+
+    // Bookings
+    "bookings.title": "My Bookings",
+    "bookings.noBookings": "No bookings yet",
+    "bookings.noBookingsDesc": "When you book a viewing, it will appear here.",
+    "bookings.browseListings": "Browse Listings",
+    "bookings.errorLoading": "Failed to load bookings",
+    "bookings.cancelConfirm": "Are you sure you want to cancel this booking?",
+    "bookings.cancelled": "Booking cancelled",
+    "bookings.cancelFailed": "Failed to cancel booking",
+    "bookings.viewDetails": "View Details",
+    "bookings.cancel": "Cancel",
+    "bookings.pending": "Pending",
+    "bookings.confirmed": "Confirmed",
+    "bookings.declined": "Declined",
+    "bookings.cancelledStatus": "Cancelled",
+    "bookings.unknownListing": "Unknown Listing",
+    "bookings.joinVideoCall": "Join Video Call",
+
+    // Booking Detail
+    "bookingDetail.title": "Booking Details",
+    "bookingDetail.errorLoading": "Failed to load booking details",
+    "bookingDetail.notFound": "Booking not found",
+    "bookingDetail.backToBookings": "Back to Bookings",
+    "bookingDetail.back": "Back",
+    "bookingDetail.viewingSchedule": "Viewing Schedule",
+    "bookingDetail.dateAndTime": "Date & Time",
+    "bookingDetail.joinVideoCall": "Join Video Call",
+    "bookingDetail.actions": "Actions",
+    "bookingDetail.reviewRequest":
+      "Review this viewing request and take action.",
+    "bookingDetail.confirmBooking": "Confirm Booking",
+    "bookingDetail.declineBooking": "Decline Booking",
+    "bookingDetail.cancelBooking": "Cancel Booking",
+    "bookingDetail.bookingConfirmed": "Booking confirmed",
+    "bookingDetail.bookingDeclined": "Booking declined",
+    "bookingDetail.updateFailed": "Failed to update booking",
+    "bookingDetail.cancelConfirm":
+      "Are you sure you want to cancel this booking?",
+    "bookingDetail.bookingCancelled": "Booking cancelled",
+    "bookingDetail.cancelFailed": "Failed to cancel booking",
+
+    // Listing Bookings
+    "listingBookings.manageBookings": "Manage Bookings",
+    "listingBookings.backToListing": "Back to Listing",
+    "listingBookings.listingNotFound": "Listing not found",
+    "listingBookings.backToMyListings": "Back to My Listings",
+    "listingBookings.bookingsTab": "Bookings",
+    "listingBookings.timeSlotsTab": "Time Slots",
+    "listingBookings.noBookings": "No bookings yet",
+    "listingBookings.noBookingsDesc":
+      "When candidates book viewings, they will appear here.",
+    "listingBookings.candidateId": "Candidate ID",
+    "listingBookings.accept": "Accept",
+    "listingBookings.decline": "Decline",
+    "listingBookings.availabilitySlots": "Availability Time Slots",
+    "listingBookings.availabilitySlotsDesc":
+      "Manage when candidates can book viewings for your property.",
+    "listingBookings.addTimeSlot": "Add Time Slot",
+    "listingBookings.noTimeSlots": "No time slots available",
+    "listingBookings.noTimeSlotsDesc":
+      "Add availability slots to let candidates book viewings.",
+    "listingBookings.addFirstTimeSlot": "Add First Time Slot",
+    "listingBookings.booked": "Booked",
+    "listingBookings.available": "Available",
+    "listingBookings.edit": "Edit",
+    "listingBookings.delete": "Delete",
+    "listingBookings.bookingConfirmed": "Booking confirmed",
+    "listingBookings.bookingDeclined": "Booking declined",
+    "listingBookings.updateFailed": "Failed to update booking",
+    "listingBookings.cancelConfirm":
+      "Are you sure you want to cancel this booking?",
+    "listingBookings.bookingCancelled": "Booking cancelled",
+    "listingBookings.cancelFailed": "Failed to cancel booking",
+    "listingBookings.deleteSlotConfirm":
+      "Are you sure you want to delete this time slot?",
+    "listingBookings.slotDeleted": "Time slot deleted",
+    "listingBookings.deleteSlotFailed": "Failed to delete time slot",
+    "listingBookings.errorLoading": "Failed to load booking data",
+
+    // Listing Verification
+    "verification.title": "Property Verification",
+    "verification.subtitle":
+      "Verify your property ownership to build trust with potential tenants",
+    "verification.back": "Back",
+    "verification.authRequired": "Authentication Required",
+    "verification.signIn": "sign in",
+    "verification.authRequiredDesc": "Please {link} to access verification.",
+    "verification.accessDenied": "Access Denied",
+    "verification.accessDeniedDesc":
+      "Only landlords can access the verification page.",
+    "verification.listingNotFound": "Listing Not Found",
+    "verification.listingNotFoundDesc":
+      "The listing you're looking for doesn't exist or has been removed.",
+
+    // Not Found
+    "notFound.title": "404",
+    "notFound.subtitle": "Oops! Page not found",
+    "notFound.returnHome": "Return to Home",
   },
 };
 
