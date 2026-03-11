@@ -1,6 +1,6 @@
 {
-  "id": "15b2212a-633f-46b4-ba00-465d5e390057",
-  "prevId": "04ff3661-b6e9-4d4c-92a8-624158163ad0",
+  "id": "68270af4-5d90-49c1-8752-6e01e9904e0d",
+  "prevId": "15b2212a-633f-46b4-ba00-465d5e390057",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -889,7 +889,8 @@
           "name": "date_available",
           "type": "date",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "default": "now()"
         },
         "date_built": {
           "name": "date_built",
@@ -983,10 +984,22 @@
           "name": "title_el",
           "type": "varchar(100)",
           "primaryKey": false,
+          "notNull": true
+        },
+        "title_en": {
+          "name": "title_en",
+          "type": "varchar(100)",
+          "primaryKey": false,
           "notNull": false
         },
         "description_el": {
           "name": "description_el",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "description_en": {
+          "name": "description_en",
           "type": "text",
           "primaryKey": false,
           "notNull": false

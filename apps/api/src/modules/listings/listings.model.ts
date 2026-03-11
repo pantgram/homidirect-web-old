@@ -12,8 +12,9 @@ import {
   index,
   date,
 } from "drizzle-orm/pg-core";
-import { sql } from "drizzle-orm";
+import { desc, sql } from "drizzle-orm";
 import { users } from "../users/users.model";
+import { title } from "process";
 
 export const propertyTypeEnum = pgEnum("property_type", [
   "apartment",
@@ -82,8 +83,10 @@ export const listings = pgTable(
     featuredUntil: timestamp("featured_until"),
 
     // Bilingual support fields
-    titleEl: varchar("title_el", { length: 100 }),
-    descriptionEl: text("description_el"),
+    titleEl: varchar("title_el", { length: 100 }).notNull().default(""),
+    titleEn: varchar("title_en", { length: 100 }),
+    descriptionEl: text("description_el").notNull().default(""),
+    descriptionEn: text("description_en"),
   },
   (table) => [
     // Check constraints
@@ -118,9 +121,13 @@ export const listings = pgTable(
     index("listings_city_price_idx").on(table.city, table.price),
     index("listings_type_city_idx").on(table.propertyType, table.city),
     // Full-text search index (GIN index for tsvector)
-    index("listings_search_idx").using(
+    index("listings_search_en_idx").using(
       "gin",
-      sql`to_tsvector('english', coalesce(${table.title}, '') || ' ' || coalesce(${table.description}, ''))`,
+      sql`to_tsvector('english', coalesce(${table.titleEn}, '') || ' ' || coalesce(${table.description}, ''))`,
+    ),
+    index("listings_search_el_idx").using(
+      "gin",
+      sql`to_tsvector('greek', coalesce(${table.titleEl}, '') || ' ' || coalesce(${table.description}, ''))`,
     ),
   ],
 );

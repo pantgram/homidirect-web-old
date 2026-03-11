@@ -158,7 +158,7 @@ export const ListingService = {
     try {
       await ListingImageService.deleteImagesByListingId(id);
     } catch (error) {
-      console.error('Failed to delete images from R2 for listing:', id, error);
+      console.error("Failed to delete images from R2 for listing:", id, error);
     }
 
     const result = await db
@@ -213,6 +213,10 @@ export const ListingService = {
           ilike(listings.description, searchTerm),
           ilike(listings.titleEl, searchTerm),
           ilike(listings.descriptionEl, searchTerm),
+          ilike(listings.titleEn, searchTerm),
+          ilike(listings.descriptionEn, searchTerm),
+          ilike(listings.city, searchTerm),
+          ilike(listings.postalCode, searchTerm),
         )!,
       );
     }
