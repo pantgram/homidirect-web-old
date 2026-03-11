@@ -1,0 +1,2 @@
+ALTER TABLE "listings" ALTER COLUMN "floor" SET DEFAULT 'ground'::"public"."floors";--> statement-breakpoint
+ALTER TABLE "listings" ALTER COLUMN "floor" SET DATA TYPE "public"."floors" USING "floor"::"public"."floors";

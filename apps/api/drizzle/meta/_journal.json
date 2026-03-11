@@ -78,6 +78,20 @@
       "when": 1772814947438,
       "tag": "0010_adorable_unus",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1773225490026,
+      "tag": "0011_easy_trish_tilby",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1773226312862,
+      "tag": "0012_common_madelyne_pryor",
+      "breakpoints": true
     }
   ]
 }
