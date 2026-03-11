@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef } from "react";
-import { Upload, X, ImageIcon, Loader2 } from "lucide-react";
+import { Upload, X, ImageIcon, Loader2, GripVertical } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -33,6 +33,8 @@ export function ImageUpload({
   const currentSessionIdRef = useRef<string | null>(sessionId);
   const [isDragging, setIsDragging] = useState(false);
   const [uploadingCount, setUploadingCount] = useState(0);
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
 
   currentSessionIdRef.current = sessionId;
 
@@ -177,6 +179,48 @@ export function ImageUpload({
     }
   };
 
+  const handleImageDragStart = (e: React.DragEvent, index: number) => {
+    e.dataTransfer.effectAllowed = "move";
+    setDraggedIndex(index);
+    e.dataTransfer.setData("text/plain", String(index));
+  };
+
+  const handleImageDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    if (draggedIndex !== null && draggedIndex !== index) {
+      setDragOverIndex(index);
+    }
+  };
+
+  const handleImageDragLeave = () => {
+    setDragOverIndex(null);
+  };
+
+  const handleImageDrop = (e: React.DragEvent, dropIndex: number) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (draggedIndex === null || draggedIndex === dropIndex) {
+      setDraggedIndex(null);
+      setDragOverIndex(null);
+      return;
+    }
+
+    const newImages = [...images];
+    const [draggedImage] = newImages.splice(draggedIndex, 1);
+    newImages.splice(dropIndex, 0, draggedImage);
+    onImagesChange(newImages);
+
+    setDraggedIndex(null);
+    setDragOverIndex(null);
+  };
+
+  const handleImageDragEnd = () => {
+    setDraggedIndex(null);
+    setDragOverIndex(null);
+  };
+
   const getImageUrl = (url: string) => {
     if (url.startsWith("http")) return url;
     return `${env.apiUrl}${url}`;
@@ -253,15 +297,31 @@ export function ImageUpload({
           {images.map((image, index) => (
             <div
               key={image.id}
-              className="relative group aspect-square rounded-lg overflow-hidden border border-border bg-muted"
+              draggable={!disabled}
+              onDragStart={(e) => handleImageDragStart(e, index)}
+              onDragOver={(e) => handleImageDragOver(e, index)}
+              onDragLeave={handleImageDragLeave}
+              onDrop={(e) => handleImageDrop(e, index)}
+              onDragEnd={handleImageDragEnd}
+              className={cn(
+                "relative group aspect-square rounded-lg overflow-hidden border border-border bg-muted transition-all",
+                draggedIndex === index && "opacity-50 scale-95",
+                dragOverIndex === index && "ring-2 ring-primary ring-offset-2",
+                !disabled && "cursor-grab active:cursor-grabbing"
+              )}
             >
+              {!disabled && (
+                <div className="absolute top-1 left-1 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <GripVertical className="h-5 w-5 text-white drop-shadow-md" />
+                </div>
+              )}
               <img
                 src={getImageUrl(image.url)}
                 alt={`Property image ${index + 1}`}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover pointer-events-none"
               />
               {index === 0 && (
-                <span className="absolute top-2 left-2 bg-primary text-primary-foreground text-xs px-2 py-0.5 rounded">
+                <span className="absolute top-2 right-8 bg-primary text-primary-foreground text-xs px-2 py-0.5 rounded">
                   {t("imageUpload.primary")}
                 </span>
               )}

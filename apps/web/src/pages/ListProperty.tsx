@@ -91,7 +91,7 @@ const ListProperty = () => {
   }, [isAuthenticated, canAccess, isAuthLoading, navigate, toast, t]);
 
   const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     const { id, value } = e.target;
     setFormData((prev) => ({ ...prev, [id]: value }));
@@ -322,7 +322,10 @@ const ListProperty = () => {
                           city: "", // Reset city when country changes
                         }));
                         if (formErrors.country) {
-                          setFormErrors((prev) => ({ ...prev, country: undefined }));
+                          setFormErrors((prev) => ({
+                            ...prev,
+                            country: undefined,
+                          }));
                         }
                       }}
                       placeholder={t("locationSearch.selectCountry")}
@@ -345,7 +348,10 @@ const ListProperty = () => {
                       onValueChange={(value) => {
                         setFormData((prev) => ({ ...prev, city: value }));
                         if (formErrors.city) {
-                          setFormErrors((prev) => ({ ...prev, city: undefined }));
+                          setFormErrors((prev) => ({
+                            ...prev,
+                            city: undefined,
+                          }));
                         }
                       }}
                       onLocationSelect={(location: LocationResult) => {
@@ -372,9 +378,7 @@ const ListProperty = () => {
                 </div>
 
                 <div>
-                  <Label htmlFor="postalCode">
-                    {t("listForm.postalCode")}
-                  </Label>
+                  <Label htmlFor="postalCode">{t("listForm.postalCode")}</Label>
                   <Input
                     id="postalCode"
                     value={formData.postalCode}
