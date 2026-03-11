@@ -252,7 +252,6 @@ const MyProfile = () => {
                 asChild
               >
                 <>
-                  <Calendar className="h-4 w-4 mr-2" />
                   {t("profile.myBookings")}
                   <ArrowRight className="ml-auto h-4 w-4" />
                 </>
