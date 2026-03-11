@@ -9,7 +9,8 @@ import { interestedListings } from "../models/interestedListings.model";
 
 // USERS
 export const usersRelations = relations(users, ({ many }) => ({
-  listings: many(listings),
+  listings: many(listings, { relationName: "landlord" }),
+  verifiedListings: many(listings, { relationName: "verifier" }),
   tenantBookings: many(bookings, { relationName: "tenant" }),
   landlordBookings: many(bookings, { relationName: "landlord" }),
   interestedListings: many(interestedListings),
@@ -20,6 +21,12 @@ export const listingsRelations = relations(listings, ({ one, many }) => ({
   landlord: one(users, {
     fields: [listings.landlordId],
     references: [users.id],
+    relationName: "landlord",
+  }),
+  verifiedByUser: one(users, {
+    fields: [listings.verifiedBy],
+    references: [users.id],
+    relationName: "verifier",
   }),
   images: many(listingImages),
   tags: many(listingTags),
