@@ -34,7 +34,6 @@ A modern real estate platform connecting landlords and tenants. Built with React
 - **Messaging** - Internal messaging between users
 - **Search & Filters** - By city, price, property type, bedrooms, area
 - **Internationalization** - English and Greek language support
-- **Dark Mode** - Light/dark theme with system detection
 
 ## Prerequisites
 
