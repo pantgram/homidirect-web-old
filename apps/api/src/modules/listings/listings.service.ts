@@ -59,13 +59,31 @@ export const ListingService = {
         description: listings.description,
         price: listings.price,
         city: listings.city,
+        postalCode: listings.postalCode,
+        floor: listings.floor,
+        levels: listings.levels,
+        kitchens: listings.kitchens,
         bedrooms: listings.bedrooms,
         bathrooms: listings.bathrooms,
         area: listings.area,
+        dateAvailable: listings.dateAvailable,
+        dateBuilt: listings.dateBuilt,
+        views_count: listings.views_count,
+        country: listings.country,
         propertyType: listings.propertyType,
         available: listings.available,
         createdAt: listings.createdAt,
+        updatedAt: listings.updatedAt,
         landlordId: listings.landlordId,
+        verificationStatus: listings.verificationStatus,
+        verifiedAt: listings.verifiedAt,
+        verifiedBy: listings.verifiedBy,
+        isFeatured: listings.isFeatured,
+        featuredUntil: listings.featuredUntil,
+        titleEl: listings.titleEl,
+        titleEn: listings.titleEn,
+        descriptionEl: listings.descriptionEl,
+        descriptionEn: listings.descriptionEn,
       })
       .from(listings);
 
@@ -80,13 +98,31 @@ export const ListingService = {
         description: listings.description,
         price: listings.price,
         city: listings.city,
+        postalCode: listings.postalCode,
+        floor: listings.floor,
+        levels: listings.levels,
+        kitchens: listings.kitchens,
         bedrooms: listings.bedrooms,
         bathrooms: listings.bathrooms,
         area: listings.area,
+        dateAvailable: listings.dateAvailable,
+        dateBuilt: listings.dateBuilt,
+        views_count: listings.views_count,
+        country: listings.country,
         propertyType: listings.propertyType,
         available: listings.available,
         createdAt: listings.createdAt,
+        updatedAt: listings.updatedAt,
         landlordId: listings.landlordId,
+        verificationStatus: listings.verificationStatus,
+        verifiedAt: listings.verifiedAt,
+        verifiedBy: listings.verifiedBy,
+        isFeatured: listings.isFeatured,
+        featuredUntil: listings.featuredUntil,
+        titleEl: listings.titleEl,
+        titleEn: listings.titleEn,
+        descriptionEl: listings.descriptionEl,
+        descriptionEn: listings.descriptionEn,
       })
       .from(listings)
       .where(eq(listings.id, id))
@@ -99,20 +135,47 @@ export const ListingService = {
     data: CreateListingDTO,
     uploadSessionId?: string,
   ): Promise<ListingResponse> {
-    const [newListing] = await db.insert(listings).values(data).returning({
-      id: listings.id,
-      title: listings.title,
-      description: listings.description,
-      price: listings.price,
-      city: listings.city,
-      bedrooms: listings.bedrooms,
-      bathrooms: listings.bathrooms,
-      area: listings.area,
-      propertyType: listings.propertyType,
-      available: listings.available,
-      createdAt: listings.createdAt,
-      landlordId: listings.landlordId,
-    });
+    const { description, area, ...restData } = data;
+    const insertData = {
+      description: description ?? "",
+      area: area ?? 0,
+      ...restData,
+    };
+    const [newListing] = await db
+      .insert(listings)
+      .values(insertData)
+      .returning({
+        id: listings.id,
+        title: listings.title,
+        description: listings.description,
+        price: listings.price,
+        city: listings.city,
+        postalCode: listings.postalCode,
+        floor: listings.floor,
+        levels: listings.levels,
+        kitchens: listings.kitchens,
+        bedrooms: listings.bedrooms,
+        bathrooms: listings.bathrooms,
+        area: listings.area,
+        dateAvailable: listings.dateAvailable,
+        dateBuilt: listings.dateBuilt,
+        views_count: listings.views_count,
+        country: listings.country,
+        propertyType: listings.propertyType,
+        available: listings.available,
+        createdAt: listings.createdAt,
+        updatedAt: listings.updatedAt,
+        landlordId: listings.landlordId,
+        verificationStatus: listings.verificationStatus,
+        verifiedAt: listings.verifiedAt,
+        verifiedBy: listings.verifiedBy,
+        isFeatured: listings.isFeatured,
+        featuredUntil: listings.featuredUntil,
+        titleEl: listings.titleEl,
+        titleEn: listings.titleEn,
+        descriptionEl: listings.descriptionEl,
+        descriptionEn: listings.descriptionEn,
+      });
 
     if (uploadSessionId) {
       console.log(
@@ -142,13 +205,31 @@ export const ListingService = {
         description: listings.description,
         price: listings.price,
         city: listings.city,
+        postalCode: listings.postalCode,
+        floor: listings.floor,
+        levels: listings.levels,
+        kitchens: listings.kitchens,
         bedrooms: listings.bedrooms,
         bathrooms: listings.bathrooms,
         area: listings.area,
+        dateAvailable: listings.dateAvailable,
+        dateBuilt: listings.dateBuilt,
+        views_count: listings.views_count,
+        country: listings.country,
         propertyType: listings.propertyType,
         available: listings.available,
         createdAt: listings.createdAt,
+        updatedAt: listings.updatedAt,
         landlordId: listings.landlordId,
+        verificationStatus: listings.verificationStatus,
+        verifiedAt: listings.verifiedAt,
+        verifiedBy: listings.verifiedBy,
+        isFeatured: listings.isFeatured,
+        featuredUntil: listings.featuredUntil,
+        titleEl: listings.titleEl,
+        titleEn: listings.titleEn,
+        descriptionEl: listings.descriptionEl,
+        descriptionEn: listings.descriptionEn,
       });
 
     return updatedListing || null;
@@ -179,6 +260,7 @@ export const ListingService = {
       city,
       region,
       country,
+      floor,
       minPrice,
       maxPrice,
       minBedrooms,
@@ -187,6 +269,14 @@ export const ListingService = {
       maxBathrooms,
       minArea,
       maxArea,
+      minKitchens,
+      maxKitchens,
+      minLevels,
+      maxLevels,
+      dateAvailableFrom,
+      dateAvailableTo,
+      minDateBuilt,
+      maxDateBuilt,
       available,
       isFeatured,
       verificationStatus,
@@ -272,6 +362,43 @@ export const ListingService = {
       conditions.push(lte(listings.area, maxArea));
     }
 
+    // Floor filter
+    if (floor) {
+      conditions.push(eq(listings.floor, floor));
+    }
+
+    // Kitchen filters
+    if (minKitchens !== undefined) {
+      conditions.push(gte(listings.kitchens, minKitchens));
+    }
+    if (maxKitchens !== undefined) {
+      conditions.push(lte(listings.kitchens, maxKitchens));
+    }
+
+    // Level filters
+    if (minLevels !== undefined) {
+      conditions.push(gte(listings.levels, minLevels));
+    }
+    if (maxLevels !== undefined) {
+      conditions.push(lte(listings.levels, maxLevels));
+    }
+
+    // Date available filters
+    if (dateAvailableFrom !== undefined) {
+      conditions.push(gte(listings.dateAvailable, dateAvailableFrom));
+    }
+    if (dateAvailableTo !== undefined) {
+      conditions.push(lte(listings.dateAvailable, dateAvailableTo));
+    }
+
+    // Date built filters
+    if (minDateBuilt !== undefined) {
+      conditions.push(gte(listings.dateBuilt, minDateBuilt));
+    }
+    if (maxDateBuilt !== undefined) {
+      conditions.push(lte(listings.dateBuilt, maxDateBuilt));
+    }
+
     // Availability filter
     if (available !== undefined) {
       conditions.push(eq(listings.available, available));
@@ -339,16 +466,30 @@ export const ListingService = {
         price: listings.price,
         city: listings.city,
         postalCode: listings.postalCode,
+        floor: listings.floor,
+        levels: listings.levels,
+        kitchens: listings.kitchens,
         bedrooms: listings.bedrooms,
         bathrooms: listings.bathrooms,
         area: listings.area,
+        dateAvailable: listings.dateAvailable,
+        dateBuilt: listings.dateBuilt,
+        views_count: listings.views_count,
         country: listings.country,
         propertyType: listings.propertyType,
         available: listings.available,
         createdAt: listings.createdAt,
+        updatedAt: listings.updatedAt,
         landlordId: listings.landlordId,
-        isFeatured: listings.isFeatured,
         verificationStatus: listings.verificationStatus,
+        verifiedAt: listings.verifiedAt,
+        verifiedBy: listings.verifiedBy,
+        isFeatured: listings.isFeatured,
+        featuredUntil: listings.featuredUntil,
+        titleEl: listings.titleEl,
+        titleEn: listings.titleEn,
+        descriptionEl: listings.descriptionEl,
+        descriptionEn: listings.descriptionEn,
       })
       .from(listings)
       .where(whereClause)
@@ -445,16 +586,30 @@ export const ListingService = {
         price: listings.price,
         city: listings.city,
         postalCode: listings.postalCode,
+        floor: listings.floor,
+        levels: listings.levels,
+        kitchens: listings.kitchens,
         bedrooms: listings.bedrooms,
         bathrooms: listings.bathrooms,
         area: listings.area,
+        dateAvailable: listings.dateAvailable,
+        dateBuilt: listings.dateBuilt,
+        views_count: listings.views_count,
         country: listings.country,
         propertyType: listings.propertyType,
         available: listings.available,
         createdAt: listings.createdAt,
+        updatedAt: listings.updatedAt,
         landlordId: listings.landlordId,
-        isFeatured: listings.isFeatured,
         verificationStatus: listings.verificationStatus,
+        verifiedAt: listings.verifiedAt,
+        verifiedBy: listings.verifiedBy,
+        isFeatured: listings.isFeatured,
+        featuredUntil: listings.featuredUntil,
+        titleEl: listings.titleEl,
+        titleEn: listings.titleEn,
+        descriptionEl: listings.descriptionEl,
+        descriptionEn: listings.descriptionEn,
       })
       .from(listings)
       .where(eq(listings.landlordId, landlordId))
