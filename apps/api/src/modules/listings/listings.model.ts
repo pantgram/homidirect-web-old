@@ -15,6 +15,7 @@ import {
 import { desc, sql } from "drizzle-orm";
 import { users } from "../users/users.model";
 import { title } from "process";
+import z from "zod";
 
 export const propertyTypeEnum = pgEnum("property_type", [
   "apartment",
@@ -39,7 +40,19 @@ export const verificationStatusEnum = pgEnum("verification_status", [
   "APPROVED",
   "REJECTED",
 ]);
-
+export const listingStatusEnum = pgEnum("listing_status", [
+  "Renovated",
+  "Luxurious",
+  "Under construction",
+  "Neoclassical",
+]);
+export const zoneTypeEnum = pgEnum("zone_type", [
+  "Residential",
+  "Agricultural",
+  "Commercial",
+  "Industrial",
+  "Regeneration",
+]);
 export const listings = pgTable(
   "listings",
   {
@@ -55,6 +68,11 @@ export const listings = pgTable(
     bedrooms: integer("bedrooms").notNull().default(1),
     bathrooms: integer("bathrooms").notNull().default(1),
     area: real("area").notNull(),
+    elevator: boolean("elevator").default(false).notNull(),
+    parkingSpace: boolean("parking_space").default(false).notNull(),
+    furnished: boolean("furnished").default(false).notNull(),
+    zoneType: zoneTypeEnum("zone_type").notNull().default("Residential"),
+    listingStatus: listingStatusEnum("listing_status"),
     dateAvailable: date("date_available").notNull().defaultNow(),
     dateBuilt: integer("date_built")
       .notNull()
@@ -68,7 +86,7 @@ export const listings = pgTable(
     landlordId: integer("landlord_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
-
+    landlordPhone: varchar("landlord_phone", { length: 20 }),
     // Verification fields
     verificationStatus: verificationStatusEnum("verification_status")
       .default("PENDING")

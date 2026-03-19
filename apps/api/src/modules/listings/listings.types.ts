@@ -14,6 +14,11 @@ export type ListingResponse = Pick<
   | "bedrooms"
   | "bathrooms"
   | "area"
+  | "elevator"
+  | "parkingSpace"
+  | "furnished"
+  | "zoneType"
+  | "listingStatus"
   | "dateAvailable"
   | "dateBuilt"
   | "views_count"
@@ -66,6 +71,20 @@ export type CreateListingDTO = {
   bedrooms: number;
   bathrooms: number;
   area: number;
+  elevator?: boolean;
+  parkingSpace?: boolean;
+  furnished?: boolean;
+  zoneType?:
+    | "Residential"
+    | "Agricultural"
+    | "Commercial"
+    | "Industrial"
+    | "Regeneration";
+  listingStatus?:
+    | "Renovated"
+    | "Luxurious"
+    | "Under construction"
+    | "Neoclassical";
   dateAvailable: string;
   dateBuilt: number;
   country: string;
@@ -108,6 +127,20 @@ export type SearchListingsParams = {
   maxKitchens?: number;
   minLevels?: number;
   maxLevels?: number;
+  elevator?: boolean;
+  parkingSpace?: boolean;
+  furnished?: boolean;
+  zoneType?:
+    | "Residential"
+    | "Agricultural"
+    | "Commercial"
+    | "Industrial"
+    | "Regeneration";
+  listingStatus?:
+    | "Renovated"
+    | "Luxurious"
+    | "Under construction"
+    | "Neoclassical";
   dateAvailableFrom?: string;
   dateAvailableTo?: string;
   minDateBuilt?: number;

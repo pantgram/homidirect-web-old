@@ -23,7 +23,7 @@ export const AuthService = {
       .where(eq(users.email, email));
     if (existing) throw new Error("Email already registered");
 
-    const hashed = await hashPassword(password);
+    const hashed = await hashPassword(password!);
     const [user] = await db
       .insert(users)
       .values({
@@ -32,6 +32,7 @@ export const AuthService = {
         firstName,
         lastName,
         role,
+        authProvider: "EMAIL",
       })
       .returning();
 
@@ -57,6 +58,10 @@ export const AuthService = {
       .from(users)
       .where(eq(users.email, email));
     if (!user) throw new Error("No account found with this email address");
+
+    if (!user.password) {
+      throw new Error("This account uses Google sign-in. Please use Google to log in.");
+    }
 
     const valid = await comparePasswords(password, user.password);
     if (!valid) throw new Error("Incorrect password");

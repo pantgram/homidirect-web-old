@@ -103,6 +103,11 @@ export const translations = {
     "auth.resendToken": "Resend Token",
     "auth.tokenRequired": "Please enter the token from your email",
     "auth.back": "Back",
+    "auth.googleSignIn": "Sign in with Google",
+    "auth.googleSignUp": "Sign up with Google",
+    "auth.googleAccountExists": "An account with this email already exists. Please log in with your email and password.",
+    "auth.googleAuthFailed": "Google authentication failed. Please try again.",
+    "auth.orContinueWith": "or continue with",
 
     // User Menu
     "userMenu.myListings": "My Listings",
@@ -731,6 +736,11 @@ export const translations = {
     "auth.resendToken": "Επαναποστολή Κωδικού",
     "auth.tokenRequired": "Παρακαλώ εισάγετε τον κωδικό από το email σας",
     "auth.back": "Πίσω",
+    "auth.googleSignIn": "Σύνδεση με Google",
+    "auth.googleSignUp": "Εγγραφή με Google",
+    "auth.googleAccountExists": "Υπάρχει ήδη λογαριασμός με αυτό το email. Παρακαλώ συνδεθείτε με το email και τον κωδικό σας.",
+    "auth.googleAuthFailed": "Η αυθεντικοποίηση Google απέτυχε. Παρακαλώ δοκιμάστε ξανά.",
+    "auth.orContinueWith": "ή συνεχίστε με",
 
     // User Menu
     "userMenu.myListings": "Οι Καταχωρήσεις μου",

@@ -66,6 +66,11 @@ export const ListingService = {
         bedrooms: listings.bedrooms,
         bathrooms: listings.bathrooms,
         area: listings.area,
+        elevator: listings.elevator,
+        parkingSpace: listings.parkingSpace,
+        furnished: listings.furnished,
+        zoneType: listings.zoneType,
+        listingStatus: listings.listingStatus,
         dateAvailable: listings.dateAvailable,
         dateBuilt: listings.dateBuilt,
         views_count: listings.views_count,
@@ -105,6 +110,11 @@ export const ListingService = {
         bedrooms: listings.bedrooms,
         bathrooms: listings.bathrooms,
         area: listings.area,
+        elevator: listings.elevator,
+        parkingSpace: listings.parkingSpace,
+        furnished: listings.furnished,
+        zoneType: listings.zoneType,
+        listingStatus: listings.listingStatus,
         dateAvailable: listings.dateAvailable,
         dateBuilt: listings.dateBuilt,
         views_count: listings.views_count,
@@ -157,6 +167,11 @@ export const ListingService = {
         bedrooms: listings.bedrooms,
         bathrooms: listings.bathrooms,
         area: listings.area,
+        elevator: listings.elevator,
+        parkingSpace: listings.parkingSpace,
+        furnished: listings.furnished,
+        zoneType: listings.zoneType,
+        listingStatus: listings.listingStatus,
         dateAvailable: listings.dateAvailable,
         dateBuilt: listings.dateBuilt,
         views_count: listings.views_count,
@@ -212,6 +227,11 @@ export const ListingService = {
         bedrooms: listings.bedrooms,
         bathrooms: listings.bathrooms,
         area: listings.area,
+        elevator: listings.elevator,
+        parkingSpace: listings.parkingSpace,
+        furnished: listings.furnished,
+        zoneType: listings.zoneType,
+        listingStatus: listings.listingStatus,
         dateAvailable: listings.dateAvailable,
         dateBuilt: listings.dateBuilt,
         views_count: listings.views_count,
@@ -273,6 +293,11 @@ export const ListingService = {
       maxKitchens,
       minLevels,
       maxLevels,
+      elevator,
+      parkingSpace,
+      furnished,
+      zoneType,
+      listingStatus,
       dateAvailableFrom,
       dateAvailableTo,
       minDateBuilt,
@@ -383,6 +408,31 @@ export const ListingService = {
       conditions.push(lte(listings.levels, maxLevels));
     }
 
+    // Elevator filter
+    if (elevator !== undefined) {
+      conditions.push(eq(listings.elevator, elevator));
+    }
+
+    // Parking space filter
+    if (parkingSpace !== undefined) {
+      conditions.push(eq(listings.parkingSpace, parkingSpace));
+    }
+
+    // Furnished filter
+    if (furnished !== undefined) {
+      conditions.push(eq(listings.furnished, furnished));
+    }
+
+    // Zone type filter
+    if (zoneType) {
+      conditions.push(eq(listings.zoneType, zoneType));
+    }
+
+    // Listing status filter
+    if (listingStatus) {
+      conditions.push(eq(listings.listingStatus, listingStatus));
+    }
+
     // Date available filters
     if (dateAvailableFrom !== undefined) {
       conditions.push(gte(listings.dateAvailable, dateAvailableFrom));
@@ -472,6 +522,11 @@ export const ListingService = {
         bedrooms: listings.bedrooms,
         bathrooms: listings.bathrooms,
         area: listings.area,
+        elevator: listings.elevator,
+        parkingSpace: listings.parkingSpace,
+        furnished: listings.furnished,
+        zoneType: listings.zoneType,
+        listingStatus: listings.listingStatus,
         dateAvailable: listings.dateAvailable,
         dateBuilt: listings.dateBuilt,
         views_count: listings.views_count,
@@ -550,7 +605,8 @@ export const ListingService = {
         createdAt: listingImages.createdAt,
       })
       .from(listingImages)
-      .where(inArray(listingImages.listingId, listingIds));
+      .where(inArray(listingImages.listingId, listingIds))
+      .orderBy(asc(listingImages.createdAt));
 
     // Group by listingId and take the first one (oldest = primary)
     const imageMap = new Map<number, ListingImageBasic>();
@@ -592,6 +648,11 @@ export const ListingService = {
         bedrooms: listings.bedrooms,
         bathrooms: listings.bathrooms,
         area: listings.area,
+        elevator: listings.elevator,
+        parkingSpace: listings.parkingSpace,
+        furnished: listings.furnished,
+        zoneType: listings.zoneType,
+        listingStatus: listings.listingStatus,
         dateAvailable: listings.dateAvailable,
         dateBuilt: listings.dateBuilt,
         views_count: listings.views_count,
