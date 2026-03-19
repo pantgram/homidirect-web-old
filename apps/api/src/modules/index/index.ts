@@ -1,5 +1,6 @@
 import { FastifyInstance } from "fastify";
 import { authRoutes } from "../auth/auth.routes";
+import { googleAuthRoutes } from "../auth/google/google.routes";
 import { userRoutes } from "../users/users.routes";
 import { listingRoutes } from "../listings/listings.routes";
 import {
@@ -19,6 +20,9 @@ import { geoapifyRoutes } from "../geoapify/geoapify.routes";
 export async function apiRoutes(fastify: FastifyInstance) {
   // all auth routes will be under /api/auth
   fastify.register(authRoutes, { prefix: "/auth" });
+
+  // google oauth routes under /api/auth/google
+  fastify.register(googleAuthRoutes, { prefix: "/auth/google" });
 
   // all user routes will be under /api/users
   fastify.register(userRoutes, { prefix: "/users" });

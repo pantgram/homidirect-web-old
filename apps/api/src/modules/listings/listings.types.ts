@@ -7,13 +7,36 @@ export type ListingResponse = Pick<
   | "description"
   | "price"
   | "city"
+  | "postalCode"
+  | "floor"
+  | "levels"
+  | "kitchens"
   | "bedrooms"
   | "bathrooms"
   | "area"
+  | "elevator"
+  | "parkingSpace"
+  | "furnished"
+  | "zoneType"
+  | "listingStatus"
+  | "dateAvailable"
+  | "dateBuilt"
+  | "views_count"
+  | "country"
   | "propertyType"
   | "available"
   | "createdAt"
+  | "updatedAt"
   | "landlordId"
+  | "verificationStatus"
+  | "verifiedAt"
+  | "verifiedBy"
+  | "isFeatured"
+  | "featuredUntil"
+  | "titleEl"
+  | "titleEn"
+  | "descriptionEl"
+  | "descriptionEn"
 >;
 
 export type ListingImageBasic = {
@@ -24,43 +47,74 @@ export type ListingImageBasic = {
 };
 
 export type ListingSearchResponse = ListingResponse & {
-  isFeatured: boolean;
-  verificationStatus: "PENDING" | "APPROVED" | "REJECTED";
-  country: string | null;
-  postalCode: string | null;
   primaryImage?: ListingImageBasic | null;
 };
 
 export type CreateListingDTO = {
   title: string;
-  description: string;
-  lastName: string;
+  description?: string;
   price: number;
-  price_per_room?: number;
   city: string;
   postalCode?: string;
+  floor:
+    | "basement"
+    | "semi-basement"
+    | "ground"
+    | "1st"
+    | "2nd"
+    | "3rd"
+    | "4th"
+    | "5th"
+    | "6th+";
+  levels?: number;
+  kitchens: number;
   bedrooms: number;
   bathrooms: number;
   area: number;
-  country?: string;
-  maxTenants?: number;
-  shareable?: boolean;
+  elevator?: boolean;
+  parkingSpace?: boolean;
+  furnished?: boolean;
+  zoneType?:
+    | "Residential"
+    | "Agricultural"
+    | "Commercial"
+    | "Industrial"
+    | "Regeneration";
+  listingStatus?:
+    | "Renovated"
+    | "Luxurious"
+    | "Under construction"
+    | "Neoclassical";
+  dateAvailable: string;
+  dateBuilt: number;
+  country: string;
   propertyType: "apartment" | "house" | "studio" | "room";
-  available?: boolean;
+  available: boolean;
   landlordId: number;
+  titleEl: string;
+  titleEn?: string;
+  descriptionEl: string;
+  descriptionEn?: string;
 };
 
 export type UpdateListingDTO = Partial<CreateListingDTO>;
 
 export type SearchListingsParams = {
-  // Full-text search
   q?: string;
-
-  // Filters
   propertyType?: "apartment" | "house" | "studio" | "room";
   city?: string;
   region?: string;
   country?: string;
+  floor?:
+    | "basement"
+    | "semi-basement"
+    | "ground"
+    | "1st"
+    | "2nd"
+    | "3rd"
+    | "4th"
+    | "5th"
+    | "6th+";
   minPrice?: number;
   maxPrice?: number;
   minBedrooms?: number;
@@ -69,14 +123,39 @@ export type SearchListingsParams = {
   maxBathrooms?: number;
   minArea?: number;
   maxArea?: number;
+  minKitchens?: number;
+  maxKitchens?: number;
+  minLevels?: number;
+  maxLevels?: number;
+  elevator?: boolean;
+  parkingSpace?: boolean;
+  furnished?: boolean;
+  zoneType?:
+    | "Residential"
+    | "Agricultural"
+    | "Commercial"
+    | "Industrial"
+    | "Regeneration";
+  listingStatus?:
+    | "Renovated"
+    | "Luxurious"
+    | "Under construction"
+    | "Neoclassical";
+  dateAvailableFrom?: string;
+  dateAvailableTo?: string;
+  minDateBuilt?: number;
+  maxDateBuilt?: number;
   available?: boolean;
   isFeatured?: boolean;
   verificationStatus?: "PENDING" | "APPROVED" | "REJECTED";
-
-  // Sort
-  sortBy?: "featured" | "newest" | "oldest" | "price_asc" | "price_desc" | "area_asc" | "area_desc";
-
-  // Pagination
+  sortBy?:
+    | "featured"
+    | "newest"
+    | "oldest"
+    | "price_asc"
+    | "price_desc"
+    | "area_asc"
+    | "area_desc";
   page?: number;
   limit?: number;
 };

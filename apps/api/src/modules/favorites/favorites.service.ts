@@ -1,4 +1,4 @@
-import { eq, and, sql, inArray, desc } from "drizzle-orm";
+import { eq, and, sql, inArray, desc, asc } from "drizzle-orm";
 import { db } from "config/db";
 import { interestedListings } from "@/models/interestedListings.model";
 import { listings } from "../listings/listings.model";
@@ -33,16 +33,35 @@ export const FavoritesService = {
         price: listings.price,
         city: listings.city,
         postalCode: listings.postalCode,
+        floor: listings.floor,
+        levels: listings.levels,
+        kitchens: listings.kitchens,
         bedrooms: listings.bedrooms,
         bathrooms: listings.bathrooms,
         area: listings.area,
+        elevator: listings.elevator,
+        parkingSpace: listings.parkingSpace,
+        furnished: listings.furnished,
+        zoneType: listings.zoneType,
+        listingStatus: listings.listingStatus,
+        dateAvailable: listings.dateAvailable,
+        dateBuilt: listings.dateBuilt,
+        views_count: listings.views_count,
         country: listings.country,
         propertyType: listings.propertyType,
         available: listings.available,
         createdAt: listings.createdAt,
+        updatedAt: listings.updatedAt,
         landlordId: listings.landlordId,
-        isFeatured: listings.isFeatured,
         verificationStatus: listings.verificationStatus,
+        verifiedAt: listings.verifiedAt,
+        verifiedBy: listings.verifiedBy,
+        isFeatured: listings.isFeatured,
+        featuredUntil: listings.featuredUntil,
+        titleEl: listings.titleEl,
+        titleEn: listings.titleEn,
+        descriptionEl: listings.descriptionEl,
+        descriptionEn: listings.descriptionEn,
       })
       .from(interestedListings)
       .innerJoin(listings, eq(interestedListings.listingId, listings.id))
@@ -145,7 +164,8 @@ export const FavoritesService = {
         createdAt: listingImages.createdAt,
       })
       .from(listingImages)
-      .where(inArray(listingImages.listingId, listingIds));
+      .where(inArray(listingImages.listingId, listingIds))
+      .orderBy(asc(listingImages.createdAt));
 
     // Group by listingId and take the first one (oldest = primary)
     const imageMap = new Map<number, ListingImageBasic>();
