@@ -267,7 +267,7 @@ export const translations = {
     "home.startSearching": "Start Searching",
     "home.listYourProperty": "List Your Property",
     "home.noListingsYet": "No properties available yet. Check back soon!",
-    "home.allRightsReserved": "© 2026 HomiDirect. All rights reserved.",
+    "home.allRightsReserved": " HomiDirect. All rights reserved.",
     "home.privacyPolicy": "Privacy Policy",
     "home.termsOfService": "Terms of Service",
     "home.contactUs": "Contact Us",
@@ -909,7 +909,7 @@ export const translations = {
     "home.noListingsYet":
       "Δεν υπάρχουν ακόμα διαθέσιμα ακίνητα. Ελέγξτε ξανά σύντομα!",
     "home.allRightsReserved":
-      "© 2026 HomiDirect. Όλα τα δικαιώματα διατηρούνται.",
+      " HomiDirect. Όλα τα δικαιώματα διατηρούνται.",
     "home.privacyPolicy": "Πολιτική Απορρήτου",
     "home.termsOfService": "Όροι Χρήσης",
     "home.contactUs": "Επικοινωνήστε Μαζί μας",
