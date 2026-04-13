@@ -26,6 +26,11 @@ export const createListingSchema = z.object({
     .min(1, "Postal code is required")
     .max(20, "Postal code must not exceed 20 characters")
     .optional(),
+  floor: z
+    .enum(["basement", "semi-basement", "ground", "1st", "2nd", "3rd", "4th", "5th", "6th+"])
+    .optional(),
+  levels: z.number().int().min(0, "Levels must be 0 or greater").optional(),
+  kitchens: z.number().int().min(0, "Kitchens must be 0 or greater").optional(),
   bedrooms: z.number().int().min(0, "Bedrooms must be 0 or greater").optional(),
   bathrooms: z
     .number()
@@ -33,6 +38,8 @@ export const createListingSchema = z.object({
     .min(0, "Bathrooms must be 0 or greater")
     .optional(),
   area: z.number().positive("Area must be a positive number").optional(),
+  dateAvailable: z.coerce.date().optional(),
+  dateBuilt: z.number().int().min(1800, "Year built must be 1800 or later").optional(),
   country: z
     .string()
     .min(1, "Country is required")
@@ -44,8 +51,12 @@ export const createListingSchema = z.object({
     }),
   }),
   available: z.boolean().optional(),
-  landlordId: z.number().int().positive().optional(), // Set by middleware
-  uploadSessionId: z.string().uuid().optional(), // For associating pending images
+  landlordId: z.number().int().positive().optional(),
+  uploadSessionId: z.string().uuid().optional(),
+  titleEl: z.string().max(100, "Greek title must not exceed 100 characters").optional(),
+  titleEn: z.string().max(100, "English title must not exceed 100 characters").optional(),
+  descriptionEl: z.string().optional(),
+  descriptionEn: z.string().optional(),
 });
 
 /**
@@ -55,7 +66,7 @@ export const updateListingSchema = z.object({
   title: z
     .string()
     .min(1, "Title is required")
-    .max(255, "Title must not exceed 255 characters")
+    .max(100, "Title must not exceed 100 characters")
     .optional(),
   description: z.string().optional(),
   price: z.number().positive("Price must be a positive number").optional(),
@@ -69,6 +80,11 @@ export const updateListingSchema = z.object({
     .min(1, "Postal code is required")
     .max(20, "Postal code must not exceed 20 characters")
     .optional(),
+  floor: z
+    .enum(["basement", "semi-basement", "ground", "1st", "2nd", "3rd", "4th", "5th", "6th+"])
+    .optional(),
+  levels: z.number().int().min(0, "Levels must be 0 or greater").optional(),
+  kitchens: z.number().int().min(0, "Kitchens must be 0 or greater").optional(),
   bedrooms: z.number().int().min(0, "Bedrooms must be 0 or greater").optional(),
   bathrooms: z
     .number()
@@ -76,6 +92,8 @@ export const updateListingSchema = z.object({
     .min(0, "Bathrooms must be 0 or greater")
     .optional(),
   area: z.number().positive("Area must be a positive number").optional(),
+  dateAvailable: z.coerce.date().optional(),
+  dateBuilt: z.number().int().min(1800, "Year built must be 1800 or later").optional(),
   country: z
     .string()
     .min(1, "Country is required")
@@ -89,20 +107,22 @@ export const updateListingSchema = z.object({
     })
     .optional(),
   available: z.boolean().optional(),
+  titleEl: z.string().max(100, "Greek title must not exceed 100 characters").optional(),
+  titleEn: z.string().max(100, "English title must not exceed 100 characters").optional(),
+  descriptionEl: z.string().optional(),
+  descriptionEn: z.string().optional(),
 });
 
 /**
  * Search listings query schema
  */
 export const searchListingsSchema = z.object({
-  // Full-text search
   q: z.string().max(200).optional(),
-
-  // Filters
   propertyType: z.enum(["apartment", "house", "studio", "room"]).optional(),
   city: z.string().max(100).optional(),
   region: z.string().max(100).optional(),
   country: z.string().max(100).optional(),
+  floor: z.enum(["basement", "semi-basement", "ground", "1st", "2nd", "3rd", "4th", "5th", "6th+"]).optional(),
   minPrice: z.coerce.number().positive().optional(),
   maxPrice: z.coerce.number().positive().optional(),
   minBedrooms: z.coerce.number().int().min(0).optional(),
@@ -111,11 +131,17 @@ export const searchListingsSchema = z.object({
   maxBathrooms: z.coerce.number().int().min(0).optional(),
   minArea: z.coerce.number().positive().optional(),
   maxArea: z.coerce.number().positive().optional(),
+  minKitchens: z.coerce.number().int().min(0).optional(),
+  maxKitchens: z.coerce.number().int().min(0).optional(),
+  minLevels: z.coerce.number().int().min(0).optional(),
+  maxLevels: z.coerce.number().int().min(0).optional(),
+  dateAvailableFrom: z.coerce.date().optional(),
+  dateAvailableTo: z.coerce.date().optional(),
+  minDateBuilt: z.coerce.number().int().min(1800).optional(),
+  maxDateBuilt: z.coerce.number().int().optional(),
   available: z.coerce.boolean().optional(),
   isFeatured: z.coerce.boolean().optional(),
   verificationStatus: z.enum(["PENDING", "APPROVED", "REJECTED"]).optional(),
-
-  // Sort options
   sortBy: z
     .enum([
       "featured",
@@ -127,8 +153,6 @@ export const searchListingsSchema = z.object({
       "area_desc",
     ])
     .default("featured"),
-
-  // Pagination
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(100).default(15),
 });

@@ -59,13 +59,36 @@ export const ListingService = {
         description: listings.description,
         price: listings.price,
         city: listings.city,
+        postalCode: listings.postalCode,
+        floor: listings.floor,
+        levels: listings.levels,
+        kitchens: listings.kitchens,
         bedrooms: listings.bedrooms,
         bathrooms: listings.bathrooms,
         area: listings.area,
+        elevator: listings.elevator,
+        parkingSpace: listings.parkingSpace,
+        furnished: listings.furnished,
+        zoneType: listings.zoneType,
+        listingStatus: listings.listingStatus,
+        dateAvailable: listings.dateAvailable,
+        dateBuilt: listings.dateBuilt,
+        views_count: listings.views_count,
+        country: listings.country,
         propertyType: listings.propertyType,
         available: listings.available,
         createdAt: listings.createdAt,
+        updatedAt: listings.updatedAt,
         landlordId: listings.landlordId,
+        verificationStatus: listings.verificationStatus,
+        verifiedAt: listings.verifiedAt,
+        verifiedBy: listings.verifiedBy,
+        isFeatured: listings.isFeatured,
+        featuredUntil: listings.featuredUntil,
+        titleEl: listings.titleEl,
+        titleEn: listings.titleEn,
+        descriptionEl: listings.descriptionEl,
+        descriptionEn: listings.descriptionEn,
       })
       .from(listings);
 
@@ -80,13 +103,36 @@ export const ListingService = {
         description: listings.description,
         price: listings.price,
         city: listings.city,
+        postalCode: listings.postalCode,
+        floor: listings.floor,
+        levels: listings.levels,
+        kitchens: listings.kitchens,
         bedrooms: listings.bedrooms,
         bathrooms: listings.bathrooms,
         area: listings.area,
+        elevator: listings.elevator,
+        parkingSpace: listings.parkingSpace,
+        furnished: listings.furnished,
+        zoneType: listings.zoneType,
+        listingStatus: listings.listingStatus,
+        dateAvailable: listings.dateAvailable,
+        dateBuilt: listings.dateBuilt,
+        views_count: listings.views_count,
+        country: listings.country,
         propertyType: listings.propertyType,
         available: listings.available,
         createdAt: listings.createdAt,
+        updatedAt: listings.updatedAt,
         landlordId: listings.landlordId,
+        verificationStatus: listings.verificationStatus,
+        verifiedAt: listings.verifiedAt,
+        verifiedBy: listings.verifiedBy,
+        isFeatured: listings.isFeatured,
+        featuredUntil: listings.featuredUntil,
+        titleEl: listings.titleEl,
+        titleEn: listings.titleEn,
+        descriptionEl: listings.descriptionEl,
+        descriptionEn: listings.descriptionEn,
       })
       .from(listings)
       .where(eq(listings.id, id))
@@ -99,20 +145,52 @@ export const ListingService = {
     data: CreateListingDTO,
     uploadSessionId?: string,
   ): Promise<ListingResponse> {
-    const [newListing] = await db.insert(listings).values(data).returning({
-      id: listings.id,
-      title: listings.title,
-      description: listings.description,
-      price: listings.price,
-      city: listings.city,
-      bedrooms: listings.bedrooms,
-      bathrooms: listings.bathrooms,
-      area: listings.area,
-      propertyType: listings.propertyType,
-      available: listings.available,
-      createdAt: listings.createdAt,
-      landlordId: listings.landlordId,
-    });
+    const { description, area, ...restData } = data;
+    const insertData = {
+      description: description ?? "",
+      area: area ?? 0,
+      ...restData,
+    };
+    const [newListing] = await db
+      .insert(listings)
+      .values(insertData)
+      .returning({
+        id: listings.id,
+        title: listings.title,
+        description: listings.description,
+        price: listings.price,
+        city: listings.city,
+        postalCode: listings.postalCode,
+        floor: listings.floor,
+        levels: listings.levels,
+        kitchens: listings.kitchens,
+        bedrooms: listings.bedrooms,
+        bathrooms: listings.bathrooms,
+        area: listings.area,
+        elevator: listings.elevator,
+        parkingSpace: listings.parkingSpace,
+        furnished: listings.furnished,
+        zoneType: listings.zoneType,
+        listingStatus: listings.listingStatus,
+        dateAvailable: listings.dateAvailable,
+        dateBuilt: listings.dateBuilt,
+        views_count: listings.views_count,
+        country: listings.country,
+        propertyType: listings.propertyType,
+        available: listings.available,
+        createdAt: listings.createdAt,
+        updatedAt: listings.updatedAt,
+        landlordId: listings.landlordId,
+        verificationStatus: listings.verificationStatus,
+        verifiedAt: listings.verifiedAt,
+        verifiedBy: listings.verifiedBy,
+        isFeatured: listings.isFeatured,
+        featuredUntil: listings.featuredUntil,
+        titleEl: listings.titleEl,
+        titleEn: listings.titleEn,
+        descriptionEl: listings.descriptionEl,
+        descriptionEn: listings.descriptionEn,
+      });
 
     if (uploadSessionId) {
       console.log(
@@ -142,13 +220,36 @@ export const ListingService = {
         description: listings.description,
         price: listings.price,
         city: listings.city,
+        postalCode: listings.postalCode,
+        floor: listings.floor,
+        levels: listings.levels,
+        kitchens: listings.kitchens,
         bedrooms: listings.bedrooms,
         bathrooms: listings.bathrooms,
         area: listings.area,
+        elevator: listings.elevator,
+        parkingSpace: listings.parkingSpace,
+        furnished: listings.furnished,
+        zoneType: listings.zoneType,
+        listingStatus: listings.listingStatus,
+        dateAvailable: listings.dateAvailable,
+        dateBuilt: listings.dateBuilt,
+        views_count: listings.views_count,
+        country: listings.country,
         propertyType: listings.propertyType,
         available: listings.available,
         createdAt: listings.createdAt,
+        updatedAt: listings.updatedAt,
         landlordId: listings.landlordId,
+        verificationStatus: listings.verificationStatus,
+        verifiedAt: listings.verifiedAt,
+        verifiedBy: listings.verifiedBy,
+        isFeatured: listings.isFeatured,
+        featuredUntil: listings.featuredUntil,
+        titleEl: listings.titleEl,
+        titleEn: listings.titleEn,
+        descriptionEl: listings.descriptionEl,
+        descriptionEn: listings.descriptionEn,
       });
 
     return updatedListing || null;
@@ -158,7 +259,7 @@ export const ListingService = {
     try {
       await ListingImageService.deleteImagesByListingId(id);
     } catch (error) {
-      console.error('Failed to delete images from R2 for listing:', id, error);
+      console.error("Failed to delete images from R2 for listing:", id, error);
     }
 
     const result = await db
@@ -179,6 +280,7 @@ export const ListingService = {
       city,
       region,
       country,
+      floor,
       minPrice,
       maxPrice,
       minBedrooms,
@@ -187,6 +289,19 @@ export const ListingService = {
       maxBathrooms,
       minArea,
       maxArea,
+      minKitchens,
+      maxKitchens,
+      minLevels,
+      maxLevels,
+      elevator,
+      parkingSpace,
+      furnished,
+      zoneType,
+      listingStatus,
+      dateAvailableFrom,
+      dateAvailableTo,
+      minDateBuilt,
+      maxDateBuilt,
       available,
       isFeatured,
       verificationStatus,
@@ -213,6 +328,10 @@ export const ListingService = {
           ilike(listings.description, searchTerm),
           ilike(listings.titleEl, searchTerm),
           ilike(listings.descriptionEl, searchTerm),
+          ilike(listings.titleEn, searchTerm),
+          ilike(listings.descriptionEn, searchTerm),
+          ilike(listings.city, searchTerm),
+          ilike(listings.postalCode, searchTerm),
         )!,
       );
     }
@@ -266,6 +385,68 @@ export const ListingService = {
     }
     if (maxArea !== undefined) {
       conditions.push(lte(listings.area, maxArea));
+    }
+
+    // Floor filter
+    if (floor) {
+      conditions.push(eq(listings.floor, floor));
+    }
+
+    // Kitchen filters
+    if (minKitchens !== undefined) {
+      conditions.push(gte(listings.kitchens, minKitchens));
+    }
+    if (maxKitchens !== undefined) {
+      conditions.push(lte(listings.kitchens, maxKitchens));
+    }
+
+    // Level filters
+    if (minLevels !== undefined) {
+      conditions.push(gte(listings.levels, minLevels));
+    }
+    if (maxLevels !== undefined) {
+      conditions.push(lte(listings.levels, maxLevels));
+    }
+
+    // Elevator filter
+    if (elevator !== undefined) {
+      conditions.push(eq(listings.elevator, elevator));
+    }
+
+    // Parking space filter
+    if (parkingSpace !== undefined) {
+      conditions.push(eq(listings.parkingSpace, parkingSpace));
+    }
+
+    // Furnished filter
+    if (furnished !== undefined) {
+      conditions.push(eq(listings.furnished, furnished));
+    }
+
+    // Zone type filter
+    if (zoneType) {
+      conditions.push(eq(listings.zoneType, zoneType));
+    }
+
+    // Listing status filter
+    if (listingStatus) {
+      conditions.push(eq(listings.listingStatus, listingStatus));
+    }
+
+    // Date available filters
+    if (dateAvailableFrom !== undefined) {
+      conditions.push(gte(listings.dateAvailable, dateAvailableFrom));
+    }
+    if (dateAvailableTo !== undefined) {
+      conditions.push(lte(listings.dateAvailable, dateAvailableTo));
+    }
+
+    // Date built filters
+    if (minDateBuilt !== undefined) {
+      conditions.push(gte(listings.dateBuilt, minDateBuilt));
+    }
+    if (maxDateBuilt !== undefined) {
+      conditions.push(lte(listings.dateBuilt, maxDateBuilt));
     }
 
     // Availability filter
@@ -335,16 +516,35 @@ export const ListingService = {
         price: listings.price,
         city: listings.city,
         postalCode: listings.postalCode,
+        floor: listings.floor,
+        levels: listings.levels,
+        kitchens: listings.kitchens,
         bedrooms: listings.bedrooms,
         bathrooms: listings.bathrooms,
         area: listings.area,
+        elevator: listings.elevator,
+        parkingSpace: listings.parkingSpace,
+        furnished: listings.furnished,
+        zoneType: listings.zoneType,
+        listingStatus: listings.listingStatus,
+        dateAvailable: listings.dateAvailable,
+        dateBuilt: listings.dateBuilt,
+        views_count: listings.views_count,
         country: listings.country,
         propertyType: listings.propertyType,
         available: listings.available,
         createdAt: listings.createdAt,
+        updatedAt: listings.updatedAt,
         landlordId: listings.landlordId,
-        isFeatured: listings.isFeatured,
         verificationStatus: listings.verificationStatus,
+        verifiedAt: listings.verifiedAt,
+        verifiedBy: listings.verifiedBy,
+        isFeatured: listings.isFeatured,
+        featuredUntil: listings.featuredUntil,
+        titleEl: listings.titleEl,
+        titleEn: listings.titleEn,
+        descriptionEl: listings.descriptionEl,
+        descriptionEn: listings.descriptionEn,
       })
       .from(listings)
       .where(whereClause)
@@ -405,7 +605,8 @@ export const ListingService = {
         createdAt: listingImages.createdAt,
       })
       .from(listingImages)
-      .where(inArray(listingImages.listingId, listingIds));
+      .where(inArray(listingImages.listingId, listingIds))
+      .orderBy(asc(listingImages.createdAt));
 
     // Group by listingId and take the first one (oldest = primary)
     const imageMap = new Map<number, ListingImageBasic>();
@@ -441,16 +642,35 @@ export const ListingService = {
         price: listings.price,
         city: listings.city,
         postalCode: listings.postalCode,
+        floor: listings.floor,
+        levels: listings.levels,
+        kitchens: listings.kitchens,
         bedrooms: listings.bedrooms,
         bathrooms: listings.bathrooms,
         area: listings.area,
+        elevator: listings.elevator,
+        parkingSpace: listings.parkingSpace,
+        furnished: listings.furnished,
+        zoneType: listings.zoneType,
+        listingStatus: listings.listingStatus,
+        dateAvailable: listings.dateAvailable,
+        dateBuilt: listings.dateBuilt,
+        views_count: listings.views_count,
         country: listings.country,
         propertyType: listings.propertyType,
         available: listings.available,
         createdAt: listings.createdAt,
+        updatedAt: listings.updatedAt,
         landlordId: listings.landlordId,
-        isFeatured: listings.isFeatured,
         verificationStatus: listings.verificationStatus,
+        verifiedAt: listings.verifiedAt,
+        verifiedBy: listings.verifiedBy,
+        isFeatured: listings.isFeatured,
+        featuredUntil: listings.featuredUntil,
+        titleEl: listings.titleEl,
+        titleEn: listings.titleEn,
+        descriptionEl: listings.descriptionEl,
+        descriptionEn: listings.descriptionEn,
       })
       .from(listings)
       .where(eq(listings.landlordId, landlordId))

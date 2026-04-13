@@ -12,8 +12,10 @@ import {
   index,
   date,
 } from "drizzle-orm/pg-core";
-import { sql } from "drizzle-orm";
+import { desc, sql } from "drizzle-orm";
 import { users } from "../users/users.model";
+import { title } from "process";
+import z from "zod";
 
 export const propertyTypeEnum = pgEnum("property_type", [
   "apartment",
@@ -38,7 +40,19 @@ export const verificationStatusEnum = pgEnum("verification_status", [
   "APPROVED",
   "REJECTED",
 ]);
-
+export const listingStatusEnum = pgEnum("listing_status", [
+  "Renovated",
+  "Luxurious",
+  "Under construction",
+  "Neoclassical",
+]);
+export const zoneTypeEnum = pgEnum("zone_type", [
+  "Residential",
+  "Agricultural",
+  "Commercial",
+  "Industrial",
+  "Regeneration",
+]);
 export const listings = pgTable(
   "listings",
   {
@@ -54,6 +68,11 @@ export const listings = pgTable(
     bedrooms: integer("bedrooms").notNull().default(1),
     bathrooms: integer("bathrooms").notNull().default(1),
     area: real("area").notNull(),
+    elevator: boolean("elevator").default(false).notNull(),
+    parkingSpace: boolean("parking_space").default(false).notNull(),
+    furnished: boolean("furnished").default(false).notNull(),
+    zoneType: zoneTypeEnum("zone_type").notNull().default("Residential"),
+    listingStatus: listingStatusEnum("listing_status"),
     dateAvailable: date("date_available").notNull().defaultNow(),
     dateBuilt: integer("date_built")
       .notNull()
@@ -67,7 +86,7 @@ export const listings = pgTable(
     landlordId: integer("landlord_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
-
+    landlordPhone: varchar("landlord_phone", { length: 20 }),
     // Verification fields
     verificationStatus: verificationStatusEnum("verification_status")
       .default("PENDING")
@@ -82,8 +101,10 @@ export const listings = pgTable(
     featuredUntil: timestamp("featured_until"),
 
     // Bilingual support fields
-    titleEl: varchar("title_el", { length: 100 }),
-    descriptionEl: text("description_el"),
+    titleEl: varchar("title_el", { length: 100 }).notNull().default(""),
+    titleEn: varchar("title_en", { length: 100 }),
+    descriptionEl: text("description_el").notNull().default(""),
+    descriptionEn: text("description_en"),
   },
   (table) => [
     // Check constraints
@@ -118,9 +139,13 @@ export const listings = pgTable(
     index("listings_city_price_idx").on(table.city, table.price),
     index("listings_type_city_idx").on(table.propertyType, table.city),
     // Full-text search index (GIN index for tsvector)
-    index("listings_search_idx").using(
+    index("listings_search_en_idx").using(
       "gin",
-      sql`to_tsvector('english', coalesce(${table.title}, '') || ' ' || coalesce(${table.description}, ''))`,
+      sql`to_tsvector('english', coalesce(${table.titleEn}, '') || ' ' || coalesce(${table.description}, ''))`,
+    ),
+    index("listings_search_el_idx").using(
+      "gin",
+      sql`to_tsvector('greek', coalesce(${table.titleEl}, '') || ' ' || coalesce(${table.description}, ''))`,
     ),
   ],
 );

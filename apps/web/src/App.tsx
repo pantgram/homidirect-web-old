@@ -16,6 +16,7 @@ const ListingVerification = lazy(() => import("./pages/ListingVerification"));
 const ListingDetail = lazy(() => import("./pages/ListingDetail"));
 const HowItWorks = lazy(() => import("./pages/HowItWorks"));
 const Auth = lazy(() => import("./pages/Auth"));
+const OAuthCallback = lazy(() => import("./pages/OAuthCallback"));
 const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
@@ -56,6 +57,7 @@ const App = () => (
               />
               <Route path="/how-it-works" element={<HowItWorks />} />
               <Route path="/auth" element={<Auth />} />
+              <Route path="/auth/callback" element={<OAuthCallback />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/privacy-policy" element={<PrivacyPolicy />} />
