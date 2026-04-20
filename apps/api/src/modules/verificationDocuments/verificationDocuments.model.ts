@@ -7,8 +7,8 @@ import {
   pgEnum,
   index,
 } from "drizzle-orm/pg-core";
-import { listings } from "../listings/listings.model";
-import { users } from "../users/users.model";
+import { listings } from "modules/listings/listings.model";
+import { users } from "modules/users/users.model";
 
 export const documentTypeEnum = pgEnum("document_type", [
   "UTILITY_BILL",
@@ -33,7 +33,7 @@ export const verificationDocuments = pgTable(
       .references(() => users.id, { onDelete: "cascade" }),
     createdAt: timestamp("created_at").defaultNow().notNull(),
   },
-  (table) => [index("verification_docs_listing_id_idx").on(table.listingId)]
+  (table) => [index("verification_docs_listing_id_idx").on(table.listingId)],
 );
 
 export type VerificationDocument = typeof verificationDocuments.$inferSelect;

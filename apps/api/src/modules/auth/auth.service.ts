@@ -1,5 +1,5 @@
 import { db } from "config/db";
-import { NewUser, users } from "@/modules/users/users.model";
+import { NewUser, users } from "modules/users/users.model";
 import { eq, and, gt } from "drizzle-orm";
 import { hashPassword, comparePasswords } from "utils/hash";
 import { sendPasswordResetEmail } from "utils/email";
@@ -15,7 +15,7 @@ import {
 export const AuthService = {
   async register(
     { email, password, firstName, lastName, role }: NewUser,
-    fastify: FastifyInstance
+    fastify: FastifyInstance,
   ) {
     const [existing] = await db
       .select()
@@ -38,11 +38,11 @@ export const AuthService = {
 
     const accessToken = fastify.jwt.sign(
       { id: user.id, email: user.email, role: user.role },
-      { expiresIn: "15m" }
+      { expiresIn: "15m" },
     );
     const refreshToken = fastify.jwt.sign(
       { id: user.id, email: user.email, role: user.role },
-      { expiresIn: "7d" }
+      { expiresIn: "7d" },
     );
     return { token: { accessToken, refreshToken } };
   },
@@ -60,7 +60,9 @@ export const AuthService = {
     if (!user) throw new Error("No account found with this email address");
 
     if (!user.password) {
-      throw new Error("This account uses Google sign-in. Please use Google to log in.");
+      throw new Error(
+        "This account uses Google sign-in. Please use Google to log in.",
+      );
     }
 
     const valid = await comparePasswords(password, user.password);
@@ -68,11 +70,11 @@ export const AuthService = {
 
     const accessToken = fastify.jwt.sign(
       { id: user.id, email: user.email, role: user.role },
-      { expiresIn: "15m" }
+      { expiresIn: "15m" },
     );
     const refreshToken = fastify.jwt.sign(
       { id: user.id, email: user.email, role: user.role },
-      { expiresIn: "7d" }
+      { expiresIn: "7d" },
     );
     return { accessToken, refreshToken };
   },
@@ -81,11 +83,11 @@ export const AuthService = {
     const payload = fastify.jwt.verify(refreshToken) as any;
     const newAccessToken = fastify.jwt.sign(
       { id: payload.id, email: payload.email, role: payload.role },
-      { expiresIn: "15m" }
+      { expiresIn: "15m" },
     );
     const newRefreshToken = fastify.jwt.sign(
       { id: payload.id, email: payload.email, role: payload.role },
-      { expiresIn: "7d" }
+      { expiresIn: "7d" },
     );
     return { accessToken: newAccessToken, refreshToken: newRefreshToken };
   },
@@ -142,8 +144,8 @@ export const AuthService = {
       .where(
         and(
           eq(users.passwordResetToken, hashedToken),
-          gt(users.passwordResetExpires, new Date())
-        )
+          gt(users.passwordResetExpires, new Date()),
+        ),
       );
 
     if (!user) {

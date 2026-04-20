@@ -6,8 +6,11 @@ import {
   text,
   index,
 } from "drizzle-orm/pg-core";
-import { listings, verificationStatusEnum } from "../listings/listings.model";
-import { users } from "../users/users.model";
+import {
+  listings,
+  verificationStatusEnum,
+} from "modules/listings/listings.model";
+import { users } from "modules/users/users.model";
 
 export const verificationHistory = pgTable(
   "verification_history",
@@ -24,9 +27,7 @@ export const verificationHistory = pgTable(
     }),
     createdAt: timestamp("created_at").defaultNow().notNull(),
   },
-  (table) => [
-    index("verification_history_listing_id_idx").on(table.listingId),
-  ]
+  (table) => [index("verification_history_listing_id_idx").on(table.listingId)],
 );
 
 export type VerificationHistoryEntry = typeof verificationHistory.$inferSelect;

@@ -1,7 +1,7 @@
 import { FastifyRequest, FastifyReply } from "fastify";
 import { BookingService } from "./bookings.service";
 import { CreateBookingDTO, UpdateBookingDTO } from "./bookings.types";
-import { NotFoundError } from "@/utils/errors";
+import { NotFoundError } from "utils/errors";
 
 export const BookingController = {
   async getAll(request: FastifyRequest, reply: FastifyReply) {
@@ -11,7 +11,7 @@ export const BookingController = {
 
   async getById(
     request: FastifyRequest<{ Params: { id: string } }>,
-    reply: FastifyReply
+    reply: FastifyReply,
   ) {
     const id = parseInt(request.params.id);
     const booking = await BookingService.getBookingById(id);
@@ -25,7 +25,7 @@ export const BookingController = {
 
   async create(
     request: FastifyRequest<{ Body: CreateBookingDTO }>,
-    reply: FastifyReply
+    reply: FastifyReply,
   ) {
     const booking = await BookingService.createBooking(request.body);
     return reply.code(201).send({ booking: booking });
@@ -33,7 +33,7 @@ export const BookingController = {
 
   async update(
     request: FastifyRequest<{ Params: { id: string }; Body: UpdateBookingDTO }>,
-    reply: FastifyReply
+    reply: FastifyReply,
   ) {
     const id = parseInt(request.params.id);
     const booking = await BookingService.updateBooking(id, request.body);
@@ -47,7 +47,7 @@ export const BookingController = {
 
   async delete(
     request: FastifyRequest<{ Params: { id: string } }>,
-    reply: FastifyReply
+    reply: FastifyReply,
   ) {
     const id = parseInt(request.params.id);
     const deleted = await BookingService.deleteBooking(id);

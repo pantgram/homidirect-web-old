@@ -13,7 +13,7 @@ import {
   date,
 } from "drizzle-orm/pg-core";
 import { desc, sql } from "drizzle-orm";
-import { users } from "../users/users.model";
+import { users } from "modules/users/users.model";
 import { title } from "process";
 import z from "zod";
 

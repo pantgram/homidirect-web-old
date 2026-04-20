@@ -13,7 +13,7 @@ import {
 } from "drizzle-orm";
 import { db } from "config/db";
 import { listings } from "./listings.model";
-import { listingImages } from "../listingImages/listingImages.model";
+import { listingImages } from "modules/listingImages/listingImages.model";
 import {
   CreateListingDTO,
   UpdateListingDTO,
@@ -23,7 +23,7 @@ import {
   PaginatedResponse,
   ListingImageBasic,
 } from "./listings.types";
-import { ListingImageService } from "../listingImages/listingImages.service";
+import { ListingImageService } from "modules/listingImages/listingImages.service";
 
 export const ListingService = {
   async getStats(): Promise<{

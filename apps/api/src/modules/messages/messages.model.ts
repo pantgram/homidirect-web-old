@@ -7,8 +7,8 @@ import {
   pgEnum,
   index,
 } from "drizzle-orm/pg-core";
-import { conversations } from "../conversations/conversations.model";
-import { users } from "../users/users.model";
+import { conversations } from "modules/conversations/conversations.model";
+import { users } from "modules/users/users.model";
 
 export const messageStatusEnum = pgEnum("message_status", [
   "SENT",
@@ -36,7 +36,7 @@ export const messages = pgTable(
     index("messages_sender_id_idx").on(table.senderId),
     index("messages_created_at_idx").on(table.createdAt),
     index("messages_status_idx").on(table.status),
-  ]
+  ],
 );
 
 export type Message = typeof messages.$inferSelect;

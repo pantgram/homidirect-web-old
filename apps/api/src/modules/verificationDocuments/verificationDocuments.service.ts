@@ -1,24 +1,20 @@
 import { eq, desc } from "drizzle-orm";
 import { db } from "config/db";
 import { verificationDocuments } from "./verificationDocuments.model";
-import { verificationHistory } from "../verificationHistory/verificationHistory.model";
-import { listings } from "../listings/listings.model";
-import { uploadToR2, deleteFromR2, getKeyFromUrl } from "../../plugins/r2";
+import { verificationHistory } from "modules/verificationHistory/verificationHistory.model";
+import { listings } from "modules/listings/listings.model";
+import { uploadToR2, deleteFromR2, getKeyFromUrl } from "plugins/r2";
 import {
   VerificationDocumentResponse,
   VerificationStatusResponse,
   VerificationHistoryResponse,
   DocumentType,
 } from "./verificationDocuments.types";
-import {
-  NotFoundError,
-  ValidationError,
-  ForbiddenError,
-} from "../../utils/errors";
+import { NotFoundError, ValidationError, ForbiddenError } from "utils/errors";
 
 export const VerificationDocumentService = {
   async getDocumentsByListingId(
-    listingId: number
+    listingId: number,
   ): Promise<VerificationDocumentResponse[]> {
     const docs = await db
       .select({
@@ -38,7 +34,7 @@ export const VerificationDocumentService = {
   },
 
   async getVerificationHistory(
-    listingId: number
+    listingId: number,
   ): Promise<VerificationHistoryResponse[]> {
     const history = await db
       .select({
@@ -58,7 +54,7 @@ export const VerificationDocumentService = {
   },
 
   async getVerificationStatus(
-    listingId: number
+    listingId: number,
   ): Promise<VerificationStatusResponse> {
     const [listing] = await db
       .select({
@@ -96,7 +92,7 @@ export const VerificationDocumentService = {
     documentType: DocumentType,
     fileBuffer: Buffer,
     filename: string,
-    mimetype: string
+    mimetype: string,
   ): Promise<VerificationDocumentResponse> {
     // Check listing exists and get current status
     const [listing] = await db
@@ -116,7 +112,7 @@ export const VerificationDocumentService = {
     // Only allow upload if status is PENDING or REJECTED (resubmission)
     if (listing.verificationStatus === "APPROVED") {
       throw new ValidationError(
-        "Cannot upload documents for an already approved listing"
+        "Cannot upload documents for an already approved listing",
       );
     }
 
@@ -169,7 +165,7 @@ export const VerificationDocumentService = {
   async deleteDocument(
     documentId: number,
     userId: number,
-    isAdmin: boolean
+    isAdmin: boolean,
   ): Promise<boolean> {
     const [document] = await db
       .select({
@@ -200,7 +196,7 @@ export const VerificationDocumentService = {
 
     if (listing && listing.verificationStatus === "APPROVED") {
       throw new ValidationError(
-        "Cannot delete documents from an approved listing"
+        "Cannot delete documents from an approved listing",
       );
     }
 
@@ -221,7 +217,7 @@ export const VerificationDocumentService = {
     listingId: number,
     reviewerId: number,
     status: "APPROVED" | "REJECTED",
-    notes?: string
+    notes?: string,
   ): Promise<void> {
     const [listing] = await db
       .select({
@@ -282,7 +278,7 @@ export const VerificationDocumentService = {
           ...listing,
           documents,
         };
-      })
+      }),
     );
 
     return result;

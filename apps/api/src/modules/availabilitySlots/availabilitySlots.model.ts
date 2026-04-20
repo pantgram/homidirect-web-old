@@ -6,8 +6,8 @@ import {
   boolean,
   index,
 } from "drizzle-orm/pg-core";
-import { listings } from "../listings/listings.model";
-import { users } from "../users/users.model";
+import { listings } from "modules/listings/listings.model";
+import { users } from "modules/users/users.model";
 
 export const availabilitySlots = pgTable(
   "availability_slots",
@@ -29,7 +29,7 @@ export const availabilitySlots = pgTable(
     index("availability_slots_landlord_id_idx").on(table.landlordId),
     index("availability_slots_start_time_idx").on(table.startTime),
     index("availability_slots_is_booked_idx").on(table.isBooked),
-  ]
+  ],
 );
 
 export type AvailabilitySlot = typeof availabilitySlots.$inferSelect;

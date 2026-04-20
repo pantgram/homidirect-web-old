@@ -1,11 +1,11 @@
 import { relations } from "drizzle-orm";
-import { users } from "../modules/users/users.model";
-import { listings } from "../modules/listings/listings.model";
-import { bookings } from "../modules/bookings/bookings.model";
-import { tags } from "../modules/tags/tags.model";
-import { listingTags } from "../models/listingTags.model";
-import { listingImages } from "../modules/listingImages/listingImages.model";
-import { interestedListings } from "../models/interestedListings.model";
+import { users } from "modules/users/users.model";
+import { listings } from "modules/listings/listings.model";
+import { bookings } from "modules/bookings/bookings.model";
+import { tags } from "modules/tags/tags.model";
+import { listingTags } from "models/listingTags.model";
+import { listingImages } from "modules/listingImages/listingImages.model";
+import { interestedListings } from "models/interestedListings.model";
 
 // USERS
 export const usersRelations = relations(users, ({ many }) => ({
@@ -83,7 +83,7 @@ export const interestedListingsRelations = relations(
       fields: [interestedListings.listingId],
       references: [listings.id],
     }),
-  })
+  }),
 );
 
 // LISTING IMAGES

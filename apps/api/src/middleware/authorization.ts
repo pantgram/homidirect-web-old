@@ -1,7 +1,7 @@
 import { FastifyRequest, FastifyReply } from "fastify";
 import { db } from "config/db";
-import { listings } from "@/modules/listings/listings.model";
-import { bookings } from "@/modules/bookings/bookings.model";
+import { listings } from "modules/listings/listings.model";
+import { bookings } from "modules/bookings/bookings.model";
 import { eq } from "drizzle-orm";
 
 export type UserRole = "LANDLORD" | "TENANT" | "BOTH" | "ADMIN";
@@ -42,7 +42,7 @@ export function requireRole(...roles: UserRole[]) {
       return reply.code(403).send({
         error: "Forbidden",
         message: `This action requires one of the following roles: ${roles.join(
-          ", "
+          ", ",
         )}`,
       });
     }
@@ -75,7 +75,7 @@ export function requireAdmin() {
  */
 export async function verifyUserOwnership(
   request: FastifyRequest,
-  reply: FastifyReply
+  reply: FastifyReply,
 ) {
   const user = (request as AuthenticatedRequest).user;
   const params = request.params as { id: string };
@@ -104,7 +104,7 @@ export async function verifyUserOwnership(
  */
 export async function verifyListingOwnership(
   request: FastifyRequest,
-  reply: FastifyReply
+  reply: FastifyReply,
 ) {
   const user = (request as AuthenticatedRequest).user;
   const params = request.params as { listingId: string };
@@ -143,7 +143,7 @@ export async function verifyListingOwnership(
  */
 export async function verifyBookingOwnership(
   request: FastifyRequest,
-  reply: FastifyReply
+  reply: FastifyReply,
 ) {
   const user = (request as AuthenticatedRequest).user;
   const params = request.params as { id: string };
@@ -187,7 +187,7 @@ export async function verifyBookingOwnership(
  */
 export async function verifyListingCreation(
   request: FastifyRequest,
-  reply: FastifyReply
+  reply: FastifyReply,
 ) {
   const user = (request as AuthenticatedRequest).user;
   const body = request.body as { landlordId?: number };

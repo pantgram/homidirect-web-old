@@ -7,9 +7,9 @@ import {
   pgEnum,
   index,
 } from "drizzle-orm/pg-core";
-import { users } from "../users/users.model";
-import { listings } from "../listings/listings.model";
-import { availabilitySlots } from "../availabilitySlots/availabilitySlots.model";
+import { users } from "modules/users/users.model";
+import { listings } from "modules/listings/listings.model";
+import { availabilitySlots } from "modules/availabilitySlots/availabilitySlots.model";
 
 export const bookingStatusEnum = pgEnum("booking_status", [
   "PENDING",
@@ -41,7 +41,7 @@ export const bookings = pgTable(
 
     availabilitySlotId: integer("availability_slot_id").references(
       () => availabilitySlots.id,
-      { onDelete: "set null" }
+      { onDelete: "set null" },
     ),
   },
   (table) => [
@@ -49,7 +49,7 @@ export const bookings = pgTable(
     index("bookings_landlord_id_idx").on(table.landlordId),
     index("bookings_listing_id_idx").on(table.listingId),
     index("bookings_availability_slot_id_idx").on(table.availabilitySlotId),
-  ]
+  ],
 );
 
 export type Booking = typeof bookings.$inferSelect;

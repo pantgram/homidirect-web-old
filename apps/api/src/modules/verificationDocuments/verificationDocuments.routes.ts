@@ -1,12 +1,16 @@
 import { FastifyInstance } from "fastify";
 import { VerificationDocumentController } from "./verificationDocuments.controller";
-import { requireRole, requireAdmin, verifyListingOwnership } from "@/middleware/authorization";
-import { validateParams, validateBody } from "@/plugins/validator";
+import {
+  requireRole,
+  requireAdmin,
+  verifyListingOwnership,
+} from "@/middleware/authorization";
+import { validateParams, validateBody } from "plugins/validator";
 import {
   verificationDocumentParamsSchema,
   deleteVerificationDocumentParamsSchema,
   reviewVerificationBodySchema,
-} from "@/schemas/verificationDocument.schema";
+} from "schemas/verificationDocument.schema";
 
 export async function verificationDocumentRoutes(fastify: FastifyInstance) {
   // Get verification status for a listing - landlord (owner) or admin
@@ -19,7 +23,7 @@ export async function verificationDocumentRoutes(fastify: FastifyInstance) {
         verifyListingOwnership,
       ],
     },
-    VerificationDocumentController.getStatus
+    VerificationDocumentController.getStatus,
   );
 
   // Get verification documents for a listing - landlord (owner) or admin
@@ -32,7 +36,7 @@ export async function verificationDocumentRoutes(fastify: FastifyInstance) {
         verifyListingOwnership,
       ],
     },
-    VerificationDocumentController.getDocuments
+    VerificationDocumentController.getDocuments,
   );
 
   // Get verification history for a listing - landlord (owner) or admin
@@ -45,7 +49,7 @@ export async function verificationDocumentRoutes(fastify: FastifyInstance) {
         verifyListingOwnership,
       ],
     },
-    VerificationDocumentController.getHistory
+    VerificationDocumentController.getHistory,
   );
 
   // Upload verification document - landlord only, must own the listing
@@ -59,7 +63,7 @@ export async function verificationDocumentRoutes(fastify: FastifyInstance) {
         verifyListingOwnership,
       ],
     },
-    VerificationDocumentController.upload as any
+    VerificationDocumentController.upload as any,
   );
 
   // Delete verification document - landlord (owner) or admin
@@ -72,7 +76,7 @@ export async function verificationDocumentRoutes(fastify: FastifyInstance) {
         verifyListingOwnership,
       ],
     },
-    VerificationDocumentController.delete as any
+    VerificationDocumentController.delete as any,
   );
 
   // Review verification (approve/reject) - admin only
@@ -89,7 +93,7 @@ export async function verificationDocumentRoutes(fastify: FastifyInstance) {
         validateBody(reviewVerificationBodySchema),
       ],
     },
-    VerificationDocumentController.review as any
+    VerificationDocumentController.review as any,
   );
 }
 
@@ -100,6 +104,6 @@ export async function adminVerificationRoutes(fastify: FastifyInstance) {
     {
       preValidation: [fastify.authenticate, requireAdmin()],
     },
-    VerificationDocumentController.getPending
+    VerificationDocumentController.getPending,
   );
 }

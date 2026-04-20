@@ -1,8 +1,11 @@
 import { eq, desc, sql, and, SQL } from "drizzle-orm";
 import { db } from "config/db";
-import { users, userRoleEnum, userStatusEnum } from "../users/users.model";
-import { listings, verificationStatusEnum } from "../listings/listings.model";
-import { NotFoundError } from "@/utils/errors";
+import { users, userRoleEnum, userStatusEnum } from "modules/users/users.model";
+import {
+  listings,
+  verificationStatusEnum,
+} from "modules/listings/listings.model";
+import { NotFoundError } from "utils/errors";
 
 type UserRole = (typeof userRoleEnum)["enumValues"][number];
 type UserStatus = (typeof userStatusEnum)["enumValues"][number];
@@ -25,7 +28,7 @@ interface PaginatedResult<T> {
 
 export const AdminService = {
   async getUsers(
-    params: PaginationParams & { role?: string; status?: string }
+    params: PaginationParams & { role?: string; status?: string },
   ): Promise<PaginatedResult<any>> {
     const { page, limit, role, status } = params;
     const offset = (page - 1) * limit;
@@ -77,7 +80,7 @@ export const AdminService = {
 
   async updateUser(
     userId: number,
-    updates: { role?: UserRole; status?: UserStatus }
+    updates: { role?: UserRole; status?: UserStatus },
   ): Promise<any> {
     const [user] = await db
       .select({ id: users.id })
@@ -116,14 +119,16 @@ export const AdminService = {
       verificationStatus?: string;
       available?: boolean;
       landlordId?: number;
-    }
+    },
   ): Promise<PaginatedResult<any>> {
     const { page, limit, verificationStatus, available, landlordId } = params;
     const offset = (page - 1) * limit;
 
     const conditions: SQL[] = [];
     if (verificationStatus) {
-      conditions.push(eq(listings.verificationStatus, verificationStatus as any));
+      conditions.push(
+        eq(listings.verificationStatus, verificationStatus as any),
+      );
     }
     if (available !== undefined) {
       conditions.push(eq(listings.available, available));
@@ -178,7 +183,7 @@ export const AdminService = {
       available?: boolean;
       verificationStatus?: VerificationStatus;
       isFeatured?: boolean;
-    }
+    },
   ): Promise<any> {
     const [listing] = await db
       .select({ id: listings.id })
@@ -193,9 +198,15 @@ export const AdminService = {
     const [updatedListing] = await db
       .update(listings)
       .set({
-        ...(updates.available !== undefined && { available: updates.available }),
-        ...(updates.verificationStatus && { verificationStatus: updates.verificationStatus }),
-        ...(updates.isFeatured !== undefined && { isFeatured: updates.isFeatured }),
+        ...(updates.available !== undefined && {
+          available: updates.available,
+        }),
+        ...(updates.verificationStatus && {
+          verificationStatus: updates.verificationStatus,
+        }),
+        ...(updates.isFeatured !== undefined && {
+          isFeatured: updates.isFeatured,
+        }),
         updatedAt: new Date(),
       })
       .where(eq(listings.id, listingId))
@@ -234,14 +245,26 @@ export const AdminService = {
   },
 
   async getStats(): Promise<{
-    users: { total: number; byRole: Record<string, number>; byStatus: Record<string, number> };
-    listings: { total: number; available: number; byVerificationStatus: Record<string, number> };
+    users: {
+      total: number;
+      byRole: Record<string, number>;
+      byStatus: Record<string, number>;
+    };
+    listings: {
+      total: number;
+      available: number;
+      byVerificationStatus: Record<string, number>;
+    };
   }> {
     const [userStats] = await db
       .select({
         total: sql<number>`count(*)::int`,
-        byRole: sql<Record<string, number>>`json_object_agg(role, role_count) FROM (SELECT role, count(*) as role_count FROM users GROUP BY role)`,
-        byStatus: sql<Record<string, number>>`json_object_agg(status, status_count) FROM (SELECT status, count(*) as status_count FROM users GROUP BY status)`,
+        byRole: sql<
+          Record<string, number>
+        >`json_object_agg(role, role_count) FROM (SELECT role, count(*) as role_count FROM users GROUP BY role)`,
+        byStatus: sql<
+          Record<string, number>
+        >`json_object_agg(status, status_count) FROM (SELECT status, count(*) as status_count FROM users GROUP BY status)`,
       })
       .from(users);
 
@@ -249,7 +272,9 @@ export const AdminService = {
       .select({
         total: sql<number>`count(*)::int`,
         available: sql<number>`count(*) FILTER (WHERE available = true)::int`,
-        byVerificationStatus: sql<Record<string, number>>`json_object_agg(verification_status, vs_count) FROM (SELECT verification_status, count(*) as vs_count FROM listings GROUP BY verification_status)`,
+        byVerificationStatus: sql<
+          Record<string, number>
+        >`json_object_agg(verification_status, vs_count) FROM (SELECT verification_status, count(*) as vs_count FROM listings GROUP BY verification_status)`,
       })
       .from(listings);
 

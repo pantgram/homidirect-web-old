@@ -1,7 +1,7 @@
 import { FastifyInstance } from "fastify";
 import { AvailabilitySlotController } from "./availabilitySlots.controller";
-import { verifyListingOwnership, requireRole } from "@/middleware/authorization";
-import { validateBody, validateParams } from "@/plugins/validator";
+import { verifyListingOwnership, requireRole } from "middleware/authorization";
+import { validateBody, validateParams } from "plugins/validator";
 import {
   createAvailabilitySlotSchema,
   updateAvailabilitySlotSchema,
@@ -15,7 +15,7 @@ export async function availabilitySlotRoutes(fastify: FastifyInstance) {
     {
       preValidation: [validateParams(listingIdParamSchema)],
     },
-    AvailabilitySlotController.getAvailableByListingId as any
+    AvailabilitySlotController.getAvailableByListingId as any,
   );
 
   fastify.get<{ Params: { listingId: string } }>(
@@ -23,7 +23,7 @@ export async function availabilitySlotRoutes(fastify: FastifyInstance) {
     {
       preValidation: [validateParams(listingIdParamSchema)],
     },
-    AvailabilitySlotController.getByListingId as any
+    AvailabilitySlotController.getByListingId as any,
   );
 
   fastify.get<{ Params: { id: string } }>(
@@ -31,16 +31,20 @@ export async function availabilitySlotRoutes(fastify: FastifyInstance) {
     {
       preValidation: [validateParams(availabilitySlotIdParamSchema)],
     },
-    AvailabilitySlotController.getById as any
+    AvailabilitySlotController.getById as any,
   );
 
-  fastify.post("", {
-    preValidation: [
-      fastify.authenticate,
-      requireRole("LANDLORD", "BOTH", "ADMIN"),
-      validateBody(createAvailabilitySlotSchema),
-    ],
-  }, AvailabilitySlotController.create as any);
+  fastify.post(
+    "",
+    {
+      preValidation: [
+        fastify.authenticate,
+        requireRole("LANDLORD", "BOTH", "ADMIN"),
+        validateBody(createAvailabilitySlotSchema),
+      ],
+    },
+    AvailabilitySlotController.create as any,
+  );
 
   fastify.patch<{ Params: { id: string } }>(
     "/:id",
@@ -52,7 +56,7 @@ export async function availabilitySlotRoutes(fastify: FastifyInstance) {
         validateBody(updateAvailabilitySlotSchema),
       ],
     },
-    AvailabilitySlotController.update as any
+    AvailabilitySlotController.update as any,
   );
 
   fastify.delete<{ Params: { id: string } }>(
@@ -64,6 +68,6 @@ export async function availabilitySlotRoutes(fastify: FastifyInstance) {
         validateParams(availabilitySlotIdParamSchema),
       ],
     },
-    AvailabilitySlotController.delete as any
+    AvailabilitySlotController.delete as any,
   );
 }

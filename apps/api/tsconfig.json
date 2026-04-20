@@ -6,9 +6,17 @@
     "strict": true,
     "esModuleInterop": true,
     "outDir": "./dist",
-    "baseUrl": "./src",
     "paths": {
-      "@/*": ["*"]
+      "@/*": ["./src/*"],
+      "db/*": ["./src/db*"],
+      "types/*": ["./src/types/*"],
+      "config/*": ["./src/config/*"],
+      "utils/*": ["./src/utils/*"],
+      "modules/*": ["./src/modules/*"],
+      "models/*": ["./src/models/*"],
+      "plugins/*": ["./src/plugins/*"],
+      "schemas/*": ["./src/schemas/*"],
+      "middleware/*": ["./src/middleware/*"]
     },
     "resolveJsonModule": true,
     "skipLibCheck": true
