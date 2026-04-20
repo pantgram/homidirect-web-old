@@ -1,7 +1,7 @@
 import { eq, count, isNull, and, lt } from "drizzle-orm";
 import { db } from "config/db";
 import { listingImages } from "./listingImages.model";
-import { uploadToR2, deleteFromR2, copyInR2, getKeyFromUrl } from "../../plugins/r2";
+import { uploadToR2, deleteFromR2, copyInR2, getKeyFromUrl } from "plugins/r2";
 import {
   ListingImageResponse,
   PendingImageResponse,
@@ -9,10 +9,12 @@ import {
   MAX_IMAGES_PER_SESSION,
   PENDING_IMAGE_EXPIRY_HOURS,
 } from "./listingImages.types";
-import { ConflictError } from "../../utils/errors";
+import { ConflictError } from "utils/errors";
 
 export const ListingImageService = {
-  async getImagesByListingId(listingId: number): Promise<ListingImageResponse[]> {
+  async getImagesByListingId(
+    listingId: number,
+  ): Promise<ListingImageResponse[]> {
     const images = await db
       .select({
         id: listingImages.id,
@@ -27,7 +29,9 @@ export const ListingImageService = {
     return images;
   },
 
-  async getImagesBySessionId(sessionId: string): Promise<PendingImageResponse[]> {
+  async getImagesBySessionId(
+    sessionId: string,
+  ): Promise<PendingImageResponse[]> {
     const images = await db
       .select({
         id: listingImages.id,
@@ -39,8 +43,8 @@ export const ListingImageService = {
       .where(
         and(
           eq(listingImages.uploadSessionId, sessionId),
-          isNull(listingImages.listingId)
-        )
+          isNull(listingImages.listingId),
+        ),
       );
 
     return images as PendingImageResponse[];
@@ -78,8 +82,8 @@ export const ListingImageService = {
       .where(
         and(
           eq(listingImages.uploadSessionId, sessionId),
-          isNull(listingImages.listingId)
-        )
+          isNull(listingImages.listingId),
+        ),
       );
 
     return result?.count ?? 0;
@@ -89,12 +93,12 @@ export const ListingImageService = {
     listingId: number,
     fileBuffer: Buffer,
     filename: string,
-    mimetype: string
+    mimetype: string,
   ): Promise<ListingImageResponse> {
     const currentCount = await this.getImageCount(listingId);
     if (currentCount >= MAX_IMAGES_PER_LISTING) {
       throw new ConflictError(
-        `Maximum of ${MAX_IMAGES_PER_LISTING} images per listing reached`
+        `Maximum of ${MAX_IMAGES_PER_LISTING} images per listing reached`,
       );
     }
 
@@ -125,12 +129,12 @@ export const ListingImageService = {
     sessionId: string,
     fileBuffer: Buffer,
     filename: string,
-    mimetype: string
+    mimetype: string,
   ): Promise<PendingImageResponse> {
     const currentCount = await this.getSessionImageCount(sessionId);
     if (currentCount >= MAX_IMAGES_PER_SESSION) {
       throw new ConflictError(
-        `Maximum of ${MAX_IMAGES_PER_SESSION} images per upload session reached`
+        `Maximum of ${MAX_IMAGES_PER_SESSION} images per upload session reached`,
       );
     }
 
@@ -158,7 +162,7 @@ export const ListingImageService = {
 
   async associateImagesToListing(
     sessionId: string,
-    listingId: number
+    listingId: number,
   ): Promise<number> {
     const pendingImages = await this.getImagesBySessionId(sessionId);
 
@@ -171,7 +175,7 @@ export const ListingImageService = {
 
     if (pendingImages.length > availableSlots) {
       throw new ConflictError(
-        `Cannot associate ${pendingImages.length} images. Only ${availableSlots} slots available.`
+        `Cannot associate ${pendingImages.length} images. Only ${availableSlots} slots available.`,
       );
     }
 
@@ -214,9 +218,16 @@ export const ListingImageService = {
     return result.length > 0;
   },
 
-  async deletePendingImage(imageId: number, sessionId: string): Promise<boolean> {
+  async deletePendingImage(
+    imageId: number,
+    sessionId: string,
+  ): Promise<boolean> {
     const image = await this.getImageById(imageId);
-    if (!image || image.uploadSessionId !== sessionId || image.listingId !== null) {
+    if (
+      !image ||
+      image.uploadSessionId !== sessionId ||
+      image.listingId !== null
+    ) {
       return false;
     }
 
@@ -244,8 +255,8 @@ export const ListingImageService = {
       .where(
         and(
           isNull(listingImages.listingId),
-          lt(listingImages.createdAt, expiryDate)
-        )
+          lt(listingImages.createdAt, expiryDate),
+        ),
       );
 
     for (const image of expiredImages) {
@@ -259,8 +270,8 @@ export const ListingImageService = {
         .where(
           and(
             isNull(listingImages.listingId),
-            lt(listingImages.createdAt, expiryDate)
-          )
+            lt(listingImages.createdAt, expiryDate),
+          ),
         );
     }
 

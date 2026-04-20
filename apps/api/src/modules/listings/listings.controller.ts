@@ -1,10 +1,14 @@
 import { FastifyRequest, FastifyReply } from "fastify";
 import { ListingService } from "./listings.service";
-import { CreateListingDTO, UpdateListingDTO, SearchListingsParams } from "./listings.types";
-import { NotFoundError } from "@/utils/errors";
+import {
+  CreateListingDTO,
+  UpdateListingDTO,
+  SearchListingsParams,
+} from "./listings.types";
+import { NotFoundError } from "utils/errors";
 import { sendContactOwnerEmail } from "@/utils/email";
-import { UserService } from "../users/users.service";
-import { ContactOwnerInput } from "@/schemas/listing.schema";
+import { UserService } from "modules/users/users.service";
+import { ContactOwnerInput } from "schemas/listing.schema";
 
 export const ListingController = {
   async getStats(request: FastifyRequest, reply: FastifyReply) {
@@ -19,7 +23,7 @@ export const ListingController = {
 
   async getById(
     request: FastifyRequest<{ Params: { listingId: string } }>,
-    reply: FastifyReply
+    reply: FastifyReply,
   ) {
     const id = parseInt(request.params.listingId);
     const listing = await ListingService.getListingById(id);
@@ -32,17 +36,25 @@ export const ListingController = {
   },
 
   async create(
-    request: FastifyRequest<{ Body: CreateListingDTO & { uploadSessionId?: string } }>,
-    reply: FastifyReply
+    request: FastifyRequest<{
+      Body: CreateListingDTO & { uploadSessionId?: string };
+    }>,
+    reply: FastifyReply,
   ) {
     const { uploadSessionId, ...listingData } = request.body;
-    const listing = await ListingService.createListing(listingData, uploadSessionId);
+    const listing = await ListingService.createListing(
+      listingData,
+      uploadSessionId,
+    );
     return reply.code(201).send({ listing });
   },
 
   async update(
-    request: FastifyRequest<{ Params: { listingId: string }; Body: UpdateListingDTO }>,
-    reply: FastifyReply
+    request: FastifyRequest<{
+      Params: { listingId: string };
+      Body: UpdateListingDTO;
+    }>,
+    reply: FastifyReply,
   ) {
     const id = parseInt(request.params.listingId);
     const listing = await ListingService.updateListing(id, request.body);
@@ -56,7 +68,7 @@ export const ListingController = {
 
   async delete(
     request: FastifyRequest<{ Params: { listingId: string } }>,
-    reply: FastifyReply
+    reply: FastifyReply,
   ) {
     const id = parseInt(request.params.listingId);
     const deleted = await ListingService.deleteListing(id);
@@ -70,7 +82,7 @@ export const ListingController = {
 
   async search(
     request: FastifyRequest<{ Querystring: SearchListingsParams }>,
-    reply: FastifyReply
+    reply: FastifyReply,
   ) {
     const params = request.query;
     // Check if user is authenticated (user object exists from optional auth)
@@ -87,17 +99,24 @@ export const ListingController = {
 
   async getMyListings(
     request: FastifyRequest<{ Querystring: { page?: number; limit?: number } }>,
-    reply: FastifyReply
+    reply: FastifyReply,
   ) {
     const userId = (request as any).user.id;
     const { page = 1, limit = 15 } = request.query;
-    const result = await ListingService.getListingsByLandlordId(userId, page, limit);
+    const result = await ListingService.getListingsByLandlordId(
+      userId,
+      page,
+      limit,
+    );
     return reply.code(200).send(result);
   },
 
   async contactOwner(
-    request: FastifyRequest<{ Params: { listingId: string }; Body: ContactOwnerInput }>,
-    reply: FastifyReply
+    request: FastifyRequest<{
+      Params: { listingId: string };
+      Body: ContactOwnerInput;
+    }>,
+    reply: FastifyReply,
   ) {
     const listingId = parseInt(request.params.listingId);
     const { name, email, phone, message } = request.body;
@@ -126,6 +145,8 @@ export const ListingController = {
       listingId: listing.id,
     });
 
-    return reply.code(200).send({ success: true, message: "Message sent successfully" });
+    return reply
+      .code(200)
+      .send({ success: true, message: "Message sent successfully" });
   },
 };

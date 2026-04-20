@@ -1,6 +1,6 @@
 import { FastifyReply, FastifyRequest } from "fastify";
 import { AuthService } from "./auth.service";
-import { NewUser } from "../users/users.model";
+import { NewUser } from "modules/users/users.model";
 import {
   LoginInput,
   RefreshInput,
@@ -12,7 +12,7 @@ import {
   UnauthorizedError,
   InternalServerError,
   ValidationError,
-} from "@/utils/errors";
+} from "utils/errors";
 
 export const AuthController = {
   async register(req: FastifyRequest<{ Body: NewUser }>, reply: FastifyReply) {

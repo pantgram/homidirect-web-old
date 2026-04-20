@@ -1,13 +1,13 @@
 import { FastifyRequest, FastifyReply } from "fastify";
 import { UserService } from "./users.service";
 import { UpdateUser } from "./users.types";
-import { NotFoundError, UnauthorizedError } from "@/utils/errors";
-import { AuthenticatedRequest } from "@/middleware/authorization";
+import { NotFoundError, UnauthorizedError } from "utils/errors";
+import { AuthenticatedRequest } from "middleware/authorization";
 
 export const UserController = {
   async getById(
     request: FastifyRequest<{ Params: { id: string } }>,
-    reply: FastifyReply
+    reply: FastifyReply,
   ) {
     const id = parseInt(request.params.id);
     const user = await UserService.getUserById(id);
@@ -21,7 +21,7 @@ export const UserController = {
 
   async update(
     request: FastifyRequest<{ Params: { id: string }; Body: UpdateUser }>,
-    reply: FastifyReply
+    reply: FastifyReply,
   ) {
     const id = parseInt(request.params.id);
     const user = await UserService.updateUser(id, request.body);
@@ -35,7 +35,7 @@ export const UserController = {
 
   async delete(
     request: FastifyRequest<{ Params: { id: string } }>,
-    reply: FastifyReply
+    reply: FastifyReply,
   ) {
     const id = parseInt(request.params.id);
     const deleted = await UserService.deleteUser(id);

@@ -2,7 +2,7 @@ import { eq, ne } from "drizzle-orm";
 import { db } from "config/db";
 import { users, NewUser } from "./users.model";
 import { UpdateUser, UserResponse, UserWithRole } from "./users.types";
-import { ConflictError } from "@/utils/errors";
+import { ConflictError } from "utils/errors";
 
 export const UserService = {
   async getAllUsers(): Promise<UserResponse[]> {

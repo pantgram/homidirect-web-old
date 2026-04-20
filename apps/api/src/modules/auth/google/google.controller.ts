@@ -1,7 +1,7 @@
 import { FastifyReply, FastifyRequest } from "fastify";
 import { GoogleAuthService } from "./google.service";
-import { config } from "@/config/env";
-import { InternalServerError, ValidationError } from "@/utils/errors";
+import { config } from "config/env";
+import { InternalServerError, ValidationError } from "utils/errors";
 import crypto from "crypto";
 
 const stateStore = new Map<string, { createdAt: number }>();
@@ -31,8 +31,10 @@ export const GoogleAuthController = {
   },
 
   async callback(
-    req: FastifyRequest<{ Querystring: { code?: string; state?: string; error?: string } }>,
-    reply: FastifyReply
+    req: FastifyRequest<{
+      Querystring: { code?: string; state?: string; error?: string };
+    }>,
+    reply: FastifyReply,
   ) {
     try {
       const { code, state, error } = req.query;
@@ -54,8 +56,13 @@ export const GoogleAuthController = {
       stateStore.delete(state);
 
       const tokens = await GoogleAuthService.exchangeCodeForTokens(code);
-      const googleUser = await GoogleAuthService.getUserInfo(tokens.access_token);
-      const jwtTokens = await GoogleAuthService.findOrCreateUser(googleUser, req.server);
+      const googleUser = await GoogleAuthService.getUserInfo(
+        tokens.access_token,
+      );
+      const jwtTokens = await GoogleAuthService.findOrCreateUser(
+        googleUser,
+        req.server,
+      );
 
       const frontendUrl = new URL("/auth/callback", config.frontendUrl);
       frontendUrl.hash = `accessToken=${jwtTokens.accessToken}&refreshToken=${jwtTokens.refreshToken}`;

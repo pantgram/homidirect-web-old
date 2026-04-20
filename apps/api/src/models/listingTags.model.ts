@@ -1,6 +1,6 @@
 import { pgTable, integer, primaryKey } from "drizzle-orm/pg-core";
-import { listings } from "../modules/listings/listings.model";
-import { tags } from "../modules/tags/tags.model";
+import { listings } from "modules/listings/listings.model";
+import { tags } from "modules/tags/tags.model";
 
 export const listingTags = pgTable(
   "listing_tags", // You might want to rename this to "listing_tags" to match the variable name
@@ -16,7 +16,7 @@ export const listingTags = pgTable(
   (t) => [
     // Place the primary key definition inside the array
     primaryKey({ columns: [t.tagId, t.listingId] }),
-  ]
+  ],
 );
 
 export type ListingTag = typeof listingTags.$inferSelect;

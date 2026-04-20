@@ -1,45 +1,48 @@
 import { FastifyRequest, FastifyReply } from "fastify";
 import { VerificationDocumentService } from "./verificationDocuments.service";
-import { NotFoundError, ValidationError } from "@/utils/errors";
+import { NotFoundError, ValidationError } from "utils/errors";
 import {
   ALLOWED_DOCUMENT_MIME_TYPES,
   MAX_DOCUMENT_SIZE,
   DocumentType,
   DOCUMENT_TYPES,
 } from "./verificationDocuments.types";
-import { AuthenticatedRequest } from "@/middleware/authorization";
+import { AuthenticatedRequest } from "middleware/authorization";
 
 export const VerificationDocumentController = {
   async getStatus(
     request: FastifyRequest<{ Params: { listingId: string } }>,
-    reply: FastifyReply
+    reply: FastifyReply,
   ) {
     const listingId = parseInt(request.params.listingId);
-    const status = await VerificationDocumentService.getVerificationStatus(listingId);
+    const status =
+      await VerificationDocumentService.getVerificationStatus(listingId);
     return reply.code(200).send(status);
   },
 
   async getDocuments(
     request: FastifyRequest<{ Params: { listingId: string } }>,
-    reply: FastifyReply
+    reply: FastifyReply,
   ) {
     const listingId = parseInt(request.params.listingId);
-    const documents = await VerificationDocumentService.getDocumentsByListingId(listingId);
+    const documents =
+      await VerificationDocumentService.getDocumentsByListingId(listingId);
     return reply.code(200).send({ documents });
   },
 
   async getHistory(
     request: FastifyRequest<{ Params: { listingId: string } }>,
-    reply: FastifyReply
+    reply: FastifyReply,
   ) {
     const listingId = parseInt(request.params.listingId);
-    const history = await VerificationDocumentService.getVerificationHistory(listingId);
+    const history =
+      await VerificationDocumentService.getVerificationHistory(listingId);
     return reply.code(200).send({ history });
   },
 
   async upload(
     request: FastifyRequest<{ Params: { listingId: string } }>,
-    reply: FastifyReply
+    reply: FastifyReply,
   ) {
     const listingId = parseInt(request.params.listingId);
     const user = (request as AuthenticatedRequest).user;
@@ -60,7 +63,7 @@ export const VerificationDocumentController = {
         documentType = value as DocumentType;
       } else {
         throw new ValidationError(
-          `Invalid document type. Allowed types: ${DOCUMENT_TYPES.join(", ")}`
+          `Invalid document type. Allowed types: ${DOCUMENT_TYPES.join(", ")}`,
         );
       }
     }
@@ -68,11 +71,11 @@ export const VerificationDocumentController = {
     // Validate mime type
     if (
       !ALLOWED_DOCUMENT_MIME_TYPES.includes(
-        data.mimetype as (typeof ALLOWED_DOCUMENT_MIME_TYPES)[number]
+        data.mimetype as (typeof ALLOWED_DOCUMENT_MIME_TYPES)[number],
       )
     ) {
       throw new ValidationError(
-        `Invalid file type. Allowed types: PDF, JPEG, PNG, WebP`
+        `Invalid file type. Allowed types: PDF, JPEG, PNG, WebP`,
       );
     }
 
@@ -80,7 +83,7 @@ export const VerificationDocumentController = {
     const buffer = await data.toBuffer();
     if (buffer.length > MAX_DOCUMENT_SIZE) {
       throw new ValidationError(
-        `File size exceeds maximum of ${MAX_DOCUMENT_SIZE / (1024 * 1024)}MB`
+        `File size exceeds maximum of ${MAX_DOCUMENT_SIZE / (1024 * 1024)}MB`,
       );
     }
 
@@ -90,15 +93,17 @@ export const VerificationDocumentController = {
       documentType,
       buffer,
       data.filename,
-      data.mimetype
+      data.mimetype,
     );
 
     return reply.code(201).send({ document });
   },
 
   async delete(
-    request: FastifyRequest<{ Params: { listingId: string; documentId: string } }>,
-    reply: FastifyReply
+    request: FastifyRequest<{
+      Params: { listingId: string; documentId: string };
+    }>,
+    reply: FastifyReply,
   ) {
     const documentId = parseInt(request.params.documentId);
     const user = (request as AuthenticatedRequest).user;
@@ -107,7 +112,7 @@ export const VerificationDocumentController = {
     const deleted = await VerificationDocumentService.deleteDocument(
       documentId,
       user.id,
-      isAdmin
+      isAdmin,
     );
 
     if (!deleted) {
@@ -122,7 +127,7 @@ export const VerificationDocumentController = {
       Params: { listingId: string };
       Body: { status: "APPROVED" | "REJECTED"; notes?: string };
     }>,
-    reply: FastifyReply
+    reply: FastifyReply,
   ) {
     const listingId = parseInt(request.params.listingId);
     const user = (request as AuthenticatedRequest).user;
@@ -132,7 +137,7 @@ export const VerificationDocumentController = {
       listingId,
       user.id,
       status,
-      notes
+      notes,
     );
 
     return reply.code(200).send({

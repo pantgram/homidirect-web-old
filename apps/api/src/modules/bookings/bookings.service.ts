@@ -1,9 +1,9 @@
 import { eq } from "drizzle-orm";
 import { db } from "config/db";
 import { bookings } from "./bookings.model";
-import { users } from "../users/users.model";
-import { listings } from "../listings/listings.model";
-import { AvailabilitySlotService } from "../availabilitySlots/availabilitySlots.service";
+import { users } from "modules/users/users.model";
+import { listings } from "modules/listings/listings.model";
+import { AvailabilitySlotService } from "modules/availabilitySlots/availabilitySlots.service";
 import {
   CreateBookingDTO,
   UpdateBookingDTO,
@@ -14,7 +14,7 @@ import {
   sendBookingConfirmedEmail,
   sendBookingDeclinedEmail,
   sendBookingCancelledEmail,
-} from "@/utils/email";
+} from "utils/email";
 
 export const BookingService = {
   async getAllBookings(): Promise<BookingResponse[]> {
@@ -73,7 +73,7 @@ export const BookingService = {
     try {
       if (newBooking.availabilitySlotId) {
         await AvailabilitySlotService.markSlotAsBooked(
-          newBooking.availabilitySlotId
+          newBooking.availabilitySlotId,
         );
       }
 
@@ -119,7 +119,7 @@ export const BookingService = {
 
   async updateBooking(
     id: number,
-    data: UpdateBookingDTO
+    data: UpdateBookingDTO,
   ): Promise<BookingResponse | null> {
     const [updatedBooking] = await db
       .update(bookings)
@@ -167,7 +167,12 @@ export const BookingService = {
         .where(eq(listings.id, updatedBooking.listingId))
         .limit(1);
 
-      if (tenant && landlord && listing && updatedBooking.status === "CONFIRMED") {
+      if (
+        tenant &&
+        landlord &&
+        listing &&
+        updatedBooking.status === "CONFIRMED"
+      ) {
         await sendBookingConfirmedEmail({
           tenantEmail: tenant.email,
           tenantName: `${tenant.firstName} ${tenant.lastName}`,
@@ -177,7 +182,12 @@ export const BookingService = {
           scheduledAt: updatedBooking.scheduledAt,
           meetLink: updatedBooking.meetLink || undefined,
         });
-      } else if (tenant && landlord && listing && updatedBooking.status === "DECLINED") {
+      } else if (
+        tenant &&
+        landlord &&
+        listing &&
+        updatedBooking.status === "DECLINED"
+      ) {
         await sendBookingDeclinedEmail({
           tenantEmail: tenant.email,
           tenantName: `${tenant.firstName} ${tenant.lastName}`,

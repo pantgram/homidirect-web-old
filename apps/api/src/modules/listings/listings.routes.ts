@@ -4,19 +4,15 @@ import {
   requireRole,
   verifyListingOwnership,
   verifyListingCreation,
-} from "@/middleware/authorization";
-import {
-  validateBody,
-  validateParams,
-  validateQuery,
-} from "@/plugins/validator";
+} from "middleware/authorization";
+import { validateBody, validateParams, validateQuery } from "plugins/validator";
 import {
   createListingSchema,
   updateListingSchema,
   listingIdParamSchema,
   searchListingsSchema,
   contactOwnerSchema,
-} from "@/schemas/listing.schema";
+} from "schemas/listing.schema";
 
 export async function listingRoutes(fastify: FastifyInstance) {
   // Get platform stats - public endpoint
@@ -44,7 +40,7 @@ export async function listingRoutes(fastify: FastifyInstance) {
         },
       ],
     },
-    ListingController.search
+    ListingController.search,
   );
 
   // Get distinct cities for location filter dropdown
@@ -56,7 +52,7 @@ export async function listingRoutes(fastify: FastifyInstance) {
     {
       preValidation: [fastify.authenticate, requireRole("LANDLORD", "BOTH")],
     },
-    ListingController.getMyListings
+    ListingController.getMyListings,
   );
 
   // Get all listings - public (anyone can browse)
@@ -68,7 +64,7 @@ export async function listingRoutes(fastify: FastifyInstance) {
     {
       preValidation: [validateParams(listingIdParamSchema)],
     },
-    ListingController.getById
+    ListingController.getById,
   );
 
   // Create listing - only landlords, and only for themselves
@@ -82,7 +78,7 @@ export async function listingRoutes(fastify: FastifyInstance) {
         verifyListingCreation,
       ],
     },
-    ListingController.create as any
+    ListingController.create as any,
   );
 
   // Update listing - only the landlord who owns it
@@ -97,7 +93,7 @@ export async function listingRoutes(fastify: FastifyInstance) {
         verifyListingOwnership,
       ],
     },
-    ListingController.update as any
+    ListingController.update as any,
   );
 
   // Delete listing - only the landlord who owns it
@@ -111,7 +107,7 @@ export async function listingRoutes(fastify: FastifyInstance) {
         verifyListingOwnership,
       ],
     },
-    ListingController.delete as any
+    ListingController.delete as any,
   );
 
   // Contact listing owner - public endpoint (no auth required)
@@ -123,6 +119,6 @@ export async function listingRoutes(fastify: FastifyInstance) {
         validateBody(contactOwnerSchema),
       ],
     },
-    ListingController.contactOwner as any
+    ListingController.contactOwner as any,
   );
 }

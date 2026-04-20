@@ -1,16 +1,13 @@
 import { FastifyInstance } from "fastify";
 import { ListingImageController } from "./listingImages.controller";
-import {
-  requireRole,
-  verifyListingOwnership,
-} from "@/middleware/authorization";
-import { validateParams } from "@/plugins/validator";
+import { requireRole, verifyListingOwnership } from "middleware/authorization";
+import { validateParams } from "plugins/validator";
 import {
   listingImageParamsSchema,
   deleteImageParamsSchema,
   sessionParamsSchema,
   deletePendingImageParamsSchema,
-} from "@/schemas/listingImage.schema";
+} from "schemas/listingImage.schema";
 
 export async function listingImageRoutes(fastify: FastifyInstance) {
   // Get all images for a listing - public
@@ -19,7 +16,7 @@ export async function listingImageRoutes(fastify: FastifyInstance) {
     {
       preValidation: [validateParams(listingImageParamsSchema)],
     },
-    ListingImageController.getByListingId
+    ListingImageController.getByListingId,
   );
 
   // Upload image to a listing - landlord only, must own the listing
@@ -33,7 +30,7 @@ export async function listingImageRoutes(fastify: FastifyInstance) {
         verifyListingOwnership,
       ],
     },
-    ListingImageController.upload as any
+    ListingImageController.upload as any,
   );
 
   // Delete image from a listing - landlord only, must own the listing
@@ -47,7 +44,7 @@ export async function listingImageRoutes(fastify: FastifyInstance) {
         verifyListingOwnership,
       ],
     },
-    ListingImageController.delete as any
+    ListingImageController.delete as any,
   );
 }
 
@@ -62,7 +59,7 @@ export async function pendingImageRoutes(fastify: FastifyInstance) {
         validateParams(sessionParamsSchema),
       ],
     },
-    ListingImageController.getBySessionId
+    ListingImageController.getBySessionId,
   );
 
   // Upload pending image - authenticated landlords only
@@ -76,7 +73,7 @@ export async function pendingImageRoutes(fastify: FastifyInstance) {
         validateParams(sessionParamsSchema),
       ],
     },
-    ListingImageController.uploadPending as any
+    ListingImageController.uploadPending as any,
   );
 
   // Delete pending image - authenticated landlords only
@@ -89,6 +86,6 @@ export async function pendingImageRoutes(fastify: FastifyInstance) {
         validateParams(deletePendingImageParamsSchema),
       ],
     },
-    ListingImageController.deletePending as any
+    ListingImageController.deletePending as any,
   );
 }

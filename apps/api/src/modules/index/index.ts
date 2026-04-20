@@ -1,21 +1,21 @@
 import { FastifyInstance } from "fastify";
-import { authRoutes } from "../auth/auth.routes";
-import { googleAuthRoutes } from "../auth/google/google.routes";
-import { userRoutes } from "../users/users.routes";
-import { listingRoutes } from "../listings/listings.routes";
+import { authRoutes } from "modules/auth/auth.routes";
+import { googleAuthRoutes } from "modules/auth/google/google.routes";
+import { userRoutes } from "modules/users/users.routes";
+import { listingRoutes } from "modules/listings/listings.routes";
 import {
   listingImageRoutes,
   pendingImageRoutes,
-} from "../listingImages/listingImages.routes";
-import { bookingRoutes } from "../bookings/bookings.routes";
-import { tagRoutes } from "../tags/tags.routes";
+} from "modules/listingImages/listingImages.routes";
+import { bookingRoutes } from "modules/bookings/bookings.routes";
+import { tagRoutes } from "modules/tags/tags.routes";
 import {
   verificationDocumentRoutes,
   adminVerificationRoutes,
-} from "../verificationDocuments/verificationDocuments.routes";
-import { favoritesRoutes } from "../favorites/favorites.routes";
-import { availabilitySlotRoutes } from "../availabilitySlots/availabilitySlots.routes";
-import { geoapifyRoutes } from "../geoapify/geoapify.routes";
+} from "modules/verificationDocuments/verificationDocuments.routes";
+import { favoritesRoutes } from "modules/favorites/favorites.routes";
+import { availabilitySlotRoutes } from "modules/availabilitySlots/availabilitySlots.routes";
+import { geoapifyRoutes } from "modules/geoapify/geoapify.routes";
 
 export async function apiRoutes(fastify: FastifyInstance) {
   // all auth routes will be under /api/auth

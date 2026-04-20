@@ -4,12 +4,12 @@ import {
   CreateAvailabilitySlotDTO,
   UpdateAvailabilitySlotDTO,
 } from "./availabilitySlots.types";
-import { NotFoundError } from "@/utils/errors";
+import { NotFoundError } from "utils/errors";
 
 export const AvailabilitySlotController = {
   async getAvailableByListingId(
     request: FastifyRequest<{ Params: { listingId: string } }>,
-    reply: FastifyReply
+    reply: FastifyReply,
   ) {
     const listingId = parseInt(request.params.listingId);
     const slots =
@@ -19,18 +19,17 @@ export const AvailabilitySlotController = {
 
   async getByListingId(
     request: FastifyRequest<{ Params: { listingId: string } }>,
-    reply: FastifyReply
+    reply: FastifyReply,
   ) {
     const listingId = parseInt(request.params.listingId);
-    const slots = await AvailabilitySlotService.getAvailabilitySlotsByListingId(
-      listingId
-    );
+    const slots =
+      await AvailabilitySlotService.getAvailabilitySlotsByListingId(listingId);
     return reply.code(200).send({ slots });
   },
 
   async getById(
     request: FastifyRequest<{ Params: { id: string } }>,
-    reply: FastifyReply
+    reply: FastifyReply,
   ) {
     const id = parseInt(request.params.id);
     const slot = await AvailabilitySlotService.getAvailabilitySlotById(id);
@@ -44,22 +43,25 @@ export const AvailabilitySlotController = {
 
   async create(
     request: FastifyRequest<{ Body: CreateAvailabilitySlotDTO }>,
-    reply: FastifyReply
+    reply: FastifyReply,
   ) {
     const slot = await AvailabilitySlotService.createAvailabilitySlot(
-      request.body
+      request.body,
     );
     return reply.code(201).send({ slot });
   },
 
   async update(
-    request: FastifyRequest<{ Params: { id: string }; Body: UpdateAvailabilitySlotDTO }>,
-    reply: FastifyReply
+    request: FastifyRequest<{
+      Params: { id: string };
+      Body: UpdateAvailabilitySlotDTO;
+    }>,
+    reply: FastifyReply,
   ) {
     const id = parseInt(request.params.id);
     const slot = await AvailabilitySlotService.updateAvailabilitySlot(
       id,
-      request.body
+      request.body,
     );
 
     if (!slot) {
@@ -71,7 +73,7 @@ export const AvailabilitySlotController = {
 
   async delete(
     request: FastifyRequest<{ Params: { id: string } }>,
-    reply: FastifyReply
+    reply: FastifyReply,
   ) {
     const id = parseInt(request.params.id);
     const deleted = await AvailabilitySlotService.deleteAvailabilitySlot(id);

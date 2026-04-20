@@ -8,8 +8,8 @@ import {
   pgEnum,
   index,
 } from "drizzle-orm/pg-core";
-import { listings } from "../listings/listings.model";
-import { users } from "../users/users.model";
+import { listings } from "modules/listings/listings.model";
+import { users } from "modules/users/users.model";
 
 export const featuredPurchaseStatusEnum = pgEnum("featured_purchase_status", [
   "PENDING",
@@ -40,7 +40,7 @@ export const featuredListingPurchases = pgTable(
     index("featured_purchases_listing_id_idx").on(table.listingId),
     index("featured_purchases_status_idx").on(table.status),
     index("featured_purchases_expires_at_idx").on(table.expiresAt),
-  ]
+  ],
 );
 
 export type FeaturedListingPurchase =

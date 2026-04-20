@@ -1,19 +1,19 @@
 import { eq, and, sql, inArray, desc, asc } from "drizzle-orm";
 import { db } from "config/db";
-import { interestedListings } from "@/models/interestedListings.model";
-import { listings } from "../listings/listings.model";
-import { listingImages } from "../listingImages/listingImages.model";
+import { interestedListings } from "models/interestedListings.model";
+import { listings } from "modules/listings/listings.model";
+import { listingImages } from "modules/listingImages/listingImages.model";
 import {
   ListingSearchResponse,
   PaginatedResponse,
   ListingImageBasic,
-} from "../listings/listings.types";
+} from "modules/listings/listings.types";
 
 export const FavoritesService = {
   async getUserFavorites(
     userId: number,
     page: number = 1,
-    limit: number = 15
+    limit: number = 15,
   ): Promise<PaginatedResponse<ListingSearchResponse>> {
     const offset = (page - 1) * limit;
 
@@ -79,7 +79,7 @@ export const FavoritesService = {
       (listing) => ({
         ...listing,
         primaryImage: primaryImagesMap.get(listing.id) || null,
-      })
+      }),
     );
 
     const totalPages = Math.ceil(total / limit);
@@ -117,8 +117,8 @@ export const FavoritesService = {
       .where(
         and(
           eq(interestedListings.userId, userId),
-          eq(interestedListings.listingId, listingId)
-        )
+          eq(interestedListings.listingId, listingId),
+        ),
       )
       .returning({ listingId: interestedListings.listingId });
 
@@ -132,8 +132,8 @@ export const FavoritesService = {
       .where(
         and(
           eq(interestedListings.userId, userId),
-          eq(interestedListings.listingId, listingId)
-        )
+          eq(interestedListings.listingId, listingId),
+        ),
       )
       .limit(1);
 
@@ -150,7 +150,7 @@ export const FavoritesService = {
   },
 
   async getPrimaryImagesForListings(
-    listingIds: number[]
+    listingIds: number[],
   ): Promise<Map<number, ListingImageBasic>> {
     if (listingIds.length === 0) {
       return new Map();

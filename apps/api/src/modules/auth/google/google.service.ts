@@ -1,9 +1,9 @@
 import { db } from "config/db";
-import { users } from "@/modules/users/users.model";
+import { users } from "modules/users/users.model";
 import { eq } from "drizzle-orm";
 import { FastifyInstance } from "fastify";
-import { config } from "@/config/env";
-import { ConflictError } from "@/utils/errors";
+import { config } from "config/env";
+import { ConflictError } from "utils/errors";
 
 interface GoogleUserInfo {
   id: string;

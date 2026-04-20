@@ -6,8 +6,8 @@ import {
   index,
   unique,
 } from "drizzle-orm/pg-core";
-import { listings } from "../listings/listings.model";
-import { users } from "../users/users.model";
+import { listings } from "modules/listings/listings.model";
+import { users } from "modules/users/users.model";
 
 export const conversations = pgTable(
   "conversations",
@@ -29,13 +29,13 @@ export const conversations = pgTable(
     unique("conversations_listing_landlord_tenant_unique").on(
       table.listingId,
       table.landlordId,
-      table.tenantId
+      table.tenantId,
     ),
     index("conversations_listing_id_idx").on(table.listingId),
     index("conversations_landlord_id_idx").on(table.landlordId),
     index("conversations_tenant_id_idx").on(table.tenantId),
     index("conversations_last_message_at_idx").on(table.lastMessageAt),
-  ]
+  ],
 );
 
 export type Conversation = typeof conversations.$inferSelect;

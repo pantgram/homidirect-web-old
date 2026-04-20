@@ -1,5 +1,5 @@
 import { FastifyError, FastifyReply, FastifyRequest } from "fastify";
-import { AppError } from "@/utils/errors";
+import { AppError } from "utils/errors";
 import { ZodError } from "zod";
 
 /**
@@ -8,7 +8,7 @@ import { ZodError } from "zod";
 export async function errorHandler(
   error: FastifyError | AppError | ZodError | Error,
   request: FastifyRequest,
-  reply: FastifyReply
+  reply: FastifyReply,
 ) {
   // Log error for debugging (in production, use proper logging service)
   console.error("Error:", {
@@ -49,8 +49,9 @@ export async function errorHandler(
   // Handle unknown errors
   return reply.code(500).send({
     error: "Internal Server Error",
-    message: process.env.NODE_ENV === "production"
-      ? "An unexpected error occurred"
-      : error.message,
+    message:
+      process.env.NODE_ENV === "production"
+        ? "An unexpected error occurred"
+        : error.message,
   });
 }

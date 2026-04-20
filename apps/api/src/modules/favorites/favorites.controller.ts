@@ -1,12 +1,12 @@
 import { FastifyRequest, FastifyReply } from "fastify";
 import { FavoritesService } from "./favorites.service";
-import { NotFoundError } from "@/utils/errors";
-import { ListingService } from "../listings/listings.service";
+import { NotFoundError } from "utils/errors";
+import { ListingService } from "modules/listings/listings.service";
 
 export const FavoritesController = {
   async getMyFavorites(
     request: FastifyRequest<{ Querystring: { page?: number; limit?: number } }>,
-    reply: FastifyReply
+    reply: FastifyReply,
   ) {
     const userId = (request as any).user.id;
     const { page = 1, limit = 15 } = request.query;
@@ -16,7 +16,7 @@ export const FavoritesController = {
 
   async addFavorite(
     request: FastifyRequest<{ Params: { listingId: string } }>,
-    reply: FastifyReply
+    reply: FastifyReply,
   ) {
     const userId = (request as any).user.id;
     const listingId = parseInt(request.params.listingId);
@@ -38,7 +38,7 @@ export const FavoritesController = {
 
   async removeFavorite(
     request: FastifyRequest<{ Params: { listingId: string } }>,
-    reply: FastifyReply
+    reply: FastifyReply,
   ) {
     const userId = (request as any).user.id;
     const listingId = parseInt(request.params.listingId);
@@ -57,7 +57,7 @@ export const FavoritesController = {
 
   async checkFavorite(
     request: FastifyRequest<{ Params: { listingId: string } }>,
-    reply: FastifyReply
+    reply: FastifyReply,
   ) {
     const userId = (request as any).user.id;
     const listingId = parseInt(request.params.listingId);

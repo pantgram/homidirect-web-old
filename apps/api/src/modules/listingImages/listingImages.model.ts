@@ -1,5 +1,11 @@
-import { pgTable, serial, varchar, integer, timestamp } from "drizzle-orm/pg-core";
-import { listings } from "../listings/listings.model";
+import {
+  pgTable,
+  serial,
+  varchar,
+  integer,
+  timestamp,
+} from "drizzle-orm/pg-core";
+import { listings } from "modules/listings/listings.model";
 
 export const listingImages = pgTable("listing_images", {
   id: serial("id").primaryKey(),

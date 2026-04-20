@@ -1,13 +1,13 @@
 import { FastifyRequest, FastifyReply } from "fastify";
 import { randomUUID } from "crypto";
 import { ListingImageService } from "./listingImages.service";
-import { NotFoundError, ValidationError } from "@/utils/errors";
+import { NotFoundError, ValidationError } from "utils/errors";
 import { ALLOWED_MIME_TYPES, MAX_FILE_SIZE } from "./listingImages.types";
 
 export const ListingImageController = {
   async getByListingId(
     request: FastifyRequest<{ Params: { listingId: string } }>,
-    reply: FastifyReply
+    reply: FastifyReply,
   ) {
     const listingId = parseInt(request.params.listingId);
     const images = await ListingImageService.getImagesByListingId(listingId);
@@ -16,7 +16,7 @@ export const ListingImageController = {
 
   async getBySessionId(
     request: FastifyRequest<{ Params: { sessionId: string } }>,
-    reply: FastifyReply
+    reply: FastifyReply,
   ) {
     const { sessionId } = request.params;
     const images = await ListingImageService.getImagesBySessionId(sessionId);
@@ -25,7 +25,7 @@ export const ListingImageController = {
 
   async upload(
     request: FastifyRequest<{ Params: { listingId: string } }>,
-    reply: FastifyReply
+    reply: FastifyReply,
   ) {
     const listingId = parseInt(request.params.listingId);
 
@@ -36,18 +36,18 @@ export const ListingImageController = {
 
     if (
       !ALLOWED_MIME_TYPES.includes(
-        file.mimetype as (typeof ALLOWED_MIME_TYPES)[number]
+        file.mimetype as (typeof ALLOWED_MIME_TYPES)[number],
       )
     ) {
       throw new ValidationError(
-        `Invalid file type. Allowed types: ${ALLOWED_MIME_TYPES.join(", ")}`
+        `Invalid file type. Allowed types: ${ALLOWED_MIME_TYPES.join(", ")}`,
       );
     }
 
     const buffer = await file.toBuffer();
     if (buffer.length > MAX_FILE_SIZE) {
       throw new ValidationError(
-        `File size exceeds maximum of ${MAX_FILE_SIZE / (1024 * 1024)}MB`
+        `File size exceeds maximum of ${MAX_FILE_SIZE / (1024 * 1024)}MB`,
       );
     }
 
@@ -55,7 +55,7 @@ export const ListingImageController = {
       listingId,
       buffer,
       file.filename,
-      file.mimetype
+      file.mimetype,
     );
 
     return reply.code(201).send({ image });
@@ -63,7 +63,7 @@ export const ListingImageController = {
 
   async uploadPending(
     request: FastifyRequest<{ Params: { sessionId: string } }>,
-    reply: FastifyReply
+    reply: FastifyReply,
   ) {
     let { sessionId } = request.params;
 
@@ -78,18 +78,18 @@ export const ListingImageController = {
 
     if (
       !ALLOWED_MIME_TYPES.includes(
-        file.mimetype as (typeof ALLOWED_MIME_TYPES)[number]
+        file.mimetype as (typeof ALLOWED_MIME_TYPES)[number],
       )
     ) {
       throw new ValidationError(
-        `Invalid file type. Allowed types: ${ALLOWED_MIME_TYPES.join(", ")}`
+        `Invalid file type. Allowed types: ${ALLOWED_MIME_TYPES.join(", ")}`,
       );
     }
 
     const buffer = await file.toBuffer();
     if (buffer.length > MAX_FILE_SIZE) {
       throw new ValidationError(
-        `File size exceeds maximum of ${MAX_FILE_SIZE / (1024 * 1024)}MB`
+        `File size exceeds maximum of ${MAX_FILE_SIZE / (1024 * 1024)}MB`,
       );
     }
 
@@ -97,7 +97,7 @@ export const ListingImageController = {
       sessionId,
       buffer,
       file.filename,
-      file.mimetype
+      file.mimetype,
     );
 
     return reply.code(201).send({ image, uploadSessionId: sessionId });
@@ -105,7 +105,7 @@ export const ListingImageController = {
 
   async delete(
     request: FastifyRequest<{ Params: { listingId: string; imageId: string } }>,
-    reply: FastifyReply
+    reply: FastifyReply,
   ) {
     const imageId = parseInt(request.params.imageId);
     const listingId = parseInt(request.params.listingId);
@@ -129,14 +129,14 @@ export const ListingImageController = {
 
   async deletePending(
     request: FastifyRequest<{ Params: { sessionId: string; imageId: string } }>,
-    reply: FastifyReply
+    reply: FastifyReply,
   ) {
     const imageId = parseInt(request.params.imageId);
     const { sessionId } = request.params;
 
     const deleted = await ListingImageService.deletePendingImage(
       imageId,
-      sessionId
+      sessionId,
     );
     if (!deleted) {
       throw new NotFoundError("Image not found");
