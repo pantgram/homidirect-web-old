@@ -200,7 +200,7 @@ const Bookings = () => {
                           <div className="flex items-start justify-between">
                             <div>
                               <Link
-                                to={`/listing/${booking.listingId}`}
+                                to={`/listings/${booking.listingId}`}
                                 className="text-lg font-semibold hover:text-primary transition-colors"
                               >
                                 {listing?.title || "Unknown Listing"}

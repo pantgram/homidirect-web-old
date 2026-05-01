@@ -13,12 +13,10 @@ import { format, isPast, isSameDay, addMonths, subMonths } from "date-fns";
 
 interface AvailabilitySlotsManagerProps {
   listingId: number;
-  landlordId: number;
 }
 
 const AvailabilitySlotsManager = ({
   listingId,
-  landlordId,
 }: AvailabilitySlotsManagerProps) => {
   const { toast } = useToast();
   const { t } = useLanguage();
@@ -355,7 +353,6 @@ const AvailabilitySlotsManager = ({
           open={showForm}
           onOpenChange={setShowForm}
           listingId={listingId}
-          landlordId={landlordId}
           onSuccess={fetchSlots}
         />
       )}

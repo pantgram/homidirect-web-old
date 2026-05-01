@@ -45,8 +45,8 @@ export const listingsApi = {
   },
 
   async getAll(params?: ListingsQueryParams): Promise<Listing[]> {
-    const response = await apiClient.get<Listing[]>("/listings", { params });
-    return response.data;
+    const response = await apiClient.get<{ listings: Listing[] }>("/listings", { params });
+    return response.data.listings;
   },
 
   async getMyListings(params?: {

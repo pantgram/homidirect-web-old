@@ -110,11 +110,19 @@ export async function listingRoutes(fastify: FastifyInstance) {
     ListingController.delete as any,
   );
 
-  // Contact listing owner - public endpoint (no auth required)
+  // Contact listing owner - rate limited to prevent spam
   fastify.post<{ Params: { listingId: string } }>(
     "/:listingId/contact",
     {
+      config: {
+        rateLimit: {
+          max: 5,
+          timeWindow: "15 minutes",
+        },
+      },
       preValidation: [
+        fastify.authenticate,
+        requireRole("TENANT", "BOTH"),
         validateParams(listingIdParamSchema),
         validateBody(contactOwnerSchema),
       ],

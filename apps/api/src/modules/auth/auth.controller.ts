@@ -32,7 +32,6 @@ export const AuthController = {
     try {
       const token = await AuthService.login(req.body, req.server);
       return reply.send({ token });
-      33;
     } catch (err: any) {
       req.log.error(err);
       if (err.message === "No account found with this email address") {

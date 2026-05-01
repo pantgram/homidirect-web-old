@@ -132,6 +132,13 @@ export const AvailabilitySlotService = {
     return updatedSlot || null;
   },
 
+  async markSlotAsAvailable(id: number): Promise<void> {
+    await db
+      .update(availabilitySlots)
+      .set({ isBooked: false })
+      .where(eq(availabilitySlots.id, id));
+  },
+
   async deleteAvailabilitySlot(id: number): Promise<boolean> {
     const result = await db
       .delete(availabilitySlots)

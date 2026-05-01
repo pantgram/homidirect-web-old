@@ -4,7 +4,6 @@ export const env = {
   isDev: import.meta.env.DEV,
 } as const;
 
-if (!env.apiUrl) throw new Error("VITE_API_URL required");
-
-console.log("🚀 Environment:", env.apiUrl);
-console.log("🚀 Socket URL:", env.socketUrl);
+if (import.meta.env.DEV) {
+  console.log("🚀 Environment:", env.apiUrl);
+}

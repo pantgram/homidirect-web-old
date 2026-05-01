@@ -1,5 +1,5 @@
 # Use a specific Node.js version based on your project's `engines` requirement in package.json
-FROM node:20-alpine
+FROM node:25.11.0-alpine3.20
 
 # Set the working directory in the container
 WORKDIR /app

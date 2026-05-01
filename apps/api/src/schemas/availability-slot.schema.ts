@@ -10,10 +10,6 @@ export const listingIdParamSchema = z.object({
 
 export const createAvailabilitySlotSchema = z.object({
   listingId: z.number().int().positive("Listing ID must be a positive integer"),
-  landlordId: z
-    .number()
-    .int()
-    .positive("Landlord ID must be a positive integer"),
   startTime: z
     .string()
     .datetime("Invalid date format. Use ISO 8601 format"),

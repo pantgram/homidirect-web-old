@@ -266,7 +266,7 @@ const BookingDetail = () => {
                 <div className="flex-1 space-y-3">
                   <div>
                     <Link
-                      to={`/listing/${listing?.id}`}
+                      to={`/listings/${listing?.id}`}
                       className="text-xl font-semibold hover:text-primary transition-colors"
                     >
                       {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}

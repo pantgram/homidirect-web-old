@@ -210,7 +210,7 @@ const ListingBookings = () => {
       <main className="container mx-auto px-4 py-8">
         <Button
           variant="ghost"
-          onClick={() => navigate(`/listing/${id}`)}
+          onClick={() => navigate(`/listings/${id}`)}
           className="mb-6 -ml-2"
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
@@ -373,7 +373,7 @@ const ListingBookings = () => {
                         Manage when candidates can book viewings for your property.
                       </p>
                     </div>
-                    <Button onClick={() => navigate(`/listing/${id}/availability/add`)}>
+                    <Button onClick={() => navigate(`/listings/${id}/availability/add`)}>
                       <Plus className="h-4 w-4 mr-2" />
                       Add Time Slot
                     </Button>
@@ -389,7 +389,7 @@ const ListingBookings = () => {
                     <p className="text-muted-foreground mb-6">
                       Add availability slots to let candidates book viewings.
                     </p>
-                    <Button onClick={() => navigate(`/listing/${id}/availability/add`)}>
+                    <Button onClick={() => navigate(`/listings/${id}/availability/add`)}>
                       <Plus className="h-4 w-4 mr-2" />
                       Add First Time Slot
                     </Button>
@@ -433,7 +433,7 @@ const ListingBookings = () => {
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => navigate(`/listing/${id}/availability/edit/${slot.id}`)}
+                            onClick={() => navigate(`/listings/${id}/availability/edit/${slot.id}`)}
                           >
                             <Edit className="h-4 w-4 mr-2" />
                             Edit

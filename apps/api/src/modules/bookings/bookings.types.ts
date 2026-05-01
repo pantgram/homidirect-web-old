@@ -22,6 +22,13 @@ export type CreateBookingDTO = {
   availabilitySlotId?: number;
 };
 
+export type CreateBookingInput = {
+  scheduledAt: string;
+  meetLink?: string;
+  listingId: number;
+  availabilitySlotId?: number;
+};
+
 export type UpdateBookingDTO = Partial<
   Omit<CreateBookingDTO, "candidateId" | "landlordId" | "listingId">
 >;

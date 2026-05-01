@@ -16,7 +16,6 @@ interface AvailabilitySlotFormProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   listingId: number;
-  landlordId: number;
   onSuccess?: () => void;
 }
 
@@ -24,7 +23,6 @@ const AvailabilitySlotForm = ({
   open,
   onOpenChange,
   listingId,
-  landlordId,
   onSuccess,
 }: AvailabilitySlotFormProps) => {
   const { toast } = useToast();
@@ -81,7 +79,6 @@ const AvailabilitySlotForm = ({
     try {
       await availabilitySlotsApi.create({
         listingId,
-        landlordId,
         startTime: startDateTime.toISOString(),
         endTime: endDateTime.toISOString(),
       });

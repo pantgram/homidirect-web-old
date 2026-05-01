@@ -9,7 +9,6 @@ export { verificationApi } from "./verification";
 
 // Types
 export * from "./types";
-export * from "./verification";
 
 // Listing types
 export type {
