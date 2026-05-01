@@ -14,8 +14,6 @@ export interface Booking {
 
 export interface CreateBookingRequest {
   listingId: number;
-  landlordId: number;
-  candidateId: number;
   scheduledAt: string;
   meetLink?: string;
   availabilitySlotId?: number;

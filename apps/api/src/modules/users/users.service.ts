@@ -1,4 +1,4 @@
-import { eq, ne } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { db } from "config/db";
 import { users, NewUser } from "./users.model";
 import { UpdateUser, UserResponse, UserWithRole } from "./users.types";

@@ -1,52 +1,19 @@
 import { apiClient } from "./client";
+import type {
+  DocumentType,
+  VerificationDocument,
+  VerificationHistoryEntry,
+  VerificationStatusResponse,
+  PendingVerificationListing,
+} from "@homidirect/shared";
 
-export type DocumentType =
-  | "UTILITY_BILL"
-  | "TITLE_DEED"
-  | "LEASE_AGREEMENT"
-  | "PROPERTY_TAX"
-  | "OTHER";
-
-export type VerificationStatus = "PENDING" | "APPROVED" | "REJECTED";
-
-export interface VerificationDocument {
-  id: number;
-  listingId: number;
-  documentType: DocumentType;
-  url: string;
-  fileName: string;
-  uploadedBy: number;
-  createdAt: string;
-}
-
-export interface VerificationHistoryEntry {
-  id: number;
-  listingId: number;
-  previousStatus: string | null;
-  newStatus: string;
-  notes: string | null;
-  reviewedBy: number | null;
-  createdAt: string;
-}
-
-export interface VerificationStatusResponse {
-  listingId: number;
-  verificationStatus: VerificationStatus;
-  verifiedAt: string | null;
-  documents: VerificationDocument[];
-  history: VerificationHistoryEntry[];
-  canResubmit: boolean;
-}
-
-export interface PendingVerificationListing {
-  id: number;
-  title: string;
-  city: string;
-  landlordId: number;
-  verificationStatus: VerificationStatus;
-  createdAt: string;
-  documents: VerificationDocument[];
-}
+export type {
+  DocumentType,
+  VerificationDocument,
+  VerificationHistoryEntry,
+  VerificationStatusResponse,
+  PendingVerificationListing,
+};
 
 export const verificationApi = {
   async getStatus(listingId: number): Promise<VerificationStatusResponse> {

@@ -15,8 +15,6 @@ interface BookingDialogProps {
   onOpenChange: (open: boolean) => void;
   listingId: number;
   listingTitle: string;
-  landlordId: number;
-  candidateId: number;
   onSuccess?: () => void;
 }
 
@@ -25,8 +23,6 @@ const BookingDialog = ({
   onOpenChange,
   listingId,
   listingTitle,
-  landlordId,
-  candidateId,
   onSuccess,
 }: BookingDialogProps) => {
   const { toast } = useToast();
@@ -71,8 +67,6 @@ const BookingDialog = ({
     try {
       await bookingsApi.create({
         listingId,
-        landlordId,
-        candidateId,
         scheduledAt: selectedSlot.startTime,
         availabilitySlotId: selectedSlot.id,
       });

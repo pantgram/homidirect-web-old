@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { eq, or } from "drizzle-orm";
 import { db } from "config/db";
 import { bookings } from "./bookings.model";
 import { users } from "modules/users/users.model";
@@ -9,6 +9,16 @@ import {
   UpdateBookingDTO,
   BookingResponse,
 } from "./bookings.types";
+import { ConflictError } from "utils/errors";
+
+type BookingStatus = "PENDING" | "CONFIRMED" | "DECLINED" | "CANCELLED";
+
+const VALID_TRANSITIONS: Record<BookingStatus, BookingStatus[]> = {
+  PENDING: ["CONFIRMED", "DECLINED", "CANCELLED"],
+  CONFIRMED: ["CANCELLED"],
+  DECLINED: [],
+  CANCELLED: [],
+};
 import {
   sendBookingCreatedEmail,
   sendBookingConfirmedEmail,
@@ -35,6 +45,30 @@ export const BookingService = {
     return allBookings;
   },
 
+  async getBookingsByUserId(userId: number): Promise<BookingResponse[]> {
+    const userBookings = await db
+      .select({
+        id: bookings.id,
+        status: bookings.status,
+        scheduledAt: bookings.scheduledAt,
+        meetLink: bookings.meetLink,
+        createdAt: bookings.createdAt,
+        candidateId: bookings.candidateId,
+        landlordId: bookings.landlordId,
+        listingId: bookings.listingId,
+        availabilitySlotId: bookings.availabilitySlotId,
+      })
+      .from(bookings)
+      .where(
+        or(
+          eq(bookings.candidateId, userId),
+          eq(bookings.landlordId, userId),
+        ),
+      );
+
+    return userBookings;
+  },
+
   async getBookingById(id: number): Promise<BookingResponse | null> {
     const [booking] = await db
       .select({
@@ -56,8 +90,6 @@ export const BookingService = {
   },
 
   async createBooking(data: CreateBookingDTO): Promise<BookingResponse> {
-    data.scheduledAt = new Date(data.scheduledAt);
-    console.log(data);
     const [newBooking] = await db.insert(bookings).values(data).returning({
       id: bookings.id,
       status: bookings.status,
@@ -121,6 +153,25 @@ export const BookingService = {
     id: number,
     data: UpdateBookingDTO,
   ): Promise<BookingResponse | null> {
+    if (data.status) {
+      const [current] = await db
+        .select({ status: bookings.status })
+        .from(bookings)
+        .where(eq(bookings.id, id))
+        .limit(1);
+
+      if (!current) {
+        return null;
+      }
+
+      const allowed = VALID_TRANSITIONS[current.status as BookingStatus];
+      if (!allowed || !allowed.includes(data.status as BookingStatus)) {
+        throw new ConflictError(
+          `Cannot transition booking from ${current.status} to ${data.status}`,
+        );
+      }
+    }
+
     const [updatedBooking] = await db
       .update(bookings)
       .set(data)
@@ -222,6 +273,12 @@ export const BookingService = {
 
     if (result.length > 0) {
       try {
+        if (booking.availabilitySlotId) {
+          await AvailabilitySlotService.markSlotAsAvailable(
+            booking.availabilitySlotId,
+          );
+        }
+
         const [tenant] = await db
           .select({
             email: users.email,

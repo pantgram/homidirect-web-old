@@ -10,7 +10,6 @@ export interface AvailabilitySlot {
 
 export interface CreateAvailabilitySlotRequest {
   listingId: number;
-  landlordId: number;
   startTime: string;
   endTime: string;
   isBooked?: boolean;

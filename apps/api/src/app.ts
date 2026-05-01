@@ -58,11 +58,6 @@ export function buildApp() {
     return { status: "ok", timestamp: new Date().toISOString() };
   });
 
-  // Add logging for requests to help debug
-  fastify.addHook("onRequest", async (request, reply) => {
-    console.log(`[Server Request] ${request.method} ${request.url}`);
-  });
-
   // Register routes
   fastify.register(apiRoutes, { prefix: "/api/v1" });
 

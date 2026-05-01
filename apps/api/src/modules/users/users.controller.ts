@@ -23,14 +23,22 @@ export const UserController = {
     request: FastifyRequest<{ Params: { id: string }; Body: UpdateUser }>,
     reply: FastifyReply,
   ) {
+    const currentUser = (request as AuthenticatedRequest).user;
     const id = parseInt(request.params.id);
-    const user = await UserService.updateUser(id, request.body);
 
-    if (!user) {
+    const body = { ...request.body };
+
+    if (body.role === "ADMIN" && currentUser.role !== "ADMIN") {
+      throw new ForbiddenError("Only admins can assign the ADMIN role");
+    }
+
+    const updated = await UserService.updateUser(id, body);
+
+    if (!updated) {
       throw new NotFoundError("User not found");
     }
 
-    return reply.code(200).send({ user: user });
+    return reply.code(200).send({ user: updated });
   },
 
   async delete(

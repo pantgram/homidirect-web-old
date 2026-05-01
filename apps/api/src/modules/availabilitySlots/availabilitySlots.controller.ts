@@ -4,7 +4,44 @@ import {
   CreateAvailabilitySlotDTO,
   UpdateAvailabilitySlotDTO,
 } from "./availabilitySlots.types";
-import { NotFoundError } from "utils/errors";
+import { NotFoundError, ForbiddenError } from "utils/errors";
+import { AuthenticatedRequest } from "middleware/authorization";
+import { listings } from "modules/listings/listings.model";
+import { availabilitySlots } from "modules/availabilitySlots/availabilitySlots.model";
+import { eq, and } from "drizzle-orm";
+import { db } from "config/db";
+
+async function verifySlotOwnership(
+  slotId: number,
+  userId: number,
+  isAdmin: boolean,
+): Promise<boolean> {
+  if (isAdmin) return true;
+
+  const [slot] = await db
+    .select({ landlordId: availabilitySlots.landlordId })
+    .from(availabilitySlots)
+    .where(eq(availabilitySlots.id, slotId))
+    .limit(1);
+
+  return slot?.landlordId === userId;
+}
+
+async function verifyListingOwnership(
+  listingId: number,
+  userId: number,
+  isAdmin: boolean,
+): Promise<boolean> {
+  if (isAdmin) return true;
+
+  const [listing] = await db
+    .select({ landlordId: listings.landlordId })
+    .from(listings)
+    .where(eq(listings.id, listingId))
+    .limit(1);
+
+  return listing?.landlordId === userId;
+}
 
 export const AvailabilitySlotController = {
   async getAvailableByListingId(
@@ -45,9 +82,23 @@ export const AvailabilitySlotController = {
     request: FastifyRequest<{ Body: CreateAvailabilitySlotDTO }>,
     reply: FastifyReply,
   ) {
-    const slot = await AvailabilitySlotService.createAvailabilitySlot(
-      request.body,
+    const user = (request as AuthenticatedRequest).user;
+    const { listingId, ...rest } = request.body;
+
+    const ownsListing = await verifyListingOwnership(
+      listingId,
+      user.id,
+      user.role === "ADMIN",
     );
+    if (!ownsListing) {
+      throw new ForbiddenError("You can only create slots for your own listings");
+    }
+
+    const slot = await AvailabilitySlotService.createAvailabilitySlot({
+      ...rest,
+      listingId,
+      landlordId: user.id,
+    });
     return reply.code(201).send({ slot });
   },
 
@@ -58,7 +109,14 @@ export const AvailabilitySlotController = {
     }>,
     reply: FastifyReply,
   ) {
+    const user = (request as AuthenticatedRequest).user;
     const id = parseInt(request.params.id);
+
+    const owns = await verifySlotOwnership(id, user.id, user.role === "ADMIN");
+    if (!owns) {
+      throw new ForbiddenError("You can only update your own availability slots");
+    }
+
     const slot = await AvailabilitySlotService.updateAvailabilitySlot(
       id,
       request.body,
@@ -75,7 +133,14 @@ export const AvailabilitySlotController = {
     request: FastifyRequest<{ Params: { id: string } }>,
     reply: FastifyReply,
   ) {
+    const user = (request as AuthenticatedRequest).user;
     const id = parseInt(request.params.id);
+
+    const owns = await verifySlotOwnership(id, user.id, user.role === "ADMIN");
+    if (!owns) {
+      throw new ForbiddenError("You can only delete your own availability slots");
+    }
+
     const deleted = await AvailabilitySlotService.deleteAvailabilitySlot(id);
 
     if (!deleted) {

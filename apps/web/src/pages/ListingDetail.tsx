@@ -12,7 +12,6 @@ import {
   Heart,
   Calendar,
   Home,
-  Users,
   Mail,
   Trash2,
   Phone,
@@ -30,6 +29,16 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -61,6 +70,8 @@ const ListingDetail = () => {
   const [favoriteLoading, setFavoriteLoading] = useState(false);
   const [contactDialogOpen, setContactDialogOpen] = useState(false);
   const [bookingDialogOpen, setBookingDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [availableSlots, setAvailableSlots] = useState<AvailabilitySlot[]>([]);
 
   useEffect(() => {
@@ -260,6 +271,24 @@ const ListingDetail = () => {
     });
   };
 
+  const handleDeleteListing = async () => {
+    if (!listing) return;
+    setDeleting(true);
+    try {
+      await listingsApi.delete(listing.id);
+      toast({ title: t("myListings.deleteSuccess") });
+      navigate("/my-listings");
+    } catch (err) {
+      toast({
+        title: t("myListings.deleteFailed"),
+        variant: "destructive",
+      });
+    } finally {
+      setDeleting(false);
+      setDeleteDialogOpen(false);
+    }
+  };
+
   const formatSlotDate = (startTime: string) => {
     const date = new Date(startTime);
     const today = new Date();
@@ -323,8 +352,7 @@ const ListingDetail = () => {
             id: 0,
             listingId: listing.id,
             url: placeholderImage,
-            isPrimary: true,
-            order: 0,
+            uploadSessionId: null,
             createdAt: "",
           },
         ];
@@ -554,34 +582,6 @@ const ListingDetail = () => {
                     </div>
                   </div>
 
-                  {listing.maxTenants && (
-                    <div className="flex items-center gap-3">
-                      <Users className="h-5 w-5 text-muted-foreground" />
-                      <div>
-                        <p className="text-sm text-muted-foreground">
-                          {t("listingDetail.maxTenants")}
-                        </p>
-                        <p className="font-medium">{listing.maxTenants}</p>
-                      </div>
-                    </div>
-                  )}
-
-                  {listing.shareable !== undefined && (
-                    <div className="flex items-center gap-3">
-                      <Users className="h-5 w-5 text-muted-foreground" />
-                      <div>
-                        <p className="text-sm text-muted-foreground">
-                          {t("listingDetail.shareable")}
-                        </p>
-                        <p className="font-medium">
-                          {listing.shareable
-                            ? t("listingDetail.yes")
-                            : t("listingDetail.no")}
-                        </p>
-                      </div>
-                    </div>
-                  )}
-
                   <div className="flex items-center gap-3">
                     <Calendar className="h-5 w-5 text-muted-foreground" />
                     <div>
@@ -593,21 +593,6 @@ const ListingDetail = () => {
                       </p>
                     </div>
                   </div>
-
-                  {listing.pricePerRoom && (
-                    <div className="flex items-center gap-3">
-                      <Bed className="h-5 w-5 text-muted-foreground" />
-                      <div>
-                        <p className="text-sm text-muted-foreground">
-                          {t("listingDetail.pricePerRoom")}
-                        </p>
-                        <p className="font-medium">
-                          €{formatPrice(listing.pricePerRoom)}/
-                          {t("listingDetail.month")}
-                        </p>
-                      </div>
-                    </div>
-                  )}
                 </div>
               </CardContent>
             </Card>
@@ -684,16 +669,15 @@ const ListingDetail = () => {
                       </Button>
                     </Link>
                     <Separator className="mb-6" />
-                    <Link to={`/listings/${listing.id}/delete`}>
-                      <Button
-                        className="w-full"
-                        variant="destructive"
-                        size="lg"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                        {t("listingDetail.deleteListing")}
-                      </Button>
-                    </Link>
+                    <Button
+                      className="w-full"
+                      variant="destructive"
+                      size="lg"
+                      onClick={() => setDeleteDialogOpen(true)}
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      {t("listingDetail.deleteListing")}
+                    </Button>
                   </CardContent>
                 </Card>
               )}
@@ -815,11 +799,34 @@ const ListingDetail = () => {
           onOpenChange={setBookingDialogOpen}
           listingId={listing.id}
           listingTitle={listing.title}
-          landlordId={listing.landlordId}
-          candidateId={user.id}
           onSuccess={handleBookingSuccess}
         />
       )}
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("myListings.delete")}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t("myListings.confirmDelete")}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t("listingDetail.no")}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteListing}
+              disabled={deleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleting ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                t("myListings.delete")
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

@@ -99,7 +99,6 @@ export const FavoritesService = {
 
   async addFavorite(userId: number, listingId: number): Promise<boolean> {
     try {
-      console.log("Adding favorite:", { userId, listingId });
       await db.insert(interestedListings).values({ userId, listingId });
       return true;
     } catch (error: any) {

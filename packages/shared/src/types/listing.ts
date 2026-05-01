@@ -4,6 +4,10 @@ export type FloorType = "basement" | "semi-basement" | "ground" | "1st" | "2nd" 
 
 export type VerificationStatus = "PENDING" | "APPROVED" | "REJECTED";
 
+export type ListingStatusType = "Renovated" | "Luxurious" | "Under construction" | "Neoclassical";
+
+export type ZoneType = "Residential" | "Agricultural" | "Commercial" | "Industrial" | "Regeneration";
+
 export interface Listing {
   id: number;
   title: string;
@@ -17,6 +21,11 @@ export interface Listing {
   bedrooms: number;
   bathrooms: number;
   area: number;
+  elevator: boolean;
+  parkingSpace: boolean;
+  furnished: boolean;
+  zoneType: ZoneType;
+  listingStatus: ListingStatusType | null;
   dateAvailable: string;
   dateBuilt: number;
   views_count: number;
@@ -24,6 +33,7 @@ export interface Listing {
   propertyType: PropertyType;
   available: boolean;
   landlordId: number;
+  landlordPhone?: string;
   createdAt: string;
   updatedAt: string;
   verificationStatus: VerificationStatus;
@@ -49,11 +59,17 @@ export interface CreateListingRequest {
   bedrooms?: number;
   bathrooms?: number;
   area?: number;
+  elevator?: boolean;
+  parkingSpace?: boolean;
+  furnished?: boolean;
+  zoneType?: ZoneType;
+  listingStatus?: ListingStatusType;
   dateAvailable?: string;
   dateBuilt?: number;
   country?: string;
   propertyType: PropertyType;
   available?: boolean;
+  landlordPhone?: string;
   titleEl?: string;
   titleEn?: string;
   descriptionEl?: string;
@@ -112,9 +128,8 @@ export interface ListingSearchResult extends Listing {
 
 export interface ListingImage {
   id: number;
-  listingId: number;
+  listingId: number | null;
   url: string;
-  isPrimary: boolean;
-  order: number;
+  uploadSessionId: string | null;
   createdAt: string;
 }

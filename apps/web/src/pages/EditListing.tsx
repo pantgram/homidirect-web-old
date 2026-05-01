@@ -778,7 +778,7 @@ const EditListing = () => {
                           alt={`Property image ${index + 1}`}
                           className="w-full h-full object-cover"
                         />
-                        {(image.isPrimary || index === 0) && (
+                        {index === 0 && (
                           <span className="absolute top-2 left-2 bg-primary text-primary-foreground text-xs px-2 py-0.5 rounded">
                             {t("imageUpload.primary")}
                           </span>
@@ -840,7 +840,6 @@ const EditListing = () => {
           <div className="max-w-3xl mx-auto mt-8">
             <AvailabilitySlotsManager
               listingId={listingId}
-              landlordId={user.id}
             />
           </div>
         )}

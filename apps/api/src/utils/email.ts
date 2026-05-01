@@ -1,6 +1,15 @@
 import nodemailer from "nodemailer";
 import { config } from "../config/env";
 
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 const transporter = nodemailer.createTransport({
   host: config.email.smtpHost,
   port: config.email.smtpPort,
@@ -13,7 +22,7 @@ const transporter = nodemailer.createTransport({
 
 export async function sendPasswordResetEmail(
   email: string,
-  token: string
+  token: string,
 ): Promise<void> {
   const resetUrl = `${config.frontendUrl}/reset-password?token=${token}`;
 
@@ -54,9 +63,9 @@ export interface ContactOwnerEmailData {
 }
 
 export async function sendContactOwnerEmail(
-  data: ContactOwnerEmailData
+  data: ContactOwnerEmailData,
 ): Promise<void> {
-  const listingUrl = `${config.frontendUrl}/listing/${data.listingId}`;
+  const listingUrl = `${config.frontendUrl}/listings/${data.listingId}`;
 
   await transporter.sendMail({
     from: config.email.emailFrom,
@@ -66,27 +75,27 @@ export async function sendContactOwnerEmail(
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <h2 style="color: #333;">New Property Inquiry</h2>
-        <p>Hello ${data.ownerName},</p>
+        <p>Hello ${escapeHtml(data.ownerName)},</p>
         <p>You have received a new inquiry about your property listing on HomiDirect.</p>
 
         <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
-          <h3 style="color: #007bff; margin-top: 0;">Property: ${data.listingTitle}</h3>
+          <h3 style="color: #007bff; margin-top: 0;">Property: ${escapeHtml(data.listingTitle)}</h3>
           <p><a href="${listingUrl}" style="color: #007bff;">View Listing</a></p>
         </div>
 
         <div style="background-color: #fff; border: 1px solid #e9ecef; padding: 20px; border-radius: 8px; margin: 20px 0;">
-          <h3 style="color: #333; margin-top: 0;">Message from ${data.senderName}:</h3>
-          <p style="white-space: pre-line; color: #555;">${data.message}</p>
+          <h3 style="color: #333; margin-top: 0;">Message from ${escapeHtml(data.senderName)}:</h3>
+          <p style="white-space: pre-line; color: #555;">${escapeHtml(data.message)}</p>
         </div>
 
         <div style="background-color: #f8f9fa; padding: 15px; border-radius: 8px; margin: 20px 0;">
           <h4 style="color: #333; margin-top: 0;">Contact Information:</h4>
-          <p style="margin: 5px 0;"><strong>Name:</strong> ${data.senderName}</p>
-          <p style="margin: 5px 0;"><strong>Email:</strong> <a href="mailto:${data.senderEmail}">${data.senderEmail}</a></p>
-          ${data.senderPhone ? `<p style="margin: 5px 0;"><strong>Phone:</strong> ${data.senderPhone}</p>` : ""}
+          <p style="margin: 5px 0;"><strong>Name:</strong> ${escapeHtml(data.senderName)}</p>
+          <p style="margin: 5px 0;"><strong>Email:</strong> ${escapeHtml(data.senderEmail)}</p>
+          ${data.senderPhone ? `<p style="margin: 5px 0;"><strong>Phone:</strong> ${escapeHtml(data.senderPhone)}</p>` : ""}
         </div>
 
-        <p>You can reply directly to this email to respond to ${data.senderName}.</p>
+        <p>You can reply directly to this email to respond to ${escapeHtml(data.senderName)}.</p>
 
         <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;" />
         <p style="color: #999; font-size: 12px;">
@@ -109,9 +118,9 @@ export interface BookingCreatedEmailData {
 }
 
 export async function sendBookingCreatedEmail(
-  data: BookingCreatedEmailData
+  data: BookingCreatedEmailData,
 ): Promise<void> {
-  const listingUrl = `${config.frontendUrl}/listing/${data.listingId}`;
+  const listingUrl = `${config.frontendUrl}/listings/${data.listingId}`;
   const formattedDate = new Date(data.scheduledAt).toLocaleString();
 
   await transporter.sendMail({
@@ -121,11 +130,11 @@ export async function sendBookingCreatedEmail(
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <h2 style="color: #333;">New Viewing Request</h2>
-        <p>Hello ${data.landlordName},</p>
-        <p>${data.tenantName} has requested to view your property.</p>
+        <p>Hello ${escapeHtml(data.landlordName)},</p>
+        <p>${escapeHtml(data.tenantName)} has requested to view your property.</p>
 
         <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
-          <h3 style="color: #007bff; margin-top: 0;">Property: ${data.listingTitle}</h3>
+          <h3 style="color: #007bff; margin-top: 0;">Property: ${escapeHtml(data.listingTitle)}</h3>
           <p><a href="${listingUrl}" style="color: #007bff;">View Listing</a></p>
         </div>
 
@@ -154,9 +163,9 @@ export interface BookingConfirmedEmailData {
 }
 
 export async function sendBookingConfirmedEmail(
-  data: BookingConfirmedEmailData
+  data: BookingConfirmedEmailData,
 ): Promise<void> {
-  const listingUrl = `${config.frontendUrl}/listing/${data.listingId}`;
+  const listingUrl = `${config.frontendUrl}/listings/${data.listingId}`;
   const formattedDate = new Date(data.scheduledAt).toLocaleString();
 
   await transporter.sendMail({
@@ -166,22 +175,26 @@ export async function sendBookingConfirmedEmail(
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <h2 style="color: #28a745;">Viewing Confirmed!</h2>
-        <p>Hello ${data.tenantName},</p>
-        <p>${data.landlordName} has confirmed your viewing request.</p>
+        <p>Hello ${escapeHtml(data.tenantName)},</p>
+        <p>${escapeHtml(data.landlordName)} has confirmed your viewing request.</p>
 
         <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
-          <h3 style="color: #007bff; margin-top: 0;">Property: ${data.listingTitle}</h3>
+          <h3 style="color: #007bff; margin-top: 0;">Property: ${escapeHtml(data.listingTitle)}</h3>
           <p><a href="${listingUrl}" style="color: #007bff;">View Listing</a></p>
         </div>
 
         <div style="background-color: #fff; border: 1px solid #e9ecef; padding: 20px; border-radius: 8px; margin: 20px 0;">
           <h4 style="color: #333; margin-top: 0;">Scheduled For:</h4>
           <p style="font-size: 18px; font-weight: bold; color: #007bff;">${formattedDate}</p>
-          ${data.meetLink ? `
+          ${
+            data.meetLink
+              ? `
             <p style="margin-top: 15px;">
-              <a href="${data.meetLink}" style="background-color: #007bff; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block;">Join Video Call</a>
+              <a href="${escapeHtml(data.meetLink)}" style="background-color: #007bff; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block;">Join Video Call</a>
             </p>
-          ` : ''}
+          `
+              : ""
+          }
         </div>
 
         <p>We look forward to seeing you at the viewing!</p>
@@ -203,9 +216,9 @@ export interface BookingDeclinedEmailData {
 }
 
 export async function sendBookingDeclinedEmail(
-  data: BookingDeclinedEmailData
+  data: BookingDeclinedEmailData,
 ): Promise<void> {
-  const listingUrl = `${config.frontendUrl}/listing/${data.listingId}`;
+  const listingUrl = `${config.frontendUrl}/listings/${data.listingId}`;
   const formattedDate = new Date(data.scheduledAt).toLocaleString();
 
   await transporter.sendMail({
@@ -215,11 +228,11 @@ export async function sendBookingDeclinedEmail(
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <h2 style="color: #dc3545;">Viewing Declined</h2>
-        <p>Hello ${data.tenantName},</p>
-        <p>${data.landlordName} has declined your viewing request.</p>
+        <p>Hello ${escapeHtml(data.tenantName)},</p>
+        <p>${escapeHtml(data.landlordName)} has declined your viewing request.</p>
 
         <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
-          <h3 style="color: #007bff; margin-top: 0;">Property: ${data.listingTitle}</h3>
+          <h3 style="color: #007bff; margin-top: 0;">Property: ${escapeHtml(data.listingTitle)}</h3>
           <p><a href="${listingUrl}" style="color: #007bff;">View Listing</a></p>
         </div>
 
@@ -247,9 +260,9 @@ export interface BookingCancelledEmailData {
 }
 
 export async function sendBookingCancelledEmail(
-  data: BookingCancelledEmailData
+  data: BookingCancelledEmailData,
 ): Promise<void> {
-  const listingUrl = `${config.frontendUrl}/listing/${data.listingId}`;
+  const listingUrl = `${config.frontendUrl}/listings/${data.listingId}`;
   const formattedDate = new Date(data.scheduledAt).toLocaleString();
 
   await transporter.sendMail({
@@ -259,11 +272,11 @@ export async function sendBookingCancelledEmail(
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <h2 style="color: #dc3545;">Viewing Cancelled</h2>
-        <p>Hello ${data.recipientName},</p>
-        <p>${data.cancelledByName} has cancelled the viewing.</p>
+        <p>Hello ${escapeHtml(data.recipientName)},</p>
+        <p>${escapeHtml(data.cancelledByName)} has cancelled the viewing.</p>
 
         <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
-          <h3 style="color: #007bff; margin-top: 0;">Property: ${data.listingTitle}</h3>
+          <h3 style="color: #007bff; margin-top: 0;">Property: ${escapeHtml(data.listingTitle)}</h3>
           <p><a href="${listingUrl}" style="color: #007bff;">View Listing</a></p>
         </div>
 

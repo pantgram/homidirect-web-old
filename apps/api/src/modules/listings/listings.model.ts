@@ -12,10 +12,8 @@ import {
   index,
   date,
 } from "drizzle-orm/pg-core";
-import { desc, sql } from "drizzle-orm";
+import { sql } from "drizzle-orm";
 import { users } from "modules/users/users.model";
-import { title } from "process";
-import z from "zod";
 
 export const propertyTypeEnum = pgEnum("property_type", [
   "apartment",
@@ -58,7 +56,7 @@ export const listings = pgTable(
   {
     id: serial("id").primaryKey(),
     description: text("description").notNull(),
-    title: varchar("title", { length: 100 }).notNull().unique(),
+    title: varchar("title", { length: 100 }).notNull(),
     price: real("price").notNull(),
     city: varchar("city", { length: 100 }).notNull(),
     postalCode: varchar("postal_code", { length: 50 }),

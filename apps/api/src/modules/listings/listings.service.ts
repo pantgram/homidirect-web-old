@@ -193,10 +193,6 @@ export const ListingService = {
       });
 
     if (uploadSessionId) {
-      console.log(
-        "entered create listing with upload session id",
-        uploadSessionId,
-      );
       await ListingImageService.associateImagesToListing(
         uploadSessionId,
         newListing.id,
