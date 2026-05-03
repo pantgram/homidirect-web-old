@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import {
   Calendar,
   Clock,
@@ -13,10 +13,10 @@ import {
   Loader2,
   Plus,
   Trash2,
-  Edit,
 } from "lucide-react";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
+import AvailabilitySlotForm from "@/components/AvailabilitySlotForm";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -43,6 +43,17 @@ const ListingBookings = () => {
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"bookings" | "slots">("bookings");
   const [updating, setUpdating] = useState<number | null>(null);
+  const [showSlotForm, setShowSlotForm] = useState(false);
+
+  const fetchSlots = async () => {
+    if (!id) return;
+    try {
+      const slotsData = await availabilitySlotsApi.getByListingId(parseInt(id));
+      setAvailabilitySlots(slotsData);
+    } catch (err) {
+      console.error("Failed to fetch slots:", err);
+    }
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -373,7 +384,7 @@ const ListingBookings = () => {
                         Manage when candidates can book viewings for your property.
                       </p>
                     </div>
-                    <Button onClick={() => navigate(`/listings/${id}/availability/add`)}>
+                    <Button onClick={() => setShowSlotForm(true)}>
                       <Plus className="h-4 w-4 mr-2" />
                       Add Time Slot
                     </Button>
@@ -389,7 +400,7 @@ const ListingBookings = () => {
                     <p className="text-muted-foreground mb-6">
                       Add availability slots to let candidates book viewings.
                     </p>
-                    <Button onClick={() => navigate(`/listings/${id}/availability/add`)}>
+                    <Button onClick={() => setShowSlotForm(true)}>
                       <Plus className="h-4 w-4 mr-2" />
                       Add First Time Slot
                     </Button>
@@ -431,17 +442,10 @@ const ListingBookings = () => {
 
                         <div className="flex gap-2">
                           <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => navigate(`/listings/${id}/availability/edit/${slot.id}`)}
-                          >
-                            <Edit className="h-4 w-4 mr-2" />
-                            Edit
-                          </Button>
-                          <Button
                             variant="destructive"
                             size="sm"
                             onClick={() => handleDeleteSlot(slot.id)}
+                            disabled={slot.isBooked}
                           >
                             <Trash2 className="h-4 w-4 mr-2" />
                             Delete
@@ -456,6 +460,15 @@ const ListingBookings = () => {
           )}
         </div>
       </main>
+
+      {id && (
+        <AvailabilitySlotForm
+          open={showSlotForm}
+          onOpenChange={setShowSlotForm}
+          listingId={parseInt(id)}
+          onSuccess={fetchSlots}
+        />
+      )}
 
       <Footer />
     </div>

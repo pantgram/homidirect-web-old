@@ -8,7 +8,6 @@ import {
   pendingImageRoutes,
 } from "modules/listingImages/listingImages.routes";
 import { bookingRoutes } from "modules/bookings/bookings.routes";
-import { tagRoutes } from "modules/tags/tags.routes";
 import {
   verificationDocumentRoutes,
   adminVerificationRoutes,
@@ -41,9 +40,6 @@ export async function apiRoutes(fastify: FastifyInstance) {
 
   // all booking routes will be under /api/bookings
   fastify.register(bookingRoutes, { prefix: "/bookings" });
-
-  // all tag routes will be under /api/tags
-  fastify.register(tagRoutes, { prefix: "/tags" });
 
   // admin verification routes under /api/admin/verifications
   fastify.register(adminVerificationRoutes, { prefix: "/admin/verifications" });

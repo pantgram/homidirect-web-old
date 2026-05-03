@@ -1,5 +1,9 @@
 {
+<<<<<<< HEAD
   "id": "de42973b-3650-446a-8f81-96effe1c95b0",
+=======
+  "id": "5ca96872-f0a1-48d4-a5e0-cacd6e29a7d9",
+>>>>>>> refs/remotes/origin/develop
   "prevId": "edafdffe-07a7-4b51-9b51-68a152fa5654",
   "version": "7",
   "dialect": "postgresql",
@@ -1402,6 +1406,7 @@
       },
       "isRLSEnabled": false
     },
+<<<<<<< HEAD
     "public.tags": {
       "name": "tags",
       "schema": "",
@@ -1435,6 +1440,8 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
+=======
+>>>>>>> refs/remotes/origin/develop
     "public.users": {
       "name": "users",
       "schema": "",
@@ -1815,6 +1822,7 @@
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
+<<<<<<< HEAD
     },
     "public.listing_tags": {
       "name": "listing_tags",
@@ -1875,6 +1883,8 @@
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
+=======
+>>>>>>> refs/remotes/origin/develop
     }
   },
   "enums": {

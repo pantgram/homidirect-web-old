@@ -2,10 +2,13 @@ import { relations } from "drizzle-orm";
 import { users } from "modules/users/users.model";
 import { listings } from "modules/listings/listings.model";
 import { bookings } from "modules/bookings/bookings.model";
-import { tags } from "modules/tags/tags.model";
-import { listingTags } from "models/listingTags.model";
 import { listingImages } from "modules/listingImages/listingImages.model";
 import { interestedListings } from "models/interestedListings.model";
+import { availabilitySlots } from "modules/availabilitySlots/availabilitySlots.model";
+import { conversations } from "modules/conversations/conversations.model";
+import { featuredListingPurchases } from "modules/featuredListingPurchases/featuredListingPurchases.model";
+import { verificationDocuments } from "modules/verificationDocuments/verificationDocuments.model";
+import { verificationHistory } from "modules/verificationHistory/verificationHistory.model";
 
 // USERS
 export const usersRelations = relations(users, ({ many }) => ({
@@ -29,9 +32,13 @@ export const listingsRelations = relations(listings, ({ one, many }) => ({
     relationName: "verifier",
   }),
   images: many(listingImages),
-  tags: many(listingTags),
   bookings: many(bookings),
   interestedUsers: many(interestedListings),
+  availabilitySlots: many(availabilitySlots),
+  conversations: many(conversations),
+  verificationDocuments: many(verificationDocuments),
+  verificationHistory: many(verificationHistory),
+  featuredPurchases: many(featuredListingPurchases),
 }));
 
 // BOOKINGS
@@ -51,23 +58,6 @@ export const bookingsRelations = relations(bookings, ({ one }) => ({
   listing: one(listings, {
     fields: [bookings.listingId],
     references: [listings.id],
-  }),
-}));
-
-// TAGS
-export const tagsRelations = relations(tags, ({ many }) => ({
-  listingConnections: many(listingTags),
-}));
-
-// LISTING TAGS
-export const listingTagsRelations = relations(listingTags, ({ one }) => ({
-  listing: one(listings, {
-    fields: [listingTags.listingId],
-    references: [listings.id],
-  }),
-  tag: one(tags, {
-    fields: [listingTags.tagId],
-    references: [tags.id],
   }),
 }));
 
@@ -91,5 +81,71 @@ export const listingImagesRelations = relations(listingImages, ({ one }) => ({
   listing: one(listings, {
     fields: [listingImages.listingId],
     references: [listings.id],
+  }),
+}));
+
+// AVAILABILITY SLOTS
+export const availabilitySlotsRelations = relations(availabilitySlots, ({ one }) => ({
+  listing: one(listings, {
+    fields: [availabilitySlots.listingId],
+    references: [listings.id],
+  }),
+  landlord: one(users, {
+    fields: [availabilitySlots.landlordId],
+    references: [users.id],
+  }),
+}));
+
+// CONVERSATIONS
+export const conversationsRelations = relations(conversations, ({ one }) => ({
+  listing: one(listings, {
+    fields: [conversations.listingId],
+    references: [listings.id],
+  }),
+  landlord: one(users, {
+    fields: [conversations.landlordId],
+    references: [users.id],
+    relationName: "conversationLandlord",
+  }),
+  tenant: one(users, {
+    fields: [conversations.tenantId],
+    references: [users.id],
+    relationName: "conversationTenant",
+  }),
+}));
+
+// FEATURED LISTING PURCHASES
+export const featuredListingPurchasesRelations = relations(featuredListingPurchases, ({ one }) => ({
+  listing: one(listings, {
+    fields: [featuredListingPurchases.listingId],
+    references: [listings.id],
+  }),
+  purchaser: one(users, {
+    fields: [featuredListingPurchases.purchasedBy],
+    references: [users.id],
+  }),
+}));
+
+// VERIFICATION DOCUMENTS
+export const verificationDocumentsRelations = relations(verificationDocuments, ({ one }) => ({
+  listing: one(listings, {
+    fields: [verificationDocuments.listingId],
+    references: [listings.id],
+  }),
+  uploader: one(users, {
+    fields: [verificationDocuments.uploadedBy],
+    references: [users.id],
+  }),
+}));
+
+// VERIFICATION HISTORY
+export const verificationHistoryRelations = relations(verificationHistory, ({ one }) => ({
+  listing: one(listings, {
+    fields: [verificationHistory.listingId],
+    references: [listings.id],
+  }),
+  reviewer: one(users, {
+    fields: [verificationHistory.reviewedBy],
+    references: [users.id],
   }),
 }));
