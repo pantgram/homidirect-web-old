@@ -1,5 +1,5 @@
 {
-  "id": "de42973b-3650-446a-8f81-96effe1c95b0",
+  "id": "5ca96872-f0a1-48d4-a5e0-cacd6e29a7d9",
   "prevId": "edafdffe-07a7-4b51-9b51-68a152fa5654",
   "version": "7",
   "dialect": "postgresql",
@@ -1402,39 +1402,6 @@
       },
       "isRLSEnabled": false
     },
-    "public.tags": {
-      "name": "tags",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "serial",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "name": {
-          "name": "name",
-          "type": "varchar(255)",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "tags_name_unique": {
-          "name": "tags_name_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "name"
-          ]
-        }
-      },
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
     "public.users": {
       "name": "users",
       "schema": "",
@@ -1807,66 +1774,6 @@
           "name": "interested_listings_user_id_listing_id_pk",
           "columns": [
             "user_id",
-            "listing_id"
-          ]
-        }
-      },
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.listing_tags": {
-      "name": "listing_tags",
-      "schema": "",
-      "columns": {
-        "listing_id": {
-          "name": "listing_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "tag_id": {
-          "name": "tag_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "listing_tags_listing_id_listings_id_fk": {
-          "name": "listing_tags_listing_id_listings_id_fk",
-          "tableFrom": "listing_tags",
-          "tableTo": "listings",
-          "columnsFrom": [
-            "listing_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "listing_tags_tag_id_tags_id_fk": {
-          "name": "listing_tags_tag_id_tags_id_fk",
-          "tableFrom": "listing_tags",
-          "tableTo": "tags",
-          "columnsFrom": [
-            "tag_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {
-        "listing_tags_tag_id_listing_id_pk": {
-          "name": "listing_tags_tag_id_listing_id_pk",
-          "columns": [
-            "tag_id",
             "listing_id"
           ]
         }
