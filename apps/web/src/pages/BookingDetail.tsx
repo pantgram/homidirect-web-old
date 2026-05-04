@@ -44,7 +44,7 @@ import {
 const BookingDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { isAuthenticated, user } = useAuth();
   const { toast } = useToast();
 
@@ -75,8 +75,7 @@ const BookingDetail = () => {
         }
       } catch (err) {
         // Failed to fetch booking
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        setError(t("bookingDetail.errorLoading" as any));
+        setError(t("bookingDetail.errorLoading"));
       } finally {
         setLoading(false);
       }
@@ -95,15 +94,12 @@ const BookingDetail = () => {
       toast({
         title:
           status === "CONFIRMED"
-            ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              t("bookingDetail.bookingConfirmed" as any)
-            : // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              t("bookingDetail.bookingDeclined" as any),
+            ? t("bookingDetail.bookingConfirmed")
+            : t("bookingDetail.bookingDeclined"),
       });
     } catch (err) {
       toast({
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        title: t("bookingDetail.updateFailed" as any),
+        title: t("bookingDetail.updateFailed"),
         variant: "destructive",
       });
     } finally {
@@ -118,14 +114,12 @@ const BookingDetail = () => {
     try {
       await bookingsApi.delete(booking.id);
       toast({
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        title: t("bookingDetail.bookingCancelled" as any),
+        title: t("bookingDetail.bookingCancelled"),
       });
       navigate("/bookings");
     } catch (err) {
       toast({
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        title: t("bookingDetail.cancelFailed" as any),
+        title: t("bookingDetail.cancelFailed"),
         variant: "destructive",
       });
     }
@@ -133,7 +127,7 @@ const BookingDetail = () => {
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
+    return date.toLocaleDateString(language === "el" ? "el-GR" : "en-US", {
       weekday: "long",
       year: "numeric",
       month: "long",
@@ -149,22 +143,22 @@ const BookingDetail = () => {
       { label: string; icon: React.ReactNode; className: string }
     > = {
       PENDING: {
-        label: "Pending",
+        label: t("bookings.pending"),
         icon: <Clock className="h-3 w-3" />,
         className: "bg-yellow-500/10 text-yellow-600 hover:bg-yellow-500/20",
       },
       CONFIRMED: {
-        label: "Confirmed",
+        label: t("bookings.confirmed"),
         icon: <CheckCircle className="h-3 w-3" />,
         className: "bg-green-500/10 text-green-600 hover:bg-green-500/20",
       },
       DECLINED: {
-        label: "Declined",
+        label: t("bookings.declined"),
         icon: <XCircle className="h-3 w-3" />,
         className: "bg-red-500/10 text-red-600 hover:bg-red-500/20",
       },
       CANCELLED: {
-        label: "Cancelled",
+        label: t("bookings.cancelledStatus"),
         icon: <AlertCircle className="h-3 w-3" />,
         className: "bg-gray-500/10 text-gray-600 hover:bg-gray-500/20",
       },
@@ -177,7 +171,6 @@ const BookingDetail = () => {
         label: status,
         icon: <AlertCircle className="h-3 w-3" />,
         className: "bg-gray-500/10 text-gray-600",
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any);
 
     return (
@@ -206,11 +199,11 @@ const BookingDetail = () => {
         <Navigation />
         <div className="container mx-auto px-4 py-16 text-center">
           <h1 className="text-2xl font-bold mb-4">
-            {error || "Booking not found"}
+            {error || t("bookingDetail.notFound")}
           </h1>
           <Button onClick={() => navigate("/bookings")}>
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Bookings
+            {t("bookingDetail.backToBookings")}
           </Button>
         </div>
         <Footer />
@@ -232,13 +225,13 @@ const BookingDetail = () => {
           className="mb-6 -ml-2"
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
-          Back
+          {t("bookingDetail.back")}
         </Button>
 
         <div className="max-w-4xl mx-auto space-y-6">
           <div className="flex items-start justify-between">
             <div>
-              <h1 className="text-3xl font-bold mb-2">Booking Details</h1>
+              <h1 className="text-3xl font-bold mb-2">{t("bookingDetail.title")}</h1>
               {getStatusBadge(booking.status)}
             </div>
             {canCancel && (
@@ -248,8 +241,7 @@ const BookingDetail = () => {
                 className="flex items-center gap-2"
               >
                 <Trash2 className="h-4 w-4" />
-                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                {t("bookingDetail.cancelBooking" as any)}
+                {t("bookingDetail.cancelBooking")}
               </Button>
             )}
           </div>
@@ -269,8 +261,7 @@ const BookingDetail = () => {
                       to={`/listings/${listing?.id}`}
                       className="text-xl font-semibold hover:text-primary transition-colors"
                     >
-                      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                      {listing?.title || t("bookingDetail.unknownListing" as any)}
+                      {listing?.title || t("bookingDetail.unknownListing")}
                     </Link>
                     <div className="flex items-center gap-4 mt-2 text-muted-foreground">
                       <div className="flex items-center gap-1">
@@ -279,7 +270,7 @@ const BookingDetail = () => {
                       </div>
                       <div className="flex items-center gap-1">
                         <Home className="h-4 w-4" />
-                        <span>€{listing?.price}/month</span>
+                        <span>{t("common.pricePerMonth").replace("{price}", String(listing?.price))}</span>
                       </div>
                     </div>
                   </div>
@@ -290,12 +281,12 @@ const BookingDetail = () => {
 
           <Card>
             <CardContent className="p-6">
-              <h2 className="text-xl font-semibold mb-4">Viewing Schedule</h2>
+              <h2 className="text-xl font-semibold mb-4">{t("bookingDetail.viewingSchedule")}</h2>
               <div className="space-y-4">
                 <div className="flex items-center gap-3">
                   <Calendar className="h-5 w-5 text-primary" />
                   <div>
-                    <p className="text-sm text-muted-foreground">Date & Time</p>
+                    <p className="text-sm text-muted-foreground">{t("bookingDetail.dateAndTime")}</p>
                     <p className="text-lg font-medium">
                       {formatDate(booking.scheduledAt)}
                     </p>
@@ -312,7 +303,7 @@ const BookingDetail = () => {
                         className="flex items-center gap-2"
                       >
                         <Video className="h-4 w-4" />
-                        Join Video Call
+                        {t("bookingDetail.joinVideoCall")}
                       </a>
                     </Button>
                   </div>
@@ -324,9 +315,9 @@ const BookingDetail = () => {
           {isLandlord && booking.status === "PENDING" && (
             <Card>
               <CardContent className="p-6">
-                <h2 className="text-xl font-semibold mb-4">Actions</h2>
+                <h2 className="text-xl font-semibold mb-4">{t("bookingDetail.actions")}</h2>
                 <p className="text-muted-foreground mb-6">
-                  Review this viewing request and take action.
+                  {t("bookingDetail.reviewRequest")}
                 </p>
                 <div className="flex gap-4">
                   <Button
@@ -335,7 +326,7 @@ const BookingDetail = () => {
                     className="flex items-center gap-2"
                   >
                     <CheckCircle className="h-4 w-4" />
-                    Confirm Booking
+                    {t("bookingDetail.confirmBooking")}
                   </Button>
                   <Button
                     variant="destructive"
@@ -344,7 +335,7 @@ const BookingDetail = () => {
                     className="flex items-center gap-2"
                   >
                     <XCircle className="h-4 w-4" />
-                    Decline Booking
+                    {t("bookingDetail.declineBooking")}
                   </Button>
                 </div>
               </CardContent>
@@ -357,18 +348,16 @@ const BookingDetail = () => {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-              {t("bookingDetail.cancelBooking" as any)}
+              {t("bookingDetail.cancelBooking")}
             </AlertDialogTitle>
             <AlertDialogDescription>
-              {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-              {t("bookingDetail.cancelConfirm" as any)}
+              {t("bookingDetail.cancelConfirm")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>No, keep it</AlertDialogCancel>
+            <AlertDialogCancel>{t("bookingDetail.noKeepIt")}</AlertDialogCancel>
             <AlertDialogAction onClick={handleDelete}>
-              Yes, cancel booking
+              {t("bookingDetail.yesCancel")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

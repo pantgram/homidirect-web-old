@@ -4,8 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Calendar } from "@/components/ui/calendar";
-import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useToast } from "@/hooks/use-toast";
 import { availabilitySlotsApi } from "@/api/availability-slots";
 import { Loader2, Clock } from "lucide-react";
 import { format, isSameDay, isPast } from "date-fns";
@@ -26,7 +26,7 @@ const AvailabilitySlotForm = ({
   onSuccess,
 }: AvailabilitySlotFormProps) => {
   const { toast } = useToast();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [date, setDate] = useState("");
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [startTime, setStartTime] = useState("");
@@ -121,7 +121,7 @@ const AvailabilitySlotForm = ({
 
   const formatSlotTime = (startTime: string) => {
     const d = new Date(startTime);
-    return d.toLocaleTimeString("en-US", {
+    return d.toLocaleTimeString(language === "el" ? "el-GR" : "en-US", {
       hour: "2-digit",
       minute: "2-digit",
     });

@@ -19,7 +19,7 @@ const AvailabilitySlotsManager = ({
   listingId,
 }: AvailabilitySlotsManagerProps) => {
   const { toast } = useToast();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [slots, setSlots] = useState<AvailabilitySlot[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -114,7 +114,7 @@ const AvailabilitySlotsManager = ({
 
   const formatSlotTimeShort = (startTime: string) => {
     const d = new Date(startTime);
-    return d.toLocaleTimeString("en-US", {
+    return d.toLocaleTimeString(language === "el" ? "el-GR" : "en-US", {
       hour: "2-digit",
       minute: "2-digit",
     });

@@ -644,6 +644,198 @@ export const translations = {
     "availabilitySlots.deleted": "Slot deleted",
     "availabilitySlots.deleteFailed": "Failed to delete slot",
     "availabilitySlots.loadingSlots": "Failed to load availability slots",
+
+    // Bookings
+    "bookings.title": "My Bookings",
+    "bookings.noBookings": "No bookings yet",
+    "bookings.noBookingsDesc":
+      "When you book a viewing, it will appear here.",
+    "bookings.browseListings": "Browse Listings",
+    "bookings.errorLoading": "Failed to load bookings",
+    "bookings.cancelConfirm":
+      "Are you sure you want to cancel this booking?",
+    "bookings.cancelled": "Booking cancelled",
+    "bookings.cancelFailed": "Failed to cancel booking",
+    "bookings.viewDetails": "View Details",
+    "bookings.cancel": "Cancel",
+    "bookings.pending": "Pending",
+    "bookings.confirmed": "Confirmed",
+    "bookings.declined": "Declined",
+    "bookings.cancelledStatus": "Cancelled",
+    "bookings.unknownListing": "Unknown Listing",
+    "bookings.joinVideoCall": "Join Video Call",
+
+    // Booking Detail
+    "bookingDetail.title": "Booking Details",
+    "bookingDetail.errorLoading": "Failed to load booking details",
+    "bookingDetail.notFound": "Booking not found",
+    "bookingDetail.backToBookings": "Back to Bookings",
+    "bookingDetail.back": "Back",
+    "bookingDetail.viewingSchedule": "Viewing Schedule",
+    "bookingDetail.dateAndTime": "Date & Time",
+    "bookingDetail.joinVideoCall": "Join Video Call",
+    "bookingDetail.actions": "Actions",
+    "bookingDetail.reviewRequest":
+      "Review this viewing request and take action.",
+    "bookingDetail.confirmBooking": "Confirm Booking",
+    "bookingDetail.declineBooking": "Decline Booking",
+    "bookingDetail.cancelBooking": "Cancel Booking",
+    "bookingDetail.bookingConfirmed": "Booking confirmed",
+    "bookingDetail.bookingDeclined": "Booking declined",
+    "bookingDetail.updateFailed": "Failed to update booking",
+    "bookingDetail.cancelConfirm":
+      "Are you sure you want to cancel this booking?",
+    "bookingDetail.bookingCancelled": "Booking cancelled",
+    "bookingDetail.cancelFailed": "Failed to cancel booking",
+    "bookingDetail.unknownListing": "Unknown Listing",
+    "bookingDetail.noKeepIt": "No, keep it",
+    "bookingDetail.yesCancel": "Yes, cancel booking",
+
+    // Listing Bookings
+    "listingBookings.manageBookings": "Manage Bookings",
+    "listingBookings.backToListing": "Back to Listing",
+    "listingBookings.listingNotFound": "Listing not found",
+    "listingBookings.backToMyListings": "Back to My Listings",
+    "listingBookings.bookingsTab": "Bookings",
+    "listingBookings.timeSlotsTab": "Time Slots",
+    "listingBookings.noBookings": "No bookings yet",
+    "listingBookings.noBookingsDesc":
+      "When candidates book viewings, they will appear here.",
+    "listingBookings.candidateId": "Candidate ID",
+    "listingBookings.accept": "Accept",
+    "listingBookings.decline": "Decline",
+    "listingBookings.availabilitySlots": "Availability Time Slots",
+    "listingBookings.availabilitySlotsDesc":
+      "Manage when candidates can book viewings for your property.",
+    "listingBookings.addTimeSlot": "Add Time Slot",
+    "listingBookings.noTimeSlots": "No time slots available",
+    "listingBookings.noTimeSlotsDesc":
+      "Add availability slots to let candidates book viewings.",
+    "listingBookings.addFirstTimeSlot": "Add First Time Slot",
+    "listingBookings.booked": "Booked",
+    "listingBookings.available": "Available",
+    "listingBookings.edit": "Edit",
+    "listingBookings.delete": "Delete",
+    "listingBookings.bookingConfirmed": "Booking confirmed",
+    "listingBookings.bookingDeclined": "Booking declined",
+    "listingBookings.updateFailed": "Failed to update booking",
+    "listingBookings.cancelConfirm":
+      "Are you sure you want to cancel this booking?",
+    "listingBookings.bookingCancelled": "Booking cancelled",
+    "listingBookings.cancelFailed": "Failed to cancel booking",
+    "listingBookings.deleteSlotConfirm":
+      "Are you sure you want to delete this time slot?",
+    "listingBookings.slotDeleted": "Time slot deleted",
+    "listingBookings.deleteSlotFailed": "Failed to delete time slot",
+    "listingBookings.errorLoading": "Failed to load booking data",
+
+    // Listing Verification
+    "verification.title": "Property Verification",
+    "verification.subtitle":
+      "Verify your property ownership to build trust with potential tenants",
+    "verification.back": "Back",
+    "verification.authRequired": "Authentication Required",
+    "verification.signIn": "sign in",
+    "verification.authRequiredDesc":
+      "Please {link} to access verification.",
+    "verification.accessDenied": "Access Denied",
+    "verification.accessDeniedDesc":
+      "Only landlords can access the verification page.",
+    "verification.listingNotFound": "Listing Not Found",
+    "verification.listingNotFoundDesc":
+      "The listing you're looking for doesn't exist or has been removed.",
+
+    // Verification Upload
+    "verification.docType.utilityBill": "Utility Bill",
+    "verification.docType.titleDeed": "Title Deed",
+    "verification.docType.leaseAgreement": "Lease Agreement",
+    "verification.docType.propertyTax": "Property Tax Document",
+    "verification.docType.other": "Other Document",
+    "verification.docTypeDesc.utilityBill":
+      "Recent utility bill (electricity, water, gas) showing property address",
+    "verification.docTypeDesc.titleDeed":
+      "Official property title deed or ownership certificate",
+    "verification.docTypeDesc.leaseAgreement":
+      "Signed lease agreement if you are renting out the property",
+    "verification.docTypeDesc.propertyTax":
+      "Property tax statement or receipt",
+    "verification.docTypeDesc.other":
+      "Any other relevant ownership documentation",
+    "verification.status.pending": "Pending Review",
+    "verification.status.pendingDesc":
+      "Your documents are being reviewed by our team.",
+    "verification.status.approved": "Approved",
+    "verification.status.approvedDesc":
+      "Your property has been verified successfully.",
+    "verification.status.rejected": "Rejected",
+    "verification.status.rejectedDesc":
+      "Your verification was rejected. Please review the feedback and resubmit.",
+    "verification.history": "Verification History",
+    "verification.docUploaded": "Document uploaded successfully",
+    "verification.uploadFailed": "Failed to upload document",
+    "verification.docDeleted": "Document deleted successfully",
+    "verification.deleteFailed": "Failed to delete document",
+    "verification.errorTitle": "Error",
+    "verification.errorLoadingStatus":
+      "Failed to load verification status. Please try again.",
+    "verification.retry": "Retry",
+    "verification.statusTitle": "Verification Status",
+    "verification.propertyLabel": "Property: {title}",
+    "verification.resubmitAvailable": "Resubmission Available",
+    "verification.resubmitDesc":
+      "You can upload new documents to resubmit your verification request. Please review the rejection notes above and ensure your new documents meet the requirements.",
+    "verification.uploadTitle": "Upload Verification Document",
+    "verification.uploadDesc":
+      "Upload a document to verify your property ownership or authorization",
+    "verification.docRequirements": "Document Requirements",
+    "verification.req1":
+      "Document must clearly show the property address",
+    "verification.req2":
+      "Your name must match your account registration",
+    "verification.req3":
+      "Document should be dated within the last 3 months (for utility bills)",
+    "verification.req4":
+      "Accepted formats: PDF, JPEG, PNG, WebP (max 10MB)",
+    "verification.docTypeLabel": "Document Type",
+    "verification.dropHere": "Drop your file here",
+    "verification.dragDrop": "Drag & drop your file here",
+    "verification.orClickBrowse": "or click to browse",
+    "verification.acceptedFormatsInfo":
+      "PDF, JPEG, PNG, or WebP up to 10MB",
+    "verification.uploading": "Uploading... {progress}%",
+    "verification.uploadingButton": "Uploading...",
+    "verification.uploadButton": "Upload Document",
+    "verification.uploadedDocs": "Uploaded Documents",
+    "verification.docCount": "{count} document(s) uploaded",
+    "verification.view": "View",
+    "verification.invalidFileType":
+      "Invalid file type. Please upload a PDF, JPEG, PNG, or WebP file.",
+    "verification.fileTooLarge":
+      "File size exceeds {size}. Please upload a smaller file.",
+
+    // Booking Dialog
+    "bookingDialog.title": "Request Viewing",
+    "bookingDialog.noSlotsAvailable":
+      "No availability slots available for this property. Please check back later or contact the landlord directly.",
+    "bookingDialog.selectDate": "Select Date",
+    "bookingDialog.selectTimeSlot": "Select Time Slot",
+    "bookingDialog.noSlotsOnDate": "No slots available on this date",
+    "bookingDialog.selectDateFirst": "Please select a date first",
+    "bookingDialog.requestViewing": "Request Viewing",
+    "bookingDialog.failedLoadSlots":
+      "Failed to load availability slots",
+    "bookingDialog.selectSlot": "Please select a time slot",
+    "bookingDialog.sent": "Booking request sent",
+    "bookingDialog.failed": "Failed to create booking",
+
+    // Not Found
+    "notFound.title": "404",
+    "notFound.subtitle": "Oops! Page not found",
+    "notFound.returnHome": "Return to Home",
+
+    // Currency
+    "common.pricePerMonth": "€{price}/month",
+    "common.perSqm": "€{price}/m²",
   },
   el: {
     // Navigation
@@ -1307,103 +1499,216 @@ export const translations = {
       "Αποτυχία φόρτωσης διαστημάτων διαθεσιμότητας",
 
     // Bookings
-    "bookings.title": "My Bookings",
-    "bookings.noBookings": "No bookings yet",
-    "bookings.noBookingsDesc": "When you book a viewing, it will appear here.",
-    "bookings.browseListings": "Browse Listings",
-    "bookings.errorLoading": "Failed to load bookings",
-    "bookings.cancelConfirm": "Are you sure you want to cancel this booking?",
-    "bookings.cancelled": "Booking cancelled",
-    "bookings.cancelFailed": "Failed to cancel booking",
-    "bookings.viewDetails": "View Details",
-    "bookings.cancel": "Cancel",
-    "bookings.pending": "Pending",
-    "bookings.confirmed": "Confirmed",
-    "bookings.declined": "Declined",
-    "bookings.cancelledStatus": "Cancelled",
-    "bookings.unknownListing": "Unknown Listing",
-    "bookings.joinVideoCall": "Join Video Call",
+    "bookings.title": "Οι Κρατήσεις μου",
+    "bookings.noBookings": "Δεν υπάρχουν κρατήσεις ακόμα",
+    "bookings.noBookingsDesc":
+      "Όταν κλείσετε μια επίσκεψη, θα εμφανίζεται εδώ.",
+    "bookings.browseListings": "Περιήγηση Καταχωρήσεων",
+    "bookings.errorLoading": "Αποτυχία φόρτωσης κρατήσεων",
+    "bookings.cancelConfirm":
+      "Είστε σίγουροι ότι θέλετε να ακυρώσετε αυτή τη κράτηση;",
+    "bookings.cancelled": "Η κράτηση ακυρώθηκε",
+    "bookings.cancelFailed": "Αποτυχία ακύρωσης κράτησης",
+    "bookings.viewDetails": "Προβολή Λεπτομερειών",
+    "bookings.cancel": "Ακύρωση",
+    "bookings.pending": "Εκκρεμεί",
+    "bookings.confirmed": "Επιβεβαιωμένη",
+    "bookings.declined": "Απορριφθείσα",
+    "bookings.cancelledStatus": "Ακυρωμένη",
+    "bookings.unknownListing": "Άγνωστη Καταχώρηση",
+    "bookings.joinVideoCall": "Συμμετοχή σε Βιντεοκλήση",
 
     // Booking Detail
-    "bookingDetail.title": "Booking Details",
-    "bookingDetail.errorLoading": "Failed to load booking details",
-    "bookingDetail.notFound": "Booking not found",
-    "bookingDetail.backToBookings": "Back to Bookings",
-    "bookingDetail.back": "Back",
-    "bookingDetail.viewingSchedule": "Viewing Schedule",
-    "bookingDetail.dateAndTime": "Date & Time",
-    "bookingDetail.joinVideoCall": "Join Video Call",
-    "bookingDetail.actions": "Actions",
+    "bookingDetail.title": "Στοιχεία Κράτησης",
+    "bookingDetail.errorLoading":
+      "Αποτυχία φόρτωσης στοιχείων κράτησης",
+    "bookingDetail.notFound": "Η κράτηση δεν βρέθηκε",
+    "bookingDetail.backToBookings": "Πίσω στις Κρατήσεις",
+    "bookingDetail.back": "Πίσω",
+    "bookingDetail.viewingSchedule": "Πρόγραμμα Επίσκεψης",
+    "bookingDetail.dateAndTime": "Ημερομηνία & Ώρα",
+    "bookingDetail.joinVideoCall": "Συμμετοχή σε Βιντεοκλήση",
+    "bookingDetail.actions": "Ενέργειες",
     "bookingDetail.reviewRequest":
-      "Review this viewing request and take action.",
-    "bookingDetail.confirmBooking": "Confirm Booking",
-    "bookingDetail.declineBooking": "Decline Booking",
-    "bookingDetail.cancelBooking": "Cancel Booking",
-    "bookingDetail.bookingConfirmed": "Booking confirmed",
-    "bookingDetail.bookingDeclined": "Booking declined",
-    "bookingDetail.updateFailed": "Failed to update booking",
+      "Εξετάστε αυτό το αίτημα επίσκεψης και αναλάβετε δράση.",
+    "bookingDetail.confirmBooking": "Επιβεβαίωση Κράτησης",
+    "bookingDetail.declineBooking": "Απόρριψη Κράτησης",
+    "bookingDetail.cancelBooking": "Ακύρωση Κράτησης",
+    "bookingDetail.bookingConfirmed": "Η κράτηση επιβεβαιώθηκε",
+    "bookingDetail.bookingDeclined": "Η κράτηση απορρίφθηκε",
+    "bookingDetail.updateFailed": "Αποτυχία ενημέρωσης κράτησης",
     "bookingDetail.cancelConfirm":
-      "Are you sure you want to cancel this booking?",
-    "bookingDetail.bookingCancelled": "Booking cancelled",
-    "bookingDetail.cancelFailed": "Failed to cancel booking",
+      "Είστε σίγουροι ότι θέλετε να ακυρώσετε αυτή τη κράτηση;",
+    "bookingDetail.bookingCancelled": "Η κράτηση ακυρώθηκε",
+    "bookingDetail.cancelFailed": "Αποτυχία ακύρωσης κράτησης",
+    "bookingDetail.unknownListing": "Άγνωστη Καταχώρηση",
+    "bookingDetail.noKeepIt": "Όχι, κρατήστε το",
+    "bookingDetail.yesCancel": "Ναι, ακύρωση κράτησης",
 
     // Listing Bookings
-    "listingBookings.manageBookings": "Manage Bookings",
-    "listingBookings.backToListing": "Back to Listing",
-    "listingBookings.listingNotFound": "Listing not found",
-    "listingBookings.backToMyListings": "Back to My Listings",
-    "listingBookings.bookingsTab": "Bookings",
-    "listingBookings.timeSlotsTab": "Time Slots",
-    "listingBookings.noBookings": "No bookings yet",
+    "listingBookings.manageBookings": "Διαχείριση Κρατήσεων",
+    "listingBookings.backToListing": "Πίσω στην Καταχώρηση",
+    "listingBookings.listingNotFound": "Η καταχώρηση δεν βρέθηκε",
+    "listingBookings.backToMyListings":
+      "Πίσω στις Καταχωρήσεις μου",
+    "listingBookings.bookingsTab": "Κρατήσεις",
+    "listingBookings.timeSlotsTab": "Χρονικά Διαστήματα",
+    "listingBookings.noBookings": "Δεν υπάρχουν κρατήσεις ακόμα",
     "listingBookings.noBookingsDesc":
-      "When candidates book viewings, they will appear here.",
-    "listingBookings.candidateId": "Candidate ID",
-    "listingBookings.accept": "Accept",
-    "listingBookings.decline": "Decline",
-    "listingBookings.availabilitySlots": "Availability Time Slots",
+      "Όταν οι υποψήφιοι κλείνουν επισκέψεις, θα εμφανίζονται εδώ.",
+    "listingBookings.candidateId": "Αριθμός Υποψηφίου",
+    "listingBookings.accept": "Αποδοχή",
+    "listingBookings.decline": "Απόρριψη",
+    "listingBookings.availabilitySlots":
+      "Διαθέσιμα Χρονικά Διαστήματα",
     "listingBookings.availabilitySlotsDesc":
-      "Manage when candidates can book viewings for your property.",
-    "listingBookings.addTimeSlot": "Add Time Slot",
-    "listingBookings.noTimeSlots": "No time slots available",
+      "Διαχειριστείτε πότε οι υποψήφιοι μπορούν να κλείσουν επισκέψεις",
+    "listingBookings.addTimeSlot": "Προσθήκη Διαστήματος",
+    "listingBookings.noTimeSlots":
+      "Δεν υπάρχουν διαθέσιμα χρονικά διαστήματα",
     "listingBookings.noTimeSlotsDesc":
-      "Add availability slots to let candidates book viewings.",
-    "listingBookings.addFirstTimeSlot": "Add First Time Slot",
-    "listingBookings.booked": "Booked",
-    "listingBookings.available": "Available",
-    "listingBookings.edit": "Edit",
-    "listingBookings.delete": "Delete",
-    "listingBookings.bookingConfirmed": "Booking confirmed",
-    "listingBookings.bookingDeclined": "Booking declined",
-    "listingBookings.updateFailed": "Failed to update booking",
+      "Προσθέστε διαθέσιμα διαστήματα για να επιτρέψετε στους υποψηφίους να κλείσουν επισκέψεις.",
+    "listingBookings.addFirstTimeSlot": "Προσθήκη Πρώτου Διαστήματος",
+    "listingBookings.booked": "Κρατημένο",
+    "listingBookings.available": "Διαθέσιμο",
+    "listingBookings.edit": "Επεξεργασία",
+    "listingBookings.delete": "Διαγραφή",
+    "listingBookings.bookingConfirmed": "Η κράτηση επιβεβαιώθηκε",
+    "listingBookings.bookingDeclined": "Η κράτηση απορρίφθηκε",
+    "listingBookings.updateFailed":
+      "Αποτυχία ενημέρωσης κράτησης",
     "listingBookings.cancelConfirm":
-      "Are you sure you want to cancel this booking?",
-    "listingBookings.bookingCancelled": "Booking cancelled",
-    "listingBookings.cancelFailed": "Failed to cancel booking",
+      "Είστε σίγουροι ότι θέλετε να ακυρώσετε αυτή τη κράτηση;",
+    "listingBookings.bookingCancelled": "Η κράτηση ακυρώθηκε",
+    "listingBookings.cancelFailed": "Αποτυχία ακύρωσης κράτησης",
     "listingBookings.deleteSlotConfirm":
-      "Are you sure you want to delete this time slot?",
-    "listingBookings.slotDeleted": "Time slot deleted",
-    "listingBookings.deleteSlotFailed": "Failed to delete time slot",
-    "listingBookings.errorLoading": "Failed to load booking data",
+      "Είστε σίγουροι ότι θέλετε να διαγράψετε αυτό το χρονικό διάστημα;",
+    "listingBookings.slotDeleted": "Το χρονικό διάστημα διαγράφηκε",
+    "listingBookings.deleteSlotFailed":
+      "Αποτυχία διαγραφής διαστήματος",
+    "listingBookings.errorLoading":
+      "Αποτυχία φόρτωσης δεδομένων κράτησης",
 
     // Listing Verification
-    "verification.title": "Property Verification",
+    "verification.title": "Επαλήθευση Ακινήτου",
     "verification.subtitle":
-      "Verify your property ownership to build trust with potential tenants",
-    "verification.back": "Back",
-    "verification.authRequired": "Authentication Required",
-    "verification.signIn": "sign in",
-    "verification.authRequiredDesc": "Please {link} to access verification.",
-    "verification.accessDenied": "Access Denied",
+      "Επαληθεύστε την ιδιοκτησία του ακινήτου σας για να χτίσετε εμπιστοσύνη με πιθανούς ενοικιαστές",
+    "verification.back": "Πίσω",
+    "verification.authRequired": "Απαιτείται Ταυτοποίηση",
+    "verification.signIn": "συνδεθείτε",
+    "verification.authRequiredDesc":
+      "Παρακαλώ {link} για πρόσβαση στην επαλήθευση.",
+    "verification.accessDenied": "Δεν Επιτρέπεται η Πρόσβαση",
     "verification.accessDeniedDesc":
-      "Only landlords can access the verification page.",
-    "verification.listingNotFound": "Listing Not Found",
+      "Μόνο ιδιοκτήτες ακινήτων μπορούν να αποκτήσουν πρόσβαση στη σελίδα επαλήθευσης.",
+    "verification.listingNotFound": "Η Καταχώρηση δεν Βρέθηκε",
     "verification.listingNotFoundDesc":
-      "The listing you're looking for doesn't exist or has been removed.",
+      "Η καταχώρηση που ψάχνετε δεν υπάρχει ή έχει αφαιρεθεί.",
+
+    // Verification Upload
+    "verification.docType.utilityBill":
+      "Λογαριασμός Κοινής Ωφέλειας",
+    "verification.docType.titleDeed": "Τίτλος Ιδιοκτησίας",
+    "verification.docType.leaseAgreement": "Σύμβαση Ενοικίασης",
+    "verification.docType.propertyTax": "Ενδειξη Φόρου Ακινήτου",
+    "verification.docType.other": "Άλλο Έγγραφο",
+    "verification.docTypeDesc.utilityBill":
+      "Πρόσφατος λογαριασμός κοινής ωφέλειας (ηλεκτρικού, νερού, αερίου) με τη διεύθυνση του ακινήτου",
+    "verification.docTypeDesc.titleDeed":
+      "Επίσημος τίτλος ιδιοκτησίας ή πιστοποιητικό κυριότητας",
+    "verification.docTypeDesc.leaseAgreement":
+      "Υπογεγραμμένη σύμβαση ενοικίασης αν ενοικιάζετε το ακίνητο",
+    "verification.docTypeDesc.propertyTax":
+      "Εκκαθαριστικό ή απόδειξη πληρωμής φόρου ακινήτου",
+    "verification.docTypeDesc.other":
+      "Οποιοδήποτε άλλο σχετικό έγγραφο ιδιοκτησίας",
+    "verification.status.pending": "Εκκρεμεί Έλεγχος",
+    "verification.status.pendingDesc":
+      "Τα έγγραφά σας ελέγχονται από την ομάδα μας.",
+    "verification.status.approved": "Εγκεκριμένο",
+    "verification.status.approvedDesc":
+      "Το ακίνητό σας έχει επαληθευτεί επιτυχώς.",
+    "verification.status.rejected": "Απορριφθέν",
+    "verification.status.rejectedDesc":
+      "Η επαλήθευση σας απορρίφθηκε. Ελέγξτε τα σχόλια και υποβάλετε ξανά.",
+    "verification.history": "Ιστορικό Επαλήθευσης",
+    "verification.docUploaded":
+      "Το έγγραφο ανέβηκε επιτυχώς",
+    "verification.uploadFailed":
+      "Αποτυχία ανεβάσματος εγγράφου",
+    "verification.docDeleted":
+      "Το έγγραφο διαγράφηκε επιτυχώς",
+    "verification.deleteFailed":
+      "Αποτυχία διαγραφής εγγράφου",
+    "verification.errorTitle": "Σφάλμα",
+    "verification.errorLoadingStatus":
+      "Αποτυχία φόρτωσης κατάστασης επαλήθευσης. Δοκιμάστε ξανά.",
+    "verification.retry": "Επανάληψη",
+    "verification.statusTitle": "Κατάσταση Επαλήθευσης",
+    "verification.propertyLabel": "Ακίνητο: {title}",
+    "verification.resubmitAvailable": "Δυνατότητα Επαναυποβολής",
+    "verification.resubmitDesc":
+      "Μπορείτε να ανεβάσετε νέα έγγραφα για να επαναυποβάλετε το αίτημα επαλήθευσης. Ελέγξτε τα σχόλια απόρριψης και βεβαιωθείτε ότι τα νέα σας έγγραφα πληρούν τις απαιτήσεις.",
+    "verification.uploadTitle":
+      "Ανέβασμα Εγγράφου Επαλήθευσης",
+    "verification.uploadDesc":
+      "Ανεβάστε ένα έγγραφο για να επαληθεύσετε την ιδιοκτησία ή την εξουσιοδότησή σας",
+    "verification.docRequirements":
+      "Απαιτήσεις Εγγράφων",
+    "verification.req1":
+      "Το έγγραφο πρέπει να δείχνει ξεκάθαρα τη διεύθυνση του ακινήτου",
+    "verification.req2":
+      "Το όνομά σας πρέπει να ταιριάζει με την εγγραφή του λογαριασμού σας",
+    "verification.req3":
+      "Το έγγραφο πρέπει να είναι χρονολογημένο μέσα στους τελευταίους 3 μήνες (για λογαριασμούς κοινής ωφέλειας)",
+    "verification.req4":
+      "Αποδεκτές μορφές: PDF, JPEG, PNG, WebP (μέχρι 10MB)",
+    "verification.docTypeLabel": "Τύπος Εγγράφου",
+    "verification.dropHere": "Αφήστε το αρχείο εδώ",
+    "verification.dragDrop":
+      "Σύρετε & αφήστε το αρχείο σας εδώ",
+    "verification.orClickBrowse": "ή κάντε κλικ για αναζήτηση",
+    "verification.acceptedFormatsInfo":
+      "PDF, JPEG, PNG ή WebP μέχρι 10MB",
+    "verification.uploading": "Ανέβασμα... {progress}%",
+    "verification.uploadingButton": "Ανέβασμα...",
+    "verification.uploadButton": "Ανέβασμα Εγγράφου",
+    "verification.uploadedDocs": "Ανεβασμένα Έγγραφα",
+    "verification.docCount":
+      "{count} έγγραφο(α) ανεβασμένα",
+    "verification.view": "Προβολή",
+    "verification.invalidFileType":
+      "Μη έγκυρος τύπος αρχείου. Ανεβάστε PDF, JPEG, PNG ή WebP.",
+    "verification.fileTooLarge":
+      "Το μέγεθος του αρχείου ξεπερνά τα {size}. Ανεβάστε ένα μικρότερο αρχείο.",
+
+    // Booking Dialog
+    "bookingDialog.title": "Αίτημα Επίσκεψης",
+    "bookingDialog.noSlotsAvailable":
+      "Δεν υπάρχουν διαθέσιμα χρονικά διαστήματα για αυτό το ακίνητο. Ελέγξτε ξανά αργότερα ή επικοινωνήστε απευθείας με τον ιδιοκτήτη.",
+    "bookingDialog.selectDate": "Επιλογή Ημερομηνίας",
+    "bookingDialog.selectTimeSlot":
+      "Επιλογή Χρονικού Διαστήματος",
+    "bookingDialog.noSlotsOnDate":
+      "Δεν υπάρχουν διαθέσιμα διαστήματα σε αυτή την ημερομηνία",
+    "bookingDialog.selectDateFirst":
+      "Παρακαλώ επιλέξτε ημερομηνία πρώτα",
+    "bookingDialog.requestViewing": "Αίτημα Επίσκεψης",
+    "bookingDialog.failedLoadSlots":
+      "Αποτυχία φόρτωσης διαθέσιμων διαστημάτων",
+    "bookingDialog.selectSlot":
+      "Παρακαλώ επιλέξτε χρονικό διάστημα",
+    "bookingDialog.sent": "Το αίτημα κράτησης στάλθηκε",
+    "bookingDialog.failed": "Αποτυχία δημιουργίας κράτησης",
 
     // Not Found
     "notFound.title": "404",
-    "notFound.subtitle": "Oops! Page not found",
-    "notFound.returnHome": "Return to Home",
+    "notFound.subtitle": "Ωχ! Η σελίδα δεν βρέθηκε",
+    "notFound.returnHome": "Επιστροφή στην Αρχική",
+
+    // Currency
+    "common.pricePerMonth": "{price}€/μήνα",
+    "common.perSqm": "{price}€/τ.μ.",
   },
 };
 

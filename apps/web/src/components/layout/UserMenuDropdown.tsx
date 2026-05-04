@@ -1,5 +1,12 @@
 import { Link, useNavigate } from "react-router-dom";
-import { User, LogOut, Home, Heart, ChevronDown } from "lucide-react";
+import {
+  User,
+  LogOut,
+  Home,
+  Heart,
+  ChevronDown,
+  CalendarClock,
+} from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -81,6 +88,12 @@ export function UserMenuDropdown() {
           <Link to="/profile" className="flex items-center cursor-pointer">
             <User className="mr-2 h-4 w-4" />
             {t("userMenu.profile")}
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link to="/bookings" className="flex items-center cursor-pointer">
+            <CalendarClock className="mr-2 h-4 w-4" />
+            {t("profile.myBookings")}
           </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
