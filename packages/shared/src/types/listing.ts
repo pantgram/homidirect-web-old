@@ -30,6 +30,9 @@ export interface Listing {
   dateBuilt: number;
   views_count: number;
   country?: string;
+  address?: string;
+  latitude?: number;
+  longitude?: number;
   propertyType: PropertyType;
   available: boolean;
   landlordId: number;
@@ -67,6 +70,9 @@ export interface CreateListingRequest {
   dateAvailable?: string;
   dateBuilt?: number;
   country?: string;
+  address?: string;
+  latitude?: number;
+  longitude?: number;
   propertyType: PropertyType;
   available?: boolean;
   landlordPhone?: string;

@@ -4,7 +4,7 @@ import {
   getCountries,
   getCountryCode,
   type LocationResult,
-} from "@/api/geoapify";
+} from "@/api/geocoding";
 
 interface UseLocationSearchOptions {
   countryCode?: string;

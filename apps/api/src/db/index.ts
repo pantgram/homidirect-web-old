@@ -4,7 +4,7 @@ import { bookings } from "modules/bookings/bookings.model";
 import { listingImages } from "modules/listingImages/listingImages.model";
 import { listings } from "modules/listings/listings.model";
 import { interestedListings } from "models/interestedListings.model";
-import { geoapifyCache } from "modules/geoapify/geoapify.model";
+import { geocodingCache } from "modules/geocoding/geocoding.model";
 import { availabilitySlots } from "modules/availabilitySlots/availabilitySlots.model";
 import { conversations } from "modules/conversations/conversations.model";
 import { featuredListingPurchases } from "modules/featuredListingPurchases/featuredListingPurchases.model";
@@ -30,7 +30,7 @@ export const schema = {
   listingImages,
   listings,
   interestedListings,
-  geoapifyCache,
+  geocodingCache,
   availabilitySlots,
   conversations,
   featuredListingPurchases,

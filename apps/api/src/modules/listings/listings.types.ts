@@ -8,6 +8,9 @@ export type ListingResponse = Pick<
   | "price"
   | "city"
   | "postalCode"
+  | "address"
+  | "latitude"
+  | "longitude"
   | "floor"
   | "levels"
   | "kitchens"
@@ -88,6 +91,9 @@ export type CreateListingDTO = {
   dateAvailable: string;
   dateBuilt: number;
   country: string;
+  address?: string;
+  latitude?: number;
+  longitude?: number;
   propertyType: "apartment" | "house" | "studio" | "room";
   available: boolean;
   landlordId: number;

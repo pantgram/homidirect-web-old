@@ -23,7 +23,6 @@ export const config = {
     smtpPass: process.env.SMTP_PASS,
     emailFrom: process.env.EMAIL_FROM || "donotreply@homidirect.com",
   },
-  geoapifyApiKey: process.env.GEOAPIFY_API_KEY,
   google: {
     clientId: process.env.GOOGLE_CLIENT_ID!,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET!,

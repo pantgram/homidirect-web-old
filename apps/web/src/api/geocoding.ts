@@ -3,6 +3,7 @@ import { apiClient } from "./client";
 export interface LocationResult {
   placeId: string;
   formatted: string;
+  address: string;
   city: string;
   country: string;
   suburb?: string;
@@ -10,6 +11,15 @@ export interface LocationResult {
   quarter?: string;
   postalCode?: string;
   resultType: string;
+  lat: number;
+  lon: number;
+}
+
+export interface ReverseGeocodeResult {
+  address: string;
+  city: string;
+  country: string;
+  postalCode?: string;
   lat: number;
   lon: number;
 }
@@ -38,13 +48,36 @@ export async function searchLocations(
     }
 
     const response = await apiClient.get<{ results: LocationResult[] }>(
-      `/geoapify/search?${params}`
+      `/geocoding/search?${params}`
     );
 
     return response.data.results || [];
   } catch (error) {
     console.error("Error fetching locations:", error);
     return [];
+  }
+}
+
+export async function reverseGeocode(
+  lat: number,
+  lon: number,
+  lang?: string
+): Promise<ReverseGeocodeResult | null> {
+  try {
+    const params = new URLSearchParams({
+      lat: String(lat),
+      lon: String(lon),
+      lang: lang || "el",
+    });
+
+    const response = await apiClient.get<{ result: ReverseGeocodeResult | null }>(
+      `/geocoding/reverse?${params}`
+    );
+
+    return response.data.result;
+  } catch (error) {
+    console.error("Error reverse geocoding:", error);
+    return null;
   }
 }
 

@@ -16,7 +16,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { useLocationSearch, useCountrySearch } from "@/hooks/useLocationSearch";
-import type { LocationResult } from "@/api/geoapify";
+import type { LocationResult } from "@/api/geocoding";
 
 interface LocationSearchProps {
   value: string;
@@ -36,8 +36,8 @@ export function LocationSearch({
   value,
   onValueChange,
   onLocationSelect,
-  placeholder = "Select location...",
-  searchPlaceholder = "Search cities, neighborhoods...",
+  placeholder = "Search address...",
+  searchPlaceholder = "Search address...",
   emptyMessage = "No locations found.",
   disabled = false,
   error = false,
@@ -54,8 +54,7 @@ export function LocationSearch({
   });
 
   const handleSelect = (location: LocationResult) => {
-    const displayValue = location.city || location.formatted.split(",")[0];
-    onValueChange(displayValue);
+    onValueChange(location.formatted);
     onLocationSelect?.(location);
     setOpen(false);
     setQuery("");
@@ -68,39 +67,6 @@ export function LocationSearch({
     }
   };
 
-  const getLocationDisplay = (location: LocationResult) => {
-    const parts: string[] = [];
-
-    if (location.neighbourhood || location.quarter || location.suburb) {
-      parts.push(location.neighbourhood || location.quarter || location.suburb || "");
-    }
-
-    if (location.city) {
-      parts.push(location.city);
-    }
-
-    if (location.country && !parts.includes(location.country)) {
-      parts.push(location.country);
-    }
-
-    return parts.filter(Boolean).join(", ") || location.formatted;
-  };
-
-  const getLocationSubtitle = (location: LocationResult) => {
-    const type = location.resultType;
-    const typeLabels: Record<string, string> = {
-      city: lang === "el" ? "Πόλη" : "City",
-      suburb: lang === "el" ? "Περιοχή" : "Suburb",
-      neighbourhood: lang === "el" ? "Γειτονιά" : "Neighborhood",
-      quarter: lang === "el" ? "Συνοικία" : "Quarter",
-      village: lang === "el" ? "Χωριό" : "Village",
-      town: lang === "el" ? "Κωμόπολη" : "Town",
-      locality: lang === "el" ? "Τοποθεσία" : "Locality",
-      municipality: lang === "el" ? "Δήμος" : "Municipality",
-    };
-    return typeLabels[type] || type;
-  };
-
   return (
     <Popover open={open} onOpenChange={handleOpenChange}>
       <PopoverTrigger asChild>
@@ -110,16 +76,16 @@ export function LocationSearch({
           aria-expanded={open}
           disabled={disabled}
           className={cn(
-            "w-full justify-between font-normal h-10",
+            "w-full justify-between font-normal h-auto min-h-10",
             !value && "text-muted-foreground",
             error && "border-destructive",
             className
           )}
         >
           {value ? (
-            <span className="flex items-center">
-              <MapPin className="mr-2 h-4 w-4 text-muted-foreground" />
-              {value}
+            <span className="flex items-center text-left">
+              <MapPin className="mr-2 h-4 w-4 shrink-0 text-muted-foreground" />
+              <span className="truncate">{value}</span>
             </span>
           ) : (
             placeholder
@@ -128,8 +94,9 @@ export function LocationSearch({
         </Button>
       </PopoverTrigger>
       <PopoverContent
-        className="w-[--radix-popover-trigger-width] p-0"
+        className="p-0"
         align="start"
+        style={{ minWidth: "350px" }}
       >
         <Command shouldFilter={false}>
           <CommandInput
@@ -166,18 +133,14 @@ export function LocationSearch({
                       <Check
                         className={cn(
                           "mr-2 h-4 w-4 shrink-0",
-                          value === location.city ||
-                            value === location.formatted.split(",")[0]
+                          value === location.formatted
                             ? "opacity-100"
                             : "opacity-0"
                         )}
                       />
                       <div className="flex flex-col flex-1 min-w-0">
                         <span className="truncate font-medium">
-                          {getLocationDisplay(location)}
-                        </span>
-                        <span className="text-xs text-muted-foreground">
-                          {getLocationSubtitle(location)}
+                          {location.formatted}
                         </span>
                       </div>
                     </div>

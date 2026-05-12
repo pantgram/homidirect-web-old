@@ -45,6 +45,12 @@ export const createListingSchema = z.object({
     .min(1, "Country is required")
     .max(100, "Country must not exceed 100 characters")
     .optional(),
+  address: z
+    .string()
+    .max(500, "Address must not exceed 500 characters")
+    .optional(),
+  latitude: z.number().min(-90).max(90).optional(),
+  longitude: z.number().min(-180).max(180).optional(),
   propertyType: z.enum(["apartment", "house", "studio", "room"], {
     errorMap: () => ({
       message: "Property type must be one of: apartment, house, studio, room",
@@ -99,6 +105,12 @@ export const updateListingSchema = z.object({
     .min(1, "Country is required")
     .max(100, "Country must not exceed 100 characters")
     .optional(),
+  address: z
+    .string()
+    .max(500, "Address must not exceed 500 characters")
+    .optional(),
+  latitude: z.number().min(-90).max(90).optional(),
+  longitude: z.number().min(-180).max(180).optional(),
   propertyType: z
     .enum(["apartment", "house", "studio", "room"], {
       errorMap: () => ({

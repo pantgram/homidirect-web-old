@@ -27,20 +27,24 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { ImageUpload } from "@/components/listing/ImageUpload";
 import { useCreateListing } from "@/hooks/useListings";
-import { LocationSearch, CountrySearch } from "@/components/ui/location-search";
+import { LocationSearch } from "@/components/ui/location-search";
+import { LocationMap } from "@/components/ui/location-map";
+import { reverseGeocode } from "@/api/geocoding";
 import type { PendingImage } from "@/api/listings";
 import type { PropertyType, CreateListingRequest } from "@/api";
-import type { LocationResult } from "@/api/geoapify";
+import type { LocationResult } from "@/api/geocoding";
 
 interface ListingFormData {
   title: string;
   description: string;
   propertyType: PropertyType | "";
   price: string;
+  address: string;
   city: string;
   postalCode: string;
   country: string;
-  countryCode: string;
+  latitude: number | null;
+  longitude: number | null;
   bedrooms: string;
   bathrooms: string;
   area: string;
@@ -51,10 +55,12 @@ const initialFormData: ListingFormData = {
   description: "",
   propertyType: "",
   price: "",
+  address: "",
   city: "",
   postalCode: "",
-  country: "Ελλάδα",
-  countryCode: "gr",
+  country: "",
+  latitude: null,
+  longitude: null,
   bedrooms: "",
   bathrooms: "",
   area: "",
@@ -120,8 +126,8 @@ const ListProperty = () => {
     if (!formData.price || parseFloat(formData.price) <= 0) {
       errors.price = t("listForm.validation.priceRequired");
     }
-    if (!formData.city.trim()) {
-      errors.city = t("listForm.validation.cityRequired");
+    if (!formData.address.trim()) {
+      errors.address = t("listForm.validation.addressRequired");
     }
     if (!formData.bedrooms) {
       errors.bedrooms = t("listForm.validation.bedroomsRequired");
@@ -163,9 +169,12 @@ const ListProperty = () => {
       description: formData.description.trim(),
       propertyType: formData.propertyType as PropertyType,
       price: parseFloat(formData.price),
+      address: formData.address.trim(),
       city: formData.city.trim(),
       postalCode: formData.postalCode.trim() || undefined,
       country: formData.country.trim() || "Greece",
+      latitude: formData.latitude ?? undefined,
+      longitude: formData.longitude ?? undefined,
       bedrooms: parseInt(formData.bedrooms, 10),
       bathrooms: parseInt(formData.bathrooms, 10),
       area: parseFloat(formData.area),
@@ -309,83 +318,68 @@ const ListProperty = () => {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="country">{t("listForm.country")}</Label>
-                    <CountrySearch
-                      value={formData.country}
-                      onValueChange={(value, code) => {
-                        setFormData((prev) => ({
-                          ...prev,
-                          country: value,
-                          countryCode: code || "",
-                          city: "", // Reset city when country changes
-                        }));
-                        if (formErrors.country) {
-                          setFormErrors((prev) => ({
-                            ...prev,
-                            country: undefined,
-                          }));
-                        }
-                      }}
-                      placeholder={t("locationSearch.selectCountry")}
-                      searchPlaceholder={t("locationSearch.searchCountries")}
-                      emptyMessage={t("locationSearch.noCountriesFound")}
-                      error={!!formErrors.country}
-                      lang={language === "el" ? "el" : "en"}
-                    />
-                    {formErrors.country && (
-                      <p className="text-sm text-destructive mt-1">
-                        {formErrors.country}
-                      </p>
-                    )}
-                  </div>
-
-                  <div>
-                    <Label htmlFor="city">{t("listForm.city")}</Label>
-                    <LocationSearch
-                      value={formData.city}
-                      onValueChange={(value) => {
-                        setFormData((prev) => ({ ...prev, city: value }));
-                        if (formErrors.city) {
-                          setFormErrors((prev) => ({
-                            ...prev,
-                            city: undefined,
-                          }));
-                        }
-                      }}
-                      onLocationSelect={(location: LocationResult) => {
-                        if (location.postalCode) {
-                          setFormData((prev) => ({
-                            ...prev,
-                            postalCode: location.postalCode || prev.postalCode,
-                          }));
-                        }
-                      }}
-                      placeholder={t("locationSearch.selectCity")}
-                      searchPlaceholder={t("locationSearch.searchCities")}
-                      emptyMessage={t("locationSearch.noCitiesFound")}
-                      error={!!formErrors.city}
-                      countryCode={formData.countryCode}
-                      lang={language === "el" ? "el" : "en"}
-                    />
-                    {formErrors.city && (
-                      <p className="text-sm text-destructive mt-1">
-                        {formErrors.city}
-                      </p>
-                    )}
-                  </div>
-                </div>
-
                 <div>
-                  <Label htmlFor="postalCode">{t("listForm.postalCode")}</Label>
-                  <Input
-                    id="postalCode"
-                    value={formData.postalCode}
-                    onChange={handleInputChange}
-                    placeholder="10680"
+                  <Label htmlFor="address">{t("listForm.address")}</Label>
+                  <LocationSearch
+                    value={formData.address}
+                    onValueChange={(value) => {
+                      setFormData((prev) => ({ ...prev, address: value }));
+                      if (formErrors.address) {
+                        setFormErrors((prev) => ({
+                          ...prev,
+                          address: undefined,
+                        }));
+                      }
+                    }}
+                    onLocationSelect={(location: LocationResult) => {
+                      setFormData((prev) => ({
+                        ...prev,
+                        address: location.address,
+                        city: location.city,
+                        postalCode: location.postalCode || prev.postalCode,
+                        country: location.country,
+                        latitude: location.lat,
+                        longitude: location.lon,
+                      }));
+                    }}
+                    placeholder={t("locationSearch.searchAddress")}
+                    searchPlaceholder={t("locationSearch.searchAddress")}
+                    emptyMessage={t("locationSearch.noLocationsFound")}
+                    error={!!formErrors.address}
+                    lang={language === "el" ? "el" : "en"}
                   />
+                  {formErrors.address && (
+                    <p className="text-sm text-destructive mt-1">
+                      {formErrors.address}
+                    </p>
+                  )}
                 </div>
+
+                <LocationMap
+                  latitude={formData.latitude}
+                  longitude={formData.longitude}
+                  onLocationChange={async (lat, lon) => {
+                    const result = await reverseGeocode(lat, lon, language === "el" ? "el" : "en");
+                    if (result) {
+                      setFormData((prev) => ({
+                        ...prev,
+                        address: result.address,
+                        city: result.city,
+                        postalCode: result.postalCode || prev.postalCode,
+                        country: result.country,
+                        latitude: result.lat,
+                        longitude: result.lon,
+                      }));
+                    } else {
+                      setFormData((prev) => ({
+                        ...prev,
+                        latitude: lat,
+                        longitude: lon,
+                      }));
+                    }
+                  }}
+                  className="mb-4"
+                />
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>

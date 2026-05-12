@@ -164,6 +164,7 @@ export const translations = {
     "listForm.monthlyRent": "Monthly Rent (EUR)",
     "listForm.city": "City",
     "listForm.cityPlaceholder": "e.g., Athens",
+    "listForm.address": "Address",
     "listForm.postalCode": "Postal Code",
     "listForm.country": "Country",
     "listForm.bedrooms": "Bedrooms",
@@ -196,6 +197,7 @@ export const translations = {
     "listForm.validation.typeRequired": "Property type is required",
     "listForm.validation.priceRequired": "Price must be greater than 0",
     "listForm.validation.cityRequired": "City is required",
+    "listForm.validation.addressRequired": "Address is required",
     "listForm.validation.bedroomsRequired": "Number of bedrooms is required",
     "listForm.validation.bathroomsRequired": "Number of bathrooms is required",
     "listForm.validation.areaRequired": "Area must be greater than 0",
@@ -578,6 +580,8 @@ export const translations = {
     "common.cancel": "Cancel",
 
     // Location Search
+    "locationSearch.searchAddress": "Search address...",
+    "locationSearch.noLocationsFound": "No locations found.",
     "locationSearch.selectCity": "Select city...",
     "locationSearch.searchCities": "Search cities, neighborhoods...",
     "locationSearch.noCitiesFound": "No locations found.",
@@ -988,6 +992,7 @@ export const translations = {
     "listForm.monthlyRent": "Μηνιαίο Ενοίκιο (EUR)",
     "listForm.city": "Πόλη",
     "listForm.cityPlaceholder": "π.χ., Αθήνα",
+    "listForm.address": "Διεύθυνση",
     "listForm.postalCode": "Ταχυδρομικός Κώδικας",
     "listForm.country": "Χώρα",
     "listForm.bedrooms": "Υπνοδωμάτια",
@@ -1022,6 +1027,7 @@ export const translations = {
     "listForm.validation.priceRequired":
       "Η τιμή πρέπει να είναι μεγαλύτερη από 0",
     "listForm.validation.cityRequired": "Η πόλη είναι υποχρεωτική",
+    "listForm.validation.addressRequired": "Η διεύθυνση είναι υποχρεωτική",
     "listForm.validation.bedroomsRequired":
       "Ο αριθμός υπνοδωματίων είναι υποχρεωτικός",
     "listForm.validation.bathroomsRequired":
@@ -1425,6 +1431,8 @@ export const translations = {
     "common.cancel": "Ακύρωση",
 
     // Location Search
+    "locationSearch.searchAddress": "Αναζήτηση διεύθυνσης...",
+    "locationSearch.noLocationsFound": "Δεν βρέθηκαν τοποθεσίες.",
     "locationSearch.selectCity": "Επιλέξτε πόλη...",
     "locationSearch.searchCities": "Αναζήτηση πόλεων, γειτονιών...",
     "locationSearch.noCitiesFound": "Δεν βρέθηκαν τοποθεσίες.",
