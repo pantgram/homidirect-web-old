@@ -1,44 +1,48 @@
-# This docker-compose file is designed to be run from the root of the monorepo.
-# It sets up the development environment for the API service and a PostgreSQL database.
 version: "3.9"
 
 services:
   api:
     build:
-      context: . # The context is the root of the monorepo
-      # The Dockerfile is located in the api service directory
-      dockerfile: apps/api/src/Dockerfile.dev
+      context: ./apps/api
+      dockerfile: Dockerfile
     container_name: homidirect-api-dev
     ports:
-      - "3000:3000"
-    volumes:
-      # Mounts the entire project directory.
-      # Changes on your local machine will be reflected in the container.
-      - .:/app
-      # This volume prevents the node_modules on your host from overwriting
-      # the node_modules installed in the container.
-      - /app/node_modules
+      - "5000:5000"
     env_file:
-      # The .env file should be at the root of the project.
-      - .env
+      - apps/api/.env
     depends_on:
       - db
+      - redis
+    command: uv run uvicorn src.main:app --host 0.0.0.0 --port 5000 --reload
+
+  worker:
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile
+    container_name: homidirect-worker-dev
+    env_file:
+      - apps/api/.env
+    depends_on:
+      - redis
+    command: uv run celery -A src.utils.email.celery_app worker --loglevel=info
 
   db:
     image: postgres:16-alpine
     container_name: homidirect-db-dev
-    # These environment variables configure the PostgreSQL database.
-    # The api service will use these to connect.
     environment:
       POSTGRES_DB: homidirect
       POSTGRES_USER: homidirect
       POSTGRES_PASSWORD: homidirect
     volumes:
-      # This named volume persists the database data across container restarts.
       - pgdata:/var/lib/postgresql/data
     ports:
-      # Exposes the postgres port to the host machine for direct access if needed.
       - "5432:5432"
+
+  redis:
+    image: redis:7-alpine
+    container_name: homidirect-redis-dev
+    ports:
+      - "6379:6379"
 
 volumes:
   pgdata:
