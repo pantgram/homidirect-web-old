@@ -1,13 +1,14 @@
-import sqlalchemy as sa
-from sqlalchemy.orm import Mapped, mapped_column, relationship
-from src.config.database import Base
-from src.models.enums import user_role_enum, user_status_enum, auth_provider_enum
 from typing import TYPE_CHECKING
 
+import sqlalchemy as sa
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+from src.config.database import Base
+from src.models.enums import auth_provider_enum, user_role_enum, user_status_enum
+
 if TYPE_CHECKING:
-    from src.models.listing import Listing
-    from src.models.booking import Booking
     from src.models.interested_listing import InterestedListing
+    from src.models.listing import Listing
 
 
 class User(Base):
@@ -26,7 +27,7 @@ class User(Base):
     password_reset_token: Mapped[str | None] = mapped_column(sa.String(255))
     password_reset_expires: Mapped[sa.datetime | None] = mapped_column(sa.TIMESTAMP)
     created_at: Mapped[sa.datetime] = mapped_column(sa.TIMESTAMP, nullable=False, server_default=sa.func.now())
-    updated_at: Mapped[sa.datetime] = mapped_column(sa.TIMESTAMP, nullable=False, server_default=sa.func.now())
+    updated_at: Mapped[sa.datetime] = mapped_column(sa.TIMESTAMP, nullable=False, server_default=sa.func.now(), onupdate=sa.func.now())
 
     listings: Mapped[list["Listing"]] = relationship("Listing", foreign_keys="[Listing.landlord_id]", back_populates="landlord")
     verified_listings: Mapped[list["Listing"]] = relationship("Listing", foreign_keys="[Listing.verified_by]", back_populates="verified_by_user")

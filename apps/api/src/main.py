@@ -1,13 +1,19 @@
-from datetime import datetime
+import logging
+from datetime import datetime, timezone
+
 from fastapi import FastAPI, Request
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from slowapi import Limiter, _rate_limit_exceeded_handler
-from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
+from slowapi.util import get_remote_address
+
 from src.config.settings import settings
-from src.utils.errors import AppError
 from src.middleware.camel_case import CamelCaseMiddleware
+from src.utils.errors import AppError
+
+logger = logging.getLogger("homidirect")
 
 
 async def _app_error_handler(request: Request, exc: AppError) -> JSONResponse:
@@ -17,9 +23,20 @@ async def _app_error_handler(request: Request, exc: AppError) -> JSONResponse:
     )
 
 
+async def _validation_error_handler(request: Request, exc: RequestValidationError) -> JSONResponse:
+    details = [{"path": ".".join(str(p) for p in err["loc"]), "message": err["msg"]} for err in exc.errors()]
+    return JSONResponse(
+        status_code=422,
+        content={
+            "error": "Validation Error",
+            "message": "Invalid request data",
+            "details": details,
+        },
+    )
+
+
 async def _generic_error_handler(request: Request, exc: Exception) -> JSONResponse:
-    import traceback
-    traceback.print_exc()
+    logger.exception("Unhandled exception")
     return JSONResponse(
         status_code=500,
         content={"error": "Internal Server Error", "message": "An unexpected error occurred"},
@@ -31,6 +48,7 @@ limiter = Limiter(key_func=get_remote_address)
 app = FastAPI(title="HomiDirect API", version="1.0.0")
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+app.add_exception_handler(RequestValidationError, _validation_error_handler)
 app.add_exception_handler(AppError, _app_error_handler)
 app.add_exception_handler(Exception, _generic_error_handler)
 
@@ -45,22 +63,22 @@ app.add_middleware(
 
 from src.routers import (
     auth,
-    google_auth,
-    users,
-    favorites,
-    listings,
-    listing_images,
-    uploads,
-    bookings,
     availability_slots,
-    verification,
+    bookings,
+    favorites,
     geocoding,
+    google_auth,
+    listing_images,
+    listings,
+    uploads,
+    users,
+    verification,
 )
 
 
 @app.get("/health")
 async def health_check():
-    return {"status": "ok", "timestamp": datetime.utcnow().isoformat()}
+    return {"status": "ok", "timestamp": datetime.now(timezone.utc).isoformat()}
 
 
 api_prefix = "/api/v1"

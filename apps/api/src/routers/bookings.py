@@ -51,7 +51,6 @@ async def create_booking(
     current_user: User = Depends(get_current_user),
 ):
     data = body.model_dump(exclude_none=True)
-    data["scheduled_at"] = data.pop("scheduled_at")
     b = await booking_service.create_booking(db, data, current_user)
     return {"booking": {
         "id": b.id, "status": b.status, "scheduledAt": b.scheduled_at.isoformat(),

@@ -1,11 +1,14 @@
-from datetime import datetime
+import copy
+from datetime import datetime, timedelta, timezone
+
 from fastapi import Depends, HTTPException, status
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from jose import JWTError, jwt
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from jose import JWTError, jwt
-from src.config.settings import settings
+
 from src.config.database import get_db
+from src.config.settings import settings
 from src.models.user import User
 
 security_scheme = HTTPBearer(auto_error=False)
@@ -19,8 +22,6 @@ class TokenData:
 
 
 def create_access_token(data: dict) -> str:
-    from datetime import timedelta, timezone
-    import copy
     to_encode = copy.copy(data)
     expire = datetime.now(timezone.utc) + timedelta(minutes=15)
     to_encode.update({"exp": expire})
@@ -28,8 +29,6 @@ def create_access_token(data: dict) -> str:
 
 
 def create_refresh_token(data: dict) -> str:
-    from datetime import timedelta, timezone
-    import copy
     to_encode = copy.copy(data)
     expire = datetime.now(timezone.utc) + timedelta(days=7)
     to_encode.update({"exp": expire})
@@ -54,6 +53,8 @@ async def get_current_user(
     user = result.scalar_one_or_none()
     if user is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found")
+    if user.status in ("BANNED", "SUSPENDED"):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"Account is {user.status.lower()}")
     return user
 
 
@@ -72,7 +73,10 @@ async def get_optional_user(
         return None
 
     result = await db.execute(select(User).where(User.id == user_id))
-    return result.scalar_one_or_none()
+    user = result.scalar_one_or_none()
+    if user and user.status in ("BANNED", "SUSPENDED"):
+        return None
+    return user
 
 
 def require_role(*roles: str):

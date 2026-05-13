@@ -1,9 +1,9 @@
-import re
 import json
+
+from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
-from starlette.responses import Response, StreamingResponse
-from fastapi.responses import JSONResponse
+from starlette.responses import Response
 
 
 def to_camel_case(name: str) -> str:
@@ -23,10 +23,7 @@ class CamelCaseMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         response = await call_next(request)
 
-        if (
-            response.status_code == 200
-            and response.headers.get("content-type", "").startswith("application/json")
-        ):
+        if response.headers.get("content-type", "").startswith("application/json"):
             body = b""
             async for chunk in response.body_iterator:
                 body += chunk

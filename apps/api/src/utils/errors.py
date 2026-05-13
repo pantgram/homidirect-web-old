@@ -1,6 +1,10 @@
+import logging
+
 from fastapi import Request
-from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
+
+logger = logging.getLogger("homidirect")
 
 
 class AppError(Exception):
@@ -59,8 +63,7 @@ async def validation_error_handler(request: Request, exc: RequestValidationError
 
 
 async def generic_error_handler(request: Request, exc: Exception) -> JSONResponse:
-    import traceback
-    traceback.print_exc()
+    logger.exception("Unhandled exception")
     return JSONResponse(
         status_code=500,
         content={"error": "Internal Server Error", "message": "An unexpected error occurred"},

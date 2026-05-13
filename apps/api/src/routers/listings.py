@@ -1,12 +1,15 @@
-from fastapi import APIRouter, Depends, UploadFile, File, Form, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from src.config.database import get_db
-from src.dependencies.auth import get_current_user, require_role, verify_listing_ownership, get_optional_user
+from src.dependencies.auth import get_optional_user, require_role, verify_listing_ownership
 from src.models.user import User
+from src.models.user import User as UserModel
+from src.schemas.listing import ContactOwnerRequest, CreateListingRequest, UpdateListingRequest
 from src.services import listing as listing_service
-from src.schemas.listing import CreateListingRequest, UpdateListingRequest, ContactOwnerRequest
 from src.utils.email import send_contact_owner_email
-from src.utils.errors import AppError
+from src.utils.serializers import listing_to_dict
 
 router = APIRouter(prefix="/listings", tags=["Listings"])
 
@@ -75,13 +78,13 @@ async def get_my_listings(
 @router.get("/")
 async def get_all_listings(db: AsyncSession = Depends(get_db)):
     listings = await listing_service.get_all_listings(db)
-    return {"listings": [listing_service._listing_to_dict(l) for l in listings]}
+    return {"listings": [listing_to_dict(l) for l in listings]}
 
 
 @router.get("/{listing_id}")
 async def get_listing(listing_id: int, db: AsyncSession = Depends(get_db)):
     listing = await listing_service.get_listing_by_id(db, listing_id)
-    return {"listing": listing_service._listing_to_dict(listing)}
+    return {"listing": listing_to_dict(listing)}
 
 
 @router.post("/", status_code=201)
@@ -95,7 +98,7 @@ async def create_listing(
     data = body.model_dump(exclude={"upload_session_id"}, exclude_none=True)
     upload_session_id = body.upload_session_id
     listing = await listing_service.create_listing(db, data, upload_session_id)
-    return {"listing": listing_service._listing_to_dict(listing)}
+    return {"listing": listing_to_dict(listing)}
 
 
 @router.patch("/{listing_id}")
@@ -105,13 +108,12 @@ async def update_listing(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(require_role("LANDLORD", "BOTH")),
 ):
-    from src.dependencies.auth import verify_listing_ownership as vlo
-    await vlo(listing_id, db, current_user)
+    await verify_listing_ownership(listing_id, db, current_user)
     data = body.model_dump(exclude_none=True)
     listing = await listing_service.update_listing(db, listing_id, data)
     if not listing:
         raise HTTPException(status_code=404, detail="Listing not found")
-    return {"listing": listing_service._listing_to_dict(listing)}
+    return {"listing": listing_to_dict(listing)}
 
 
 @router.delete("/{listing_id}", status_code=204)
@@ -120,8 +122,7 @@ async def delete_listing(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(require_role("LANDLORD", "BOTH")),
 ):
-    from src.dependencies.auth import verify_listing_ownership as vlo
-    await vlo(listing_id, db, current_user)
+    await verify_listing_ownership(listing_id, db, current_user)
     deleted = await listing_service.delete_listing(db, listing_id)
     if not deleted:
         raise HTTPException(status_code=404, detail="Listing not found")
@@ -135,8 +136,6 @@ async def contact_owner(
     current_user: User = Depends(require_role("TENANT", "BOTH")),
 ):
     listing = await listing_service.get_listing_by_id(db, listing_id)
-    from src.models.user import User as UserModel
-    from sqlalchemy import select
     landlord_r = await db.execute(select(UserModel).where(UserModel.id == listing.landlord_id))
     landlord = landlord_r.scalar_one_or_none()
     if landlord:

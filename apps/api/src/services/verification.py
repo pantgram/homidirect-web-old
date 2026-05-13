@@ -1,13 +1,15 @@
 import time
 from datetime import datetime, timezone
-from sqlalchemy import select, and_
+
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from src.config.settings import settings
+from src.models.listing import Listing
 from src.models.verification_document import VerificationDocument
 from src.models.verification_history import VerificationHistory
-from src.models.listing import Listing
-from src.utils.storage import upload_to_r2, delete_from_r2, get_key_from_url
-from src.utils.errors import NotFoundError, ConflictError, ForbiddenError
-from src.config.settings import settings
+from src.utils.errors import ConflictError, NotFoundError
+from src.utils.storage import delete_from_r2, get_key_from_url, upload_to_r2
 
 
 async def get_verification_status(db: AsyncSession, listing_id: int):
@@ -117,18 +119,21 @@ async def review_verification(db: AsyncSession, listing_id: int, status: str, no
 
 
 async def get_pending_verifications(db: AsyncSession):
+    from sqlalchemy.orm import selectinload
+
     result = await db.execute(
-        select(Listing).where(Listing.verification_status == "PENDING")
+        select(Listing)
+        .options(selectinload(Listing.verification_documents))
+        .where(Listing.verification_status == "PENDING")
     )
     listings = result.scalars().all()
 
     items = []
     for l in listings:
-        docs_r = await db.execute(select(VerificationDocument).where(VerificationDocument.listing_id == l.id))
         items.append({
             "id": l.id, "title": l.title, "city": l.city,
             "landlord_id": l.landlord_id, "verification_status": l.verification_status,
             "created_at": l.created_at.isoformat() if l.created_at else None,
-            "documents": docs_r.scalars().all(),
+            "documents": l.verification_documents,
         })
     return items

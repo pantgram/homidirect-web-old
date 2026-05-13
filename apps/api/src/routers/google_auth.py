@@ -1,7 +1,10 @@
 import secrets
-from fastapi import APIRouter, Depends, Request
+import time
+
+from fastapi import APIRouter, Depends
 from fastapi.responses import RedirectResponse
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from src.config.database import get_db
 from src.services import google_auth
 
@@ -9,11 +12,21 @@ router = APIRouter(prefix="/auth/google", tags=["Google Auth"])
 
 _state_store: dict[str, float] = {}
 
+_STATE_TTL_SECONDS = 600
+
+
+def _cleanup_expired_states():
+    now = time.time()
+    expired = [k for k, v in _state_store.items() if now - v > _STATE_TTL_SECONDS]
+    for k in expired:
+        del _state_store[k]
+
 
 @router.get("/")
 async def google_auth_redirect():
+    _cleanup_expired_states()
     state = secrets.token_urlsafe(32)
-    _state_store[state] = __import__("time").time()
+    _state_store[state] = time.time()
     url = google_auth.get_google_auth_url(state)
     return RedirectResponse(url)
 
@@ -23,7 +36,10 @@ async def google_auth_callback(code: str, state: str, db: AsyncSession = Depends
     if state not in _state_store:
         from src.utils.errors import UnauthorizedError
         raise UnauthorizedError("Invalid state parameter")
-    del _state_store[state]
+    stored_time = _state_store.pop(state)
+    if time.time() - stored_time > _STATE_TTL_SECONDS:
+        from src.utils.errors import UnauthorizedError
+        raise UnauthorizedError("State parameter expired")
 
     tokens = await google_auth.exchange_code_for_tokens(code)
     user_info = await google_auth.get_google_user_info(tokens["access_token"])

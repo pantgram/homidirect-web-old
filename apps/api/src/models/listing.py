@@ -1,25 +1,27 @@
-import sqlalchemy as sa
-from sqlalchemy.orm import Mapped, mapped_column, relationship
-from src.config.database import Base
-from src.models.enums import (
-    property_type_enum,
-    floors_enum,
-    verification_status_enum,
-    listing_status_enum,
-    zone_type_enum,
-)
 from typing import TYPE_CHECKING
 
+import sqlalchemy as sa
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+from src.config.database import Base
+from src.models.enums import (
+    floors_enum,
+    listing_status_enum,
+    property_type_enum,
+    verification_status_enum,
+    zone_type_enum,
+)
+
 if TYPE_CHECKING:
-    from src.models.user import User
-    from src.models.listing_image import ListingImage
-    from src.models.booking import Booking
-    from src.models.interested_listing import InterestedListing
     from src.models.availability_slot import AvailabilitySlot
+    from src.models.booking import Booking
     from src.models.conversation import Conversation
+    from src.models.featured_listing_purchase import FeaturedListingPurchase
+    from src.models.interested_listing import InterestedListing
+    from src.models.listing_image import ListingImage
+    from src.models.user import User
     from src.models.verification_document import VerificationDocument
     from src.models.verification_history import VerificationHistory
-    from src.models.featured_listing_purchase import FeaturedListingPurchase
 
 
 class Listing(Base):
@@ -43,7 +45,7 @@ class Listing(Base):
     zone_type: Mapped[str] = mapped_column(zone_type_enum, nullable=False, server_default="Residential")
     listing_status: Mapped[str | None] = mapped_column(listing_status_enum)
     date_available: Mapped[sa.date] = mapped_column(sa.Date, nullable=False, server_default=sa.func.now())
-    date_built: Mapped[int] = mapped_column(sa.Integer, nullable=False, server_default=sa.text(str(sa.func.current_year())))
+    date_built: Mapped[int] = mapped_column(sa.Integer, nullable=False, server_default=sa.text("EXTRACT(YEAR FROM CURRENT_DATE)::INTEGER"))
     views_count: Mapped[int] = mapped_column("views_count", sa.Integer, nullable=False, server_default="0")
     country: Mapped[str | None] = mapped_column(sa.String(255), server_default="Greece")
     address: Mapped[str | None] = mapped_column(sa.String(500))
@@ -52,7 +54,7 @@ class Listing(Base):
     property_type: Mapped[str] = mapped_column(property_type_enum, nullable=False)
     available: Mapped[bool] = mapped_column(sa.Boolean, nullable=False, server_default="true")
     created_at: Mapped[sa.datetime] = mapped_column(sa.TIMESTAMP, nullable=False, server_default=sa.func.now())
-    updated_at: Mapped[sa.datetime] = mapped_column(sa.TIMESTAMP, nullable=False, server_default=sa.func.now())
+    updated_at: Mapped[sa.datetime] = mapped_column(sa.TIMESTAMP, nullable=False, server_default=sa.func.now(), onupdate=sa.func.now())
     landlord_id: Mapped[int] = mapped_column(sa.Integer, sa.ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     landlord_phone: Mapped[str | None] = mapped_column(sa.String(20))
     verification_status: Mapped[str] = mapped_column(verification_status_enum, nullable=False, server_default="PENDING")
