@@ -55,6 +55,9 @@ async def get_current_user(
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found")
     if user.status in ("BANNED", "SUSPENDED"):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"Account is {user.status.lower()}")
+    token_version = payload.get("token_version", 0)
+    if token_version != user.token_version:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token has been revoked")
     return user
 
 
@@ -76,6 +79,10 @@ async def get_optional_user(
     user = result.scalar_one_or_none()
     if user and user.status in ("BANNED", "SUSPENDED"):
         return None
+    if user:
+        token_version = payload.get("token_version", 0)
+        if token_version != user.token_version:
+            return None
     return user
 
 

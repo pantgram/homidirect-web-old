@@ -5,7 +5,7 @@ import type {
   VerificationHistoryEntry,
   VerificationStatusResponse,
   PendingVerificationListing,
-} from "@homidirect/shared";
+} from "@/types";
 
 export type {
   DocumentType,

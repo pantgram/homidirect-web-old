@@ -2,7 +2,9 @@ from fastapi import APIRouter, Depends, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.config.database import get_db
+from src.dependencies.auth import get_current_user
 from src.main import limiter
+from src.models.user import User
 from src.schemas.auth import (
     ForgotPasswordRequest,
     LoginRequest,
@@ -42,3 +44,9 @@ async def forgot_password(request: Request, body: ForgotPasswordRequest, db: Asy
 @limiter.limit("3/minute")
 async def reset_password(request: Request, body: ResetPasswordRequest, db: AsyncSession = Depends(get_db)):
     return await auth_service.reset_password(db, body.token, body.password)
+
+
+@router.post("/logout")
+async def logout(db: AsyncSession = Depends(get_db), current_user: User = Depends(get_current_user)):
+    await auth_service.logout(db, current_user.id)
+    return {"message": "Logged out successfully"}

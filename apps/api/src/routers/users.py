@@ -45,7 +45,7 @@ async def update_user(
 ):
     await verify_user_ownership(user_id, current_user)
     data = body.model_dump(exclude_none=True)
-    if "role" in data and data["role"] == "ADMIN" and current_user.role != "ADMIN":
+    if "role" in data and current_user.role != "ADMIN":
         del data["role"]
     user = await user_service.update_user(db, user_id, data)
     if not user:

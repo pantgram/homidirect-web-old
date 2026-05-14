@@ -28,7 +28,7 @@ async def register(db: AsyncSession, first_name: str, last_name: str, email: str
     await db.flush()
     await db.refresh(user)
 
-    payload = {"id": user.id, "email": user.email, "role": user.role}
+    payload = {"id": user.id, "email": user.email, "token_version": user.token_version}
     access = create_access_token(payload)
     refresh_t = create_refresh_token(payload)
     return {
@@ -43,7 +43,7 @@ async def register(db: AsyncSession, first_name: str, last_name: str, email: str
 
 async def login(db: AsyncSession, email: str, password: str):
     result = await db.execute(
-        select(User.id, User.email, User.role, User.password).where(User.email == email)
+        select(User.id, User.email, User.password, User.token_version).where(User.email == email)
     )
     row = result.first()
     if not row:
@@ -55,7 +55,7 @@ async def login(db: AsyncSession, email: str, password: str):
     if not verify_password(password, row.password):
         raise UnauthorizedError("Incorrect password")
 
-    payload = {"id": row.id, "email": row.email, "role": row.role}
+    payload = {"id": row.id, "email": row.email, "token_version": row.token_version}
     return {
         "token": {
             "accessToken": create_access_token(payload),
@@ -72,7 +72,22 @@ async def refresh(db: AsyncSession, refresh_token: str):
     except JWTError:
         raise UnauthorizedError("Invalid refresh token")
 
-    data = {"id": payload["id"], "email": payload["email"], "role": payload["role"]}
+    user_id = payload.get("id")
+    if not user_id:
+        raise UnauthorizedError("Invalid refresh token")
+
+    result = await db.execute(select(User).where(User.id == user_id))
+    user = result.scalar_one_or_none()
+    if not user:
+        raise UnauthorizedError("User not found")
+    if user.status in ("BANNED", "SUSPENDED"):
+        raise UnauthorizedError(f"Account is {user.status.lower()}")
+
+    token_version = payload.get("token_version", 0)
+    if token_version != user.token_version:
+        raise UnauthorizedError("Token has been revoked")
+
+    data = {"id": user.id, "email": user.email, "role": user.role, "token_version": user.token_version}
     return {
         "tokens": {
             "accessToken": create_access_token(data),
@@ -121,6 +136,16 @@ async def reset_password(db: AsyncSession, token: str, password: str):
     user.password = hash_password(password)
     user.password_reset_token = None
     user.password_reset_expires = None
+    user.token_version = (user.token_version or 0) + 1
     user.updated_at = datetime.now(timezone.utc)
 
     return {"message": "Password has been reset successfully"}
+
+
+async def logout(db: AsyncSession, user_id: int):
+    result = await db.execute(select(User).where(User.id == user_id))
+    user = result.scalar_one_or_none()
+    if not user:
+        return
+    user.token_version = (user.token_version or 0) + 1
+    user.updated_at = datetime.now(timezone.utc)

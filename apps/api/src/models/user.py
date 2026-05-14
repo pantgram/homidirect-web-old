@@ -26,6 +26,7 @@ class User(Base):
     email_verified: Mapped[bool] = mapped_column(sa.Boolean, nullable=False, server_default="false")
     password_reset_token: Mapped[str | None] = mapped_column(sa.String(255))
     password_reset_expires: Mapped[sa.datetime | None] = mapped_column(sa.TIMESTAMP)
+    token_version: Mapped[int] = mapped_column(sa.Integer, nullable=False, server_default="0")
     created_at: Mapped[sa.datetime] = mapped_column(sa.TIMESTAMP, nullable=False, server_default=sa.func.now())
     updated_at: Mapped[sa.datetime] = mapped_column(sa.TIMESTAMP, nullable=False, server_default=sa.func.now(), onupdate=sa.func.now())
 

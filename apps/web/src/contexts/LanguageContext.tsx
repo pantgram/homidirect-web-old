@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 
 type Language = "en" | "el";
 
-type TranslationKey = keyof (typeof translations)["en"];
+export type TranslationKey = keyof (typeof translations)["en"];
 
 interface LanguageContextType {
   language: Language;

@@ -53,7 +53,7 @@ async def find_or_create_user(db: AsyncSession, google_user: dict) -> dict:
     existing = result.scalar_one_or_none()
 
     if existing:
-        payload = {"id": existing.id, "email": existing.email, "role": existing.role}
+        payload = {"id": existing.id, "email": existing.email, "role": existing.role, "token_version": existing.token_version}
         return {"access_token": create_access_token(payload), "refresh_token": create_refresh_token(payload)}
 
     result = await db.execute(select(User).where(User.email == google_user["email"]))
@@ -77,5 +77,5 @@ async def find_or_create_user(db: AsyncSession, google_user: dict) -> dict:
     await db.flush()
     await db.refresh(user)
 
-    payload = {"id": user.id, "email": user.email, "role": user.role}
+    payload = {"id": user.id, "email": user.email, "role": user.role, "token_version": user.token_version}
     return {"access_token": create_access_token(payload), "refresh_token": create_refresh_token(payload)}
