@@ -3,7 +3,7 @@ import type {
   Booking,
   CreateBookingRequest,
   UpdateBookingRequest,
-} from "@homidirect/shared";
+} from "@/types";
 
 export const bookingsApi = {
   async getAll(): Promise<Booking[]> {

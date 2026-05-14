@@ -37,7 +37,7 @@ import {
   useUploadVerificationDocument,
   useDeleteVerificationDocument,
 } from "@/hooks/useVerification";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useLanguage, type TranslationKey } from "@/contexts/LanguageContext";
 import type {
   DocumentType,
   VerificationDocument,
@@ -91,7 +91,7 @@ function formatDate(dateString: string, language: string): string {
   });
 }
 
-function getStatusConfig(status: VerificationStatus, t: (key: string) => string) {
+function getStatusConfig(status: VerificationStatus, t: (key: TranslationKey) => string) {
   switch (status) {
     case "PENDING":
       return {
@@ -129,7 +129,6 @@ function getStatusConfig(status: VerificationStatus, t: (key: string) => string)
 interface FilePreviewProps {
   file: File;
   onRemove: () => void;
-  language: string;
 }
 
 function FilePreview({ file, onRemove }: FilePreviewProps) {
@@ -166,7 +165,7 @@ interface DocumentCardProps {
   onDelete: (id: number) => void;
   isDeleting: boolean;
   canDelete: boolean;
-  t: (key: string) => string;
+  t: (key: TranslationKey) => string;
   language: string;
 }
 
@@ -187,7 +186,7 @@ function DocumentCard({ document, onDelete, isDeleting, canDelete, t, language }
         <p className="text-sm font-medium truncate">{document.fileName}</p>
         <div className="flex items-center gap-2 mt-1">
           <Badge variant="outline" className="text-xs">
-            {t(`verification.docType.${DOC_TYPE_KEY[document.documentType]}` as any)}
+            {t(`verification.docType.${DOC_TYPE_KEY[document.documentType]}` as TranslationKey)}
           </Badge>
           <span className="text-xs text-muted-foreground">
             {formatDate(document.createdAt, language)}
@@ -227,7 +226,7 @@ function DocumentCard({ document, onDelete, isDeleting, canDelete, t, language }
 
 interface VerificationTimelineProps {
   history: VerificationHistoryEntry[];
-  t: (key: string) => string;
+  t: (key: TranslationKey) => string;
   language: string;
 }
 

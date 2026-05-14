@@ -3,7 +3,7 @@ import type {
   AvailabilitySlot,
   CreateAvailabilitySlotRequest,
   UpdateAvailabilitySlotRequest,
-} from "@homidirect/shared";
+} from "@/types";
 
 export const availabilitySlotsApi = {
   async getByListingId(listingId: number): Promise<AvailabilitySlot[]> {

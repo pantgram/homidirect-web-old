@@ -1,5 +1,3 @@
-#### **`.gitignore`**
-```
 # Dependencies
 node_modules/
 .pnpm-store/
@@ -9,10 +7,11 @@ dist/
 build/
 .next/
 .turbo/
-.env1
+
 # Environment files
 .env
 .env*.local
+.env1
 
 # IDE
 .vscode/
@@ -33,9 +32,12 @@ pnpm-debug.log*
 # Testing
 coverage/
 
+# Python
+__pycache__/
+*.pyc
+.venv/
+
 # Misc
 .cache/
 tmp/
 temp/
-.env.example
-PROJECT_PLANS
