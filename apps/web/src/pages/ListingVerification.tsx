@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { VerificationUpload } from "@/components/verification";
 import { useListing } from "@/hooks";
 import { useAuth } from "@/contexts/AuthContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import Navigation from "@/components/Navigation";
@@ -13,6 +14,7 @@ export default function ListingVerification() {
   const { listingId } = useParams<{ listingId: string }>();
   const navigate = useNavigate();
   const { user, isAuthenticated, isLoading: isAuthLoading } = useAuth();
+  const { t } = useLanguage();
 
   const listingIdNum = listingId ? parseInt(listingId, 10) : 0;
   const { data: listing, isLoading: isListingLoading } =
@@ -25,13 +27,20 @@ export default function ListingVerification() {
         <Navigation />
         <main className="flex-1 container mx-auto px-4 py-8">
           <Alert variant="destructive">
-            <AlertTitle>Authentication Required</AlertTitle>
+            <AlertTitle>{t("verification.authRequired")}</AlertTitle>
             <AlertDescription>
-              Please{" "}
-              <Link to="/auth" className="underline font-medium">
-                sign in
-              </Link>{" "}
-              to access verification.
+              {(() => {
+                const parts = t("verification.authRequiredDesc").split("{link}");
+                return (
+                  <>
+                    {parts[0]}
+                    <Link to="/auth" className="underline font-medium">
+                      {t("verification.signIn")}
+                    </Link>
+                    {parts[1]}
+                  </>
+                );
+              })()}
             </AlertDescription>
           </Alert>
         </main>
@@ -52,9 +61,9 @@ export default function ListingVerification() {
         <Navigation />
         <main className="flex-1 container mx-auto px-4 py-8">
           <Alert variant="destructive">
-            <AlertTitle>Access Denied</AlertTitle>
+            <AlertTitle>{t("verification.accessDenied")}</AlertTitle>
             <AlertDescription>
-              Only landlords can access the verification page.
+              {t("verification.accessDeniedDesc")}
             </AlertDescription>
           </Alert>
         </main>
@@ -87,9 +96,9 @@ export default function ListingVerification() {
         <Navigation />
         <main className="flex-1 container mx-auto px-4 py-8">
           <Alert variant="destructive">
-            <AlertTitle>Listing Not Found</AlertTitle>
+            <AlertTitle>{t("verification.listingNotFound")}</AlertTitle>
             <AlertDescription>
-              The listing you're looking for doesn't exist or has been removed.
+              {t("verification.listingNotFoundDesc")}
             </AlertDescription>
           </Alert>
         </main>
@@ -113,7 +122,7 @@ export default function ListingVerification() {
               className="mb-4 -ml-2"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Back
+              {t("verification.back")}
             </Button>
 
             <div className="flex items-start gap-4">
@@ -122,11 +131,10 @@ export default function ListingVerification() {
               </div>
               <div>
                 <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
-                  Property Verification
+                  {t("verification.title")}
                 </h1>
                 <p className="text-muted-foreground mt-1">
-                  Verify your property ownership to build trust with potential
-                  tenants
+                  {t("verification.subtitle")}
                 </p>
               </div>
             </div>

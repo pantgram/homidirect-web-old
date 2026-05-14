@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import {
   Calendar,
   Clock,
@@ -13,10 +13,10 @@ import {
   Loader2,
   Plus,
   Trash2,
-  Edit,
 } from "lucide-react";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
+import AvailabilitySlotForm from "@/components/AvailabilitySlotForm";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -32,7 +32,7 @@ import placeholderImage from "@/assets/property-1.jpg";
 const ListingBookings = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { isAuthenticated, user } = useAuth();
   const { toast } = useToast();
 
@@ -43,6 +43,17 @@ const ListingBookings = () => {
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"bookings" | "slots">("bookings");
   const [updating, setUpdating] = useState<number | null>(null);
+  const [showSlotForm, setShowSlotForm] = useState(false);
+
+  const fetchSlots = async () => {
+    if (!id) return;
+    try {
+      const slotsData = await availabilitySlotsApi.getByListingId(parseInt(id));
+      setAvailabilitySlots(slotsData);
+    } catch (err) {
+      console.error("Failed to fetch slots:", err);
+    }
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -62,7 +73,7 @@ const ListingBookings = () => {
         setAvailabilitySlots(slotsData);
       } catch (err) {
         console.error("Failed to fetch data:", err);
-        setError("Failed to load booking data");
+        setError(t("listingBookings.errorLoading"));
       } finally {
         setLoading(false);
       }
@@ -77,12 +88,12 @@ const ListingBookings = () => {
       const updated = await bookingsApi.update(bookingId, { status });
       setBookings((prev) => prev.map((b) => (b.id === bookingId ? updated : b)));
       toast({
-        title: status === "CONFIRMED" ? "Booking confirmed" : "Booking declined",
+        title: status === "CONFIRMED" ? t("listingBookings.bookingConfirmed") : t("listingBookings.bookingDeclined"),
       });
     } catch (err) {
       console.error("Failed to update booking:", err);
       toast({
-        title: "Failed to update booking",
+        title: t("listingBookings.updateFailed"),
         variant: "destructive",
       });
     } finally {
@@ -91,7 +102,7 @@ const ListingBookings = () => {
   };
 
   const handleDeleteBooking = async (bookingId: number) => {
-    if (!confirm("Are you sure you want to cancel this booking?")) {
+    if (!confirm(t("listingBookings.cancelConfirm"))) {
       return;
     }
 
@@ -99,19 +110,19 @@ const ListingBookings = () => {
       await bookingsApi.delete(bookingId);
       setBookings((prev) => prev.filter((b) => b.id !== bookingId));
       toast({
-        title: "Booking cancelled",
+        title: t("listingBookings.bookingCancelled"),
       });
     } catch (err) {
       console.error("Failed to cancel booking:", err);
       toast({
-        title: "Failed to cancel booking",
+        title: t("listingBookings.cancelFailed"),
         variant: "destructive",
       });
     }
   };
 
   const handleDeleteSlot = async (slotId: number) => {
-    if (!confirm("Are you sure you want to delete this time slot?")) {
+    if (!confirm(t("listingBookings.deleteSlotConfirm"))) {
       return;
     }
 
@@ -119,12 +130,12 @@ const ListingBookings = () => {
       await availabilitySlotsApi.delete(slotId);
       setAvailabilitySlots((prev) => prev.filter((s) => s.id !== slotId));
       toast({
-        title: "Time slot deleted",
+        title: t("listingBookings.slotDeleted"),
       });
     } catch (err) {
       console.error("Failed to delete slot:", err);
       toast({
-        title: "Failed to delete time slot",
+        title: t("listingBookings.deleteSlotFailed"),
         variant: "destructive",
       });
     }
@@ -132,7 +143,7 @@ const ListingBookings = () => {
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
+    return date.toLocaleDateString(language === "el" ? "el-GR" : "en-US", {
       weekday: "short",
       year: "numeric",
       month: "short",
@@ -145,22 +156,22 @@ const ListingBookings = () => {
   const getStatusBadge = (status: string) => {
     const statusConfig = {
       PENDING: {
-        label: "Pending",
+        label: t("bookings.pending"),
         icon: <Clock className="h-3 w-3" />,
         className: "bg-yellow-500/10 text-yellow-600 hover:bg-yellow-500/20",
       },
       CONFIRMED: {
-        label: "Confirmed",
+        label: t("bookings.confirmed"),
         icon: <CheckCircle className="h-3 w-3" />,
         className: "bg-green-500/10 text-green-600 hover:bg-green-500/20",
       },
       DECLINED: {
-        label: "Declined",
+        label: t("bookings.declined"),
         icon: <XCircle className="h-3 w-3" />,
         className: "bg-red-500/10 text-red-600 hover:bg-red-500/20",
       },
       CANCELLED: {
-        label: "Cancelled",
+        label: t("bookings.cancelledStatus"),
         icon: <XCircle className="h-3 w-3" />,
         className: "bg-gray-500/10 text-gray-600 hover:bg-gray-500/20",
       },
@@ -192,10 +203,10 @@ const ListingBookings = () => {
       <div className="min-h-screen bg-background">
         <Navigation />
         <div className="container mx-auto px-4 py-16 text-center">
-          <h1 className="text-2xl font-bold mb-4">Listing not found</h1>
+          <h1 className="text-2xl font-bold mb-4">{t("listingBookings.listingNotFound")}</h1>
           <Button onClick={() => navigate("/my-listings")}>
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to My Listings
+            {t("listingBookings.backToMyListings")}
           </Button>
         </div>
         <Footer />
@@ -214,12 +225,12 @@ const ListingBookings = () => {
           className="mb-6 -ml-2"
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Listing
+          {t("listingBookings.backToListing")}
         </Button>
 
         <div className="max-w-6xl mx-auto space-y-6">
           <div className="flex items-center gap-4">
-            <h1 className="text-3xl font-bold">Manage Bookings</h1>
+            <h1 className="text-3xl font-bold">{t("listingBookings.manageBookings")}</h1>
             <Calendar className="h-8 w-8 text-primary" />
           </div>
 
@@ -253,7 +264,7 @@ const ListingBookings = () => {
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
-              Bookings ({bookings.length})
+              {t("listingBookings.bookingsTab")} ({bookings.length})
             </button>
             <button
               onClick={() => setActiveTab("slots")}
@@ -263,7 +274,7 @@ const ListingBookings = () => {
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
-              Time Slots ({availabilitySlots.length})
+              {t("listingBookings.timeSlotsTab")} ({availabilitySlots.length})
             </button>
           </div>
 
@@ -272,9 +283,9 @@ const ListingBookings = () => {
               <Card>
                 <CardContent className="p-12 text-center">
                   <Calendar className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
-                  <h2 className="text-xl font-semibold mb-2">No bookings yet</h2>
+                  <h2 className="text-xl font-semibold mb-2">{t("listingBookings.noBookings")}</h2>
                   <p className="text-muted-foreground">
-                    When candidates book viewings, they will appear here.
+                    {t("listingBookings.noBookingsDesc")}
                   </p>
                 </CardContent>
               </Card>
@@ -299,7 +310,7 @@ const ListingBookings = () => {
 
                             <div className="flex items-center gap-2 text-sm text-muted-foreground">
                               <User className="h-4 w-4" />
-                              <span>Candidate ID: {booking.candidateId}</span>
+                              <span>{t("listingBookings.candidateId")}: {booking.candidateId}</span>
                             </div>
 
                             <div className="flex items-center gap-2 text-sm">
@@ -318,7 +329,7 @@ const ListingBookings = () => {
                                   className="flex items-center gap-2"
                                 >
                                   <Video className="h-4 w-4" />
-                                  Join Video Call
+                                  {t("bookings.joinVideoCall")}
                                 </a>
                               </Button>
                             )}
@@ -334,7 +345,7 @@ const ListingBookings = () => {
                                 disabled={updating === booking.id}
                               >
                                 <CheckCircle className="h-4 w-4 mr-2" />
-                                Accept
+                                {t("listingBookings.accept")}
                               </Button>
                               <Button
                                 variant="destructive"
@@ -343,7 +354,7 @@ const ListingBookings = () => {
                                 disabled={updating === booking.id}
                               >
                                 <XCircle className="h-4 w-4 mr-2" />
-                                Decline
+                                {t("listingBookings.decline")}
                               </Button>
                             </>
                           )}
@@ -353,7 +364,7 @@ const ListingBookings = () => {
                             onClick={() => handleDeleteBooking(booking.id)}
                           >
                             <Trash2 className="h-4 w-4 mr-2" />
-                            Cancel
+                            {t("bookings.cancel")}
                           </Button>
                         </div>
                       </div>
@@ -368,14 +379,14 @@ const ListingBookings = () => {
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h3 className="font-semibold mb-1">Availability Time Slots</h3>
+                      <h3 className="font-semibold mb-1">{t("listingBookings.availabilitySlots")}</h3>
                       <p className="text-sm text-muted-foreground">
-                        Manage when candidates can book viewings for your property.
+                        {t("listingBookings.availabilitySlotsDesc")}
                       </p>
                     </div>
-                    <Button onClick={() => navigate(`/listings/${id}/availability/add`)}>
+                    <Button onClick={() => setShowSlotForm(true)}>
                       <Plus className="h-4 w-4 mr-2" />
-                      Add Time Slot
+                      {t("listingBookings.addTimeSlot")}
                     </Button>
                   </div>
                 </CardContent>
@@ -385,13 +396,13 @@ const ListingBookings = () => {
                 <Card>
                   <CardContent className="p-12 text-center">
                     <Clock className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
-                    <h2 className="text-xl font-semibold mb-2">No time slots available</h2>
+                    <h2 className="text-xl font-semibold mb-2">{t("listingBookings.noTimeSlots")}</h2>
                     <p className="text-muted-foreground mb-6">
-                      Add availability slots to let candidates book viewings.
+                      {t("listingBookings.noTimeSlotsDesc")}
                     </p>
-                    <Button onClick={() => navigate(`/listings/${id}/availability/add`)}>
+                    <Button onClick={() => setShowSlotForm(true)}>
                       <Plus className="h-4 w-4 mr-2" />
-                      Add First Time Slot
+                      {t("listingBookings.addFirstTimeSlot")}
                     </Button>
                   </CardContent>
                 </Card>
@@ -404,26 +415,26 @@ const ListingBookings = () => {
                           <Calendar className="h-5 w-5 text-primary" />
                           <div>
                             <p className="font-medium">
-                              {new Date(slot.startTime).toLocaleDateString("en-US", {
+                              {new Date(slot.startTime).toLocaleDateString(language === "el" ? "el-GR" : "en-US", {
                                 weekday: "long",
                                 month: "long",
                                 day: "numeric",
                               })}
                             </p>
                             <p className="text-sm text-muted-foreground">
-                              {new Date(slot.startTime).toLocaleTimeString("en-US", {
+                              {new Date(slot.startTime).toLocaleTimeString(language === "el" ? "el-GR" : "en-US", {
                                 hour: "2-digit",
                                 minute: "2-digit",
                               })}{" "}
                               -{" "}
-                              {new Date(slot.endTime).toLocaleTimeString("en-US", {
+                              {new Date(slot.endTime).toLocaleTimeString(language === "el" ? "el-GR" : "en-US", {
                                 hour: "2-digit",
                                 minute: "2-digit",
                               })}
                             </p>
                             <div className="flex items-center gap-2 mt-1">
                               <Badge className={slot.isBooked ? "bg-red-500/10 text-red-600" : "bg-green-500/10 text-green-600"}>
-                                {slot.isBooked ? "Booked" : "Available"}
+                                {slot.isBooked ? t("listingBookings.booked") : t("listingBookings.available")}
                               </Badge>
                             </div>
                           </div>
@@ -431,20 +442,13 @@ const ListingBookings = () => {
 
                         <div className="flex gap-2">
                           <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => navigate(`/listings/${id}/availability/edit/${slot.id}`)}
-                          >
-                            <Edit className="h-4 w-4 mr-2" />
-                            Edit
-                          </Button>
-                          <Button
                             variant="destructive"
                             size="sm"
                             onClick={() => handleDeleteSlot(slot.id)}
+                            disabled={slot.isBooked}
                           >
                             <Trash2 className="h-4 w-4 mr-2" />
-                            Delete
+                            {t("listingBookings.delete")}
                           </Button>
                         </div>
                       </div>
@@ -456,6 +460,15 @@ const ListingBookings = () => {
           )}
         </div>
       </main>
+
+      {id && (
+        <AvailabilitySlotForm
+          open={showSlotForm}
+          onOpenChange={setShowSlotForm}
+          listingId={parseInt(id)}
+          onSuccess={fetchSlots}
+        />
+      )}
 
       <Footer />
     </div>

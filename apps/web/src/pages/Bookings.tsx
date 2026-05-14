@@ -1,10 +1,21 @@
 import { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
-import { Loader2, Calendar, Clock, MapPin, Home, ArrowLeft, Trash2, Video, CheckCircle, XCircle, AlertCircle } from "lucide-react";
+import {
+  Loader2,
+  CalendarClock,
+  Clock,
+  MapPin,
+  Home,
+  Trash2,
+  Video,
+  CheckCircle,
+  XCircle,
+  AlertCircle,
+} from "lucide-react";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
@@ -15,7 +26,7 @@ import type { Booking } from "@/api/types";
 import placeholderImage from "@/assets/property-1.jpg";
 
 const Bookings = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { isAuthenticated, isLoading: isAuthLoading, user } = useAuth();
   const { toast } = useToast();
 
@@ -34,7 +45,7 @@ const Bookings = () => {
 
       const listingIds = [...new Set(allBookings.map((b) => b.listingId))];
       const listingsData: Record<number, any> = {};
-      
+
       await Promise.all(
         listingIds.map(async (id) => {
           try {
@@ -43,12 +54,12 @@ const Bookings = () => {
           } catch (err) {
             console.error(`Failed to fetch listing ${id}:`, err);
           }
-        })
+        }),
       );
 
       setListings(listingsData);
     } catch (err) {
-      setError("Failed to load bookings");
+      setError(t("bookings.errorLoading"));
       console.error("Failed to fetch bookings:", err);
     } finally {
       setLoading(false);
@@ -65,7 +76,7 @@ const Bookings = () => {
   }, [isAuthLoading, isAuthenticated, fetchBookings]);
 
   const handleDeleteBooking = async (bookingId: number) => {
-    if (!confirm("Are you sure you want to cancel this booking?")) {
+    if (!confirm(t("bookings.cancelConfirm"))) {
       return;
     }
 
@@ -73,12 +84,12 @@ const Bookings = () => {
       await bookingsApi.delete(bookingId);
       setBookings((prev) => prev.filter((b) => b.id !== bookingId));
       toast({
-        title: "Booking cancelled",
+        title: t("bookings.cancelled"),
       });
     } catch (err) {
       console.error("Failed to cancel booking:", err);
       toast({
-        title: "Failed to cancel booking",
+        title: t("bookings.cancelFailed"),
         variant: "destructive",
       });
     }
@@ -86,7 +97,7 @@ const Bookings = () => {
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
+    return date.toLocaleDateString(language === "el" ? "el-GR" : "en-US", {
       weekday: "short",
       year: "numeric",
       month: "short",
@@ -99,22 +110,22 @@ const Bookings = () => {
   const getStatusBadge = (status: string) => {
     const statusConfig = {
       PENDING: {
-        label: "Pending",
+        label: t("bookings.pending"),
         icon: <Clock className="h-3 w-3" />,
         className: "bg-yellow-500/10 text-yellow-600 hover:bg-yellow-500/20",
       },
       CONFIRMED: {
-        label: "Confirmed",
+        label: t("bookings.confirmed"),
         icon: <CheckCircle className="h-3 w-3" />,
         className: "bg-green-500/10 text-green-600 hover:bg-green-500/20",
       },
       DECLINED: {
-        label: "Declined",
+        label: t("bookings.declined"),
         icon: <XCircle className="h-3 w-3" />,
         className: "bg-red-500/10 text-red-600 hover:bg-red-500/20",
       },
       CANCELLED: {
-        label: "Cancelled",
+        label: t("bookings.cancelledStatus"),
         icon: <AlertCircle className="h-3 w-3" />,
         className: "bg-gray-500/10 text-gray-600 hover:bg-gray-500/20",
       },
@@ -157,8 +168,8 @@ const Bookings = () => {
       <main className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
           <div className="flex items-center gap-4 mb-8">
-            <h1 className="text-3xl font-bold">My Bookings</h1>
-            <Calendar className="h-8 w-8 text-primary" />
+            <h1 className="text-3xl font-bold">{t("bookings.title")}</h1>
+            <CalendarClock className="h-8 w-8 text-primary" />
           </div>
 
           {error && (
@@ -172,13 +183,13 @@ const Bookings = () => {
           {bookings.length === 0 ? (
             <Card>
               <CardContent className="p-12 text-center">
-                <Calendar className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
-                <h2 className="text-xl font-semibold mb-2">No bookings yet</h2>
+                <CalendarClock className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
+                <h2 className="text-xl font-semibold mb-2">{t("bookings.noBookings")}</h2>
                 <p className="text-muted-foreground mb-6">
-                  When you book a viewing, it will appear here.
+                  {t("bookings.noBookingsDesc")}
                 </p>
                 <Link to="/search">
-                  <Button>Browse Listings</Button>
+                  <Button>{t("bookings.browseListings")}</Button>
                 </Link>
               </CardContent>
             </Card>
@@ -187,7 +198,10 @@ const Bookings = () => {
               {bookings.map((booking) => {
                 const listing = listings[booking.listingId];
                 return (
-                  <Card key={booking.id} className="hover:shadow-md transition-shadow">
+                  <Card
+                    key={booking.id}
+                    className="hover:shadow-md transition-shadow"
+                  >
                     <CardContent className="p-6">
                       <div className="flex gap-6">
                         <img
@@ -203,7 +217,7 @@ const Bookings = () => {
                                 to={`/listings/${booking.listingId}`}
                                 className="text-lg font-semibold hover:text-primary transition-colors"
                               >
-                                {listing?.title || "Unknown Listing"}
+                                {listing?.title || t("bookings.unknownListing")}
                               </Link>
                               <div className="flex items-center gap-4 mt-1 text-sm text-muted-foreground">
                                 <div className="flex items-center gap-1">
@@ -212,7 +226,7 @@ const Bookings = () => {
                                 </div>
                                 <div className="flex items-center gap-1">
                                   <Home className="h-4 w-4" />
-                                  <span>€{listing?.price}/month</span>
+                                  <span>{t("common.pricePerMonth").replace("{price}", String(listing?.price))}</span>
                                 </div>
                               </div>
                             </div>
@@ -238,7 +252,7 @@ const Bookings = () => {
                                   className="flex items-center gap-2"
                                 >
                                   <Video className="h-4 w-4" />
-                                  Join Video Call
+                                  {t("bookings.joinVideoCall")}
                                 </a>
                               </Button>
                             </div>
@@ -254,12 +268,12 @@ const Bookings = () => {
                               className="flex items-center gap-2"
                             >
                               <Trash2 className="h-4 w-4" />
-                              Cancel
+                              {t("bookings.cancel")}
                             </Button>
                           )}
                           <Link to={`/bookings/${booking.id}`}>
                             <Button variant="ghost" size="sm">
-                              View Details
+                              {t("bookings.viewDetails")}
                             </Button>
                           </Link>
                         </div>

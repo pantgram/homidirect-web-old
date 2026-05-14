@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { useParams, useNavigate, Link, useLocation } from "react-router-dom";
+import { useState, useEffect, useCallback } from "react";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import {
   MapPin,
   Bed,
@@ -14,7 +14,6 @@ import {
   Home,
   Mail,
   Trash2,
-  Phone,
   Loader2,
   CheckCircle,
   Building,
@@ -45,20 +44,20 @@ import { useToast } from "@/hooks/use-toast";
 import { listingsApi } from "@/api/listings";
 import { favoritesApi } from "@/api/favorites";
 import { availabilitySlotsApi } from "@/api/availability-slots";
+import { env } from "@/config/env";
 import type {
   Listing,
   ListingImage,
-  PropertyType,
   AvailabilitySlot,
+  PropertyType,
 } from "@/api/types";
 import placeholderImage from "@/assets/property-1.jpg";
 
 const ListingDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const location = useLocation();
   const { t } = useLanguage();
-  const { isAuthenticated, user } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const { toast } = useToast();
 
   const [listing, setListing] = useState<Listing | null>(null);
@@ -74,112 +73,22 @@ const ListingDetail = () => {
   const [deleting, setDeleting] = useState(false);
   const [availableSlots, setAvailableSlots] = useState<AvailabilitySlot[]>([]);
 
-  useEffect(() => {
-    const fetchListing = async () => {
-      if (!id) return;
-
-      setLoading(true);
-      setError(null);
-
-      try {
-        const listingData = await listingsApi.getById(parseInt(id));
-        setListing(listingData);
-
-        // Fetch images separately - don't fail if images endpoint fails
-        try {
-          const imagesData = await listingsApi.getImages(parseInt(id));
-          setImages(imagesData);
-        } catch (imgErr) {
-          console.error("Failed to fetch images:", imgErr);
-          // Continue without images
-        }
-
-        // Check if listing is favorited (only for authenticated users)
-        if (isAuthenticated) {
-          try {
-            const favorited = await favoritesApi.checkFavorite(parseInt(id));
-            setIsFavorite(favorited);
-          } catch (favErr) {
-            console.error("Failed to check favorite status:", favErr);
-          }
-        }
-
-        // Fetch available slots for this listing
-        try {
-          const slots = await availabilitySlotsApi.getAvailableSlotsByListingId(
-            parseInt(id),
-          );
-          setAvailableSlots(slots.slice(0, 5));
-        } catch (slotsErr) {
-          console.error("Failed to fetch availability slots:", slotsErr);
-        }
-      } catch (err) {
-        console.error("Failed to fetch listing:", err);
-        setError(t("listingDetail.errorLoading"));
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchListing();
-  }, [id, t, isAuthenticated]);
-
-  useEffect(() => {
-    const state = location.state as {
-      returnTo?: string;
-      action?: "contact" | "booking";
-    } | null;
-
-    if (isAuthenticated && state?.action && listing) {
-      if (state.action === "contact") {
-        setContactDialogOpen(true);
-      } else if (state.action === "booking") {
-        setBookingDialogOpen(true);
-      }
-
-      window.history.replaceState({}, document.title);
-    }
-  }, [isAuthenticated, location.state, listing]);
-
-  const handleToggleFavorite = async () => {
-    if (!id) return;
-
-    if (!isAuthenticated) {
-      navigate("/auth");
-      return;
-    }
-
-    setFavoriteLoading(true);
-    try {
-      const newFavoriteState = await favoritesApi.toggleFavorite(
-        parseInt(id),
-        isFavorite,
-      );
-      setIsFavorite(newFavoriteState);
-      toast({
-        title: newFavoriteState ? t("favorites.added") : t("favorites.removed"),
-      });
-    } catch (err) {
-      console.error("Failed to toggle favorite:", err);
-      toast({
-        title: t("favorites.removeFailed"),
-        variant: "destructive",
-      });
-    } finally {
-      setFavoriteLoading(false);
-    }
-  };
+  const listingId = id ? parseInt(id, 10) : 0;
 
   const formatPrice = (price: number) => {
     return price.toLocaleString();
   };
 
   const formatArea = (area: number) => {
-    return `${area.toLocaleString()} m²`;
+    return `${area.toLocaleString()} m\u00B2`;
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString();
+  const formatDate = (date: string) => {
+    return new Date(date).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
   };
 
   const getPropertyTypeLabel = (type: PropertyType) => {
@@ -192,101 +101,9 @@ const ListingDetail = () => {
     return labels[type] || type;
   };
 
-  const handlePrevImage = () => {
-    const totalImages = images.length > 0 ? images.length : 1;
-    setCurrentImageIndex((prev) => (prev === 0 ? totalImages - 1 : prev - 1));
-  };
-
-  const handleNextImage = () => {
-    const totalImages = images.length > 0 ? images.length : 1;
-    setCurrentImageIndex((prev) => (prev === totalImages - 1 ? 0 : prev + 1));
-  };
-
-  const handleShare = async () => {
-    const shareUrl = window.location.href;
-
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: listing?.title,
-          text: `${t("listingDetail.shareText")}: ${listing?.title}`,
-          url: shareUrl,
-        });
-      } catch (err) {
-        // User cancelled or share failed, fall back to clipboard
-        if ((err as Error).name !== "AbortError") {
-          await copyToClipboard(shareUrl);
-        }
-      }
-    } else {
-      await copyToClipboard(shareUrl);
-    }
-  };
-
-  const copyToClipboard = async (text: string) => {
-    try {
-      await navigator.clipboard.writeText(text);
-      toast({
-        title: t("listingDetail.linkCopied"),
-        description: t("listingDetail.linkCopiedDesc"),
-      });
-    } catch (err) {
-      toast({
-        title: t("listingDetail.shareFailed"),
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleContactOwner = () => {
-    if (!isAuthenticated) {
-      navigate("/auth", {
-        state: {
-          returnTo: `/listings/${id}`,
-          action: "contact",
-        },
-      });
-      return;
-    }
-
-    setContactDialogOpen(true);
-  };
-
-  const handleRequestViewing = () => {
-    if (!isAuthenticated) {
-      navigate("/auth", {
-        state: {
-          returnTo: `/listings/${id}`,
-          action: "booking",
-        },
-      });
-      return;
-    }
-    setBookingDialogOpen(true);
-  };
-
-  const handleBookingSuccess = () => {
-    toast({
-      title: t("listingDetail.bookingSent"),
-    });
-  };
-
-  const handleDeleteListing = async () => {
-    if (!listing) return;
-    setDeleting(true);
-    try {
-      await listingsApi.delete(listing.id);
-      toast({ title: t("myListings.deleteSuccess") });
-      navigate("/my-listings");
-    } catch (err) {
-      toast({
-        title: t("myListings.deleteFailed"),
-        variant: "destructive",
-      });
-    } finally {
-      setDeleting(false);
-      setDeleteDialogOpen(false);
-    }
+  const getImageUrl = (url: string) => {
+    if (url.startsWith("http")) return url;
+    return `${env.apiUrl}${url}`;
   };
 
   const formatSlotDate = (startTime: string) => {
@@ -310,6 +127,155 @@ const ListingDetail = () => {
       });
     }
   };
+
+  const fetchListing = useCallback(async () => {
+    if (!listingId) return;
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const [listingData, imagesData] = await Promise.all([
+        listingsApi.getById(listingId),
+        listingsApi.getImages(listingId),
+      ]);
+      setListing(listingData);
+      setImages(imagesData);
+
+      if (isAuthenticated) {
+        try {
+          const isFav = await favoritesApi.checkFavorite(listingId);
+          setIsFavorite(isFav);
+        } catch {
+          // Ignore favorite check errors
+        }
+      }
+
+      try {
+        const slots = await availabilitySlotsApi.getAvailableSlotsByListingId(listingId);
+        setAvailableSlots(slots);
+      } catch {
+        // Ignore availability slot errors
+      }
+    } catch (err) {
+      setError(t("listingDetail.notFoundDesc"));
+    } finally {
+      setLoading(false);
+    }
+  }, [listingId, isAuthenticated, t]);
+
+  useEffect(() => {
+    fetchListing();
+  }, [fetchListing]);
+
+  const handlePrevImage = () => {
+    setCurrentImageIndex((prev) =>
+      prev === 0 ? displayImages.length - 1 : prev - 1
+    );
+  };
+
+  const handleNextImage = () => {
+    setCurrentImageIndex((prev) =>
+      prev === displayImages.length - 1 ? 0 : prev + 1
+    );
+  };
+
+  const handleToggleFavorite = async () => {
+    if (!listing || !isAuthenticated) {
+      navigate("/auth");
+      return;
+    }
+
+    setFavoriteLoading(true);
+    try {
+      const newFavoriteState = await favoritesApi.toggleFavorite(
+        listing.id,
+        isFavorite
+      );
+      setIsFavorite(newFavoriteState);
+      toast({
+        title: newFavoriteState
+          ? t("favorites.added")
+          : t("favorites.removed"),
+      });
+    } catch {
+      toast({
+        title: t("favorites.removeFailed"),
+        variant: "destructive",
+      });
+    } finally {
+      setFavoriteLoading(false);
+    }
+  };
+
+  const handleShare = async () => {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      toast({
+        title: t("listingDetail.linkCopied"),
+      });
+    } catch {
+      toast({
+        title: t("listingDetail.shareFailed"),
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleContactOwner = () => {
+    if (!isAuthenticated) {
+      navigate("/auth");
+      return;
+    }
+    setContactDialogOpen(true);
+  };
+
+  const handleRequestViewing = () => {
+    if (!isAuthenticated) {
+      navigate("/auth");
+      return;
+    }
+    setBookingDialogOpen(true);
+  };
+
+  const handleBookingSuccess = () => {
+    setBookingDialogOpen(false);
+    toast({
+      title: t("listingDetail.bookingSent"),
+    });
+  };
+
+  const handleDeleteListing = async () => {
+    if (!listing) return;
+    setDeleting(true);
+    try {
+      await listingsApi.delete(listing.id);
+      toast({ title: t("myListings.deleteSuccess") });
+      navigate("/my-listings");
+    } catch {
+      toast({
+        title: t("myListings.deleteFailed"),
+        variant: "destructive",
+      });
+    } finally {
+      setDeleting(false);
+      setDeleteDialogOpen(false);
+    }
+  };
+
+  const displayImages =
+    images.length > 0
+      ? images
+      : [
+          {
+            id: 0,
+            listingId: listing?.id ?? 0,
+            url: placeholderImage,
+            uploadSessionId: null,
+            createdAt: "",
+          },
+        ];
+  const currentImage = displayImages[currentImageIndex];
 
   if (loading) {
     return (
@@ -344,26 +310,11 @@ const ListingDetail = () => {
     );
   }
 
-  const displayImages =
-    images.length > 0
-      ? images
-      : [
-          {
-            id: 0,
-            listingId: listing.id,
-            url: placeholderImage,
-            uploadSessionId: null,
-            createdAt: "",
-          },
-        ];
-  const currentImage = displayImages[currentImageIndex];
-
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
 
       <main className="container mx-auto px-4 py-8">
-        {/* Back Button */}
         <Button
           variant="ghost"
           onClick={() => navigate(-1)}
@@ -374,18 +325,16 @@ const ListingDetail = () => {
         </Button>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
             {/* Image Gallery */}
             <div className="relative rounded-xl overflow-hidden bg-muted">
               <div className="aspect-[16/10] relative">
                 <img
-                  src={currentImage.url}
+                  src={getImageUrl(currentImage.url)}
                   alt={listing.title}
                   className="w-full h-full object-cover"
                 />
 
-                {/* Image Navigation */}
                 {displayImages.length > 1 && (
                   <>
                     <button
@@ -403,14 +352,12 @@ const ListingDetail = () => {
                   </>
                 )}
 
-                {/* Image Counter */}
                 {displayImages.length > 1 && (
                   <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-background/80 px-3 py-1 rounded-full text-sm">
                     {currentImageIndex + 1} / {displayImages.length}
                   </div>
                 )}
 
-                {/* Action Buttons */}
                 <div className="absolute top-4 right-4 flex gap-2">
                   <button
                     onClick={handleToggleFavorite}
@@ -434,7 +381,6 @@ const ListingDetail = () => {
                 </div>
               </div>
 
-              {/* Thumbnail Strip */}
               {displayImages.length > 1 && (
                 <div className="flex gap-2 p-4 overflow-x-auto">
                   {displayImages.map((img, index) => (
@@ -448,7 +394,7 @@ const ListingDetail = () => {
                       }`}
                     >
                       <img
-                        src={img.url}
+                        src={getImageUrl(img.url)}
                         alt={`${listing.title} - ${index + 1}`}
                         className="w-full h-full object-cover"
                       />
@@ -784,7 +730,6 @@ const ListingDetail = () => {
 
       <Footer />
 
-      {/* Contact Owner Dialog */}
       <ContactOwnerDialog
         open={contactDialogOpen}
         onOpenChange={setContactDialogOpen}
@@ -792,7 +737,6 @@ const ListingDetail = () => {
         listingId={listing.id}
       />
 
-      {/* Booking Dialog */}
       {user && (
         <BookingDialog
           open={bookingDialogOpen}

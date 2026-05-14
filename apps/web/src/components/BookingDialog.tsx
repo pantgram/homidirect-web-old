@@ -9,6 +9,7 @@ import { availabilitySlotsApi } from "@/api/availability-slots";
 import type { AvailabilitySlot } from "@/api/types";
 import { Calendar as CalendarIcon, Clock, Loader2 } from "lucide-react";
 import { addDays, format, isBefore } from "date-fns";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface BookingDialogProps {
   open: boolean;
@@ -26,6 +27,7 @@ const BookingDialog = ({
   onSuccess,
 }: BookingDialogProps) => {
   const { toast } = useToast();
+  const { t, language } = useLanguage();
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [selectedSlot, setSelectedSlot] = useState<AvailabilitySlot | null>(null);
   const [availableSlots, setAvailableSlots] = useState<AvailabilitySlot[]>([]);
@@ -43,7 +45,7 @@ const BookingDialog = ({
       } catch (err) {
         console.error("Failed to fetch availability slots:", err);
         toast({
-          title: "Failed to load availability slots",
+          title: t("bookingDialog.failedLoadSlots"),
           variant: "destructive",
         });
       } finally {
@@ -57,7 +59,7 @@ const BookingDialog = ({
   const handleSubmit = async () => {
     if (!selectedSlot) {
       toast({
-        title: "Please select a time slot",
+        title: t("bookingDialog.selectSlot"),
         variant: "destructive",
       });
       return;
@@ -72,7 +74,7 @@ const BookingDialog = ({
       });
 
       toast({
-        title: "Booking request sent",
+        title: t("bookingDialog.sent"),
       });
 
       onOpenChange(false);
@@ -80,7 +82,7 @@ const BookingDialog = ({
     } catch (err) {
       console.error("Failed to create booking:", err);
       toast({
-        title: "Failed to create booking",
+        title: t("bookingDialog.failed"),
         variant: "destructive",
       });
     } finally {
@@ -106,7 +108,7 @@ const BookingDialog = ({
 
   const formatSlotTime = (startTime: string) => {
     const date = new Date(startTime);
-    return date.toLocaleTimeString("en-US", {
+    return date.toLocaleTimeString(language === "el" ? "el-GR" : "en-US", {
       hour: "2-digit",
       minute: "2-digit",
     });
@@ -116,7 +118,7 @@ const BookingDialog = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Request Viewing: {listingTitle}</DialogTitle>
+          <DialogTitle>{t("bookingDialog.title")}: {listingTitle}</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-6 py-4">
@@ -128,13 +130,13 @@ const BookingDialog = ({
             <div className="text-center py-8">
               <CalendarIcon className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
               <p className="text-muted-foreground">
-                No availability slots available for this property. Please check back later or contact the landlord directly.
+                {t("bookingDialog.noSlotsAvailable")}
               </p>
             </div>
           ) : (
             <div className="grid md:grid-cols-2 gap-6">
               <div>
-                <label className="text-sm font-medium mb-2 block">Select Date</label>
+                <label className="text-sm font-medium mb-2 block">{t("bookingDialog.selectDate")}</label>
                 <Calendar
                   mode="single"
                   selected={selectedDate}
@@ -147,7 +149,7 @@ const BookingDialog = ({
               </div>
 
               <div>
-                <label className="text-sm font-medium mb-2 block">Select Time Slot</label>
+                <label className="text-sm font-medium mb-2 block">{t("bookingDialog.selectTimeSlot")}</label>
                 {selectedDate ? (
                   filteredSlots.length > 0 ? (
                     <div className="space-y-2">
@@ -175,12 +177,12 @@ const BookingDialog = ({
                     </div>
                   ) : (
                     <div className="text-center py-8 text-muted-foreground">
-                      No slots available on this date
+                      {t("bookingDialog.noSlotsOnDate")}
                     </div>
                   )
                 ) : (
                   <div className="text-center py-8 text-muted-foreground">
-                    Please select a date first
+                    {t("bookingDialog.selectDateFirst")}
                   </div>
                 )}
               </div>
@@ -190,7 +192,7 @@ const BookingDialog = ({
 
         <div className="flex justify-end gap-3">
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Cancel
+            {t("common.cancel")}
           </Button>
           <Button
             onClick={handleSubmit}
@@ -199,7 +201,7 @@ const BookingDialog = ({
             {submitting ? (
               <Loader2 className="h-4 w-4 animate-spin mr-2" />
             ) : null}
-            Request Viewing
+            {t("bookingDialog.requestViewing")}
           </Button>
         </div>
       </DialogContent>

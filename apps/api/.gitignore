@@ -1,4 +1,9 @@
-node_modules
-# Keep environment variables out of version control
+.venv/
+__pycache__/
+*.pyc
 .env
-
+*.egg-info/
+dist/
+build/
+.ruff_cache/
+.pytest_cache/

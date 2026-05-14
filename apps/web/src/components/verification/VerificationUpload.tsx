@@ -37,6 +37,7 @@ import {
   useUploadVerificationDocument,
   useDeleteVerificationDocument,
 } from "@/hooks/useVerification";
+import { useLanguage, type TranslationKey } from "@/contexts/LanguageContext";
 import type {
   DocumentType,
   VerificationDocument,
@@ -49,20 +50,20 @@ interface VerificationUploadProps {
   listingTitle?: string;
 }
 
-const DOCUMENT_TYPE_LABELS: Record<DocumentType, string> = {
-  UTILITY_BILL: "Utility Bill",
-  TITLE_DEED: "Title Deed",
-  LEASE_AGREEMENT: "Lease Agreement",
-  PROPERTY_TAX: "Property Tax Document",
-  OTHER: "Other Document",
-};
+const DOCUMENT_TYPES: DocumentType[] = [
+  "UTILITY_BILL",
+  "TITLE_DEED",
+  "LEASE_AGREEMENT",
+  "PROPERTY_TAX",
+  "OTHER",
+];
 
-const DOCUMENT_TYPE_DESCRIPTIONS: Record<DocumentType, string> = {
-  UTILITY_BILL: "Recent utility bill (electricity, water, gas) showing property address",
-  TITLE_DEED: "Official property title deed or ownership certificate",
-  LEASE_AGREEMENT: "Signed lease agreement if you are renting out the property",
-  PROPERTY_TAX: "Property tax statement or receipt",
-  OTHER: "Any other relevant ownership documentation",
+const DOC_TYPE_KEY: Record<DocumentType, string> = {
+  UTILITY_BILL: "utilityBill",
+  TITLE_DEED: "titleDeed",
+  LEASE_AGREEMENT: "leaseAgreement",
+  PROPERTY_TAX: "propertyTax",
+  OTHER: "other",
 };
 
 const ALLOWED_FILE_TYPES = [
@@ -80,8 +81,8 @@ function formatFileSize(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-function formatDate(dateString: string): string {
-  return new Date(dateString).toLocaleDateString("en-US", {
+function formatDate(dateString: string, language: string): string {
+  return new Date(dateString).toLocaleDateString(language === "el" ? "el-GR" : "en-US", {
     year: "numeric",
     month: "short",
     day: "numeric",
@@ -90,7 +91,7 @@ function formatDate(dateString: string): string {
   });
 }
 
-function getStatusConfig(status: VerificationStatus) {
+function getStatusConfig(status: VerificationStatus, t: (key: TranslationKey) => string) {
   switch (status) {
     case "PENDING":
       return {
@@ -99,8 +100,8 @@ function getStatusConfig(status: VerificationStatus) {
         bgColor: "bg-yellow-50",
         borderColor: "border-yellow-200",
         badgeVariant: "secondary" as const,
-        label: "Pending Review",
-        description: "Your documents are being reviewed by our team.",
+        label: t("verification.status.pending"),
+        description: t("verification.status.pendingDesc"),
       };
     case "APPROVED":
       return {
@@ -109,8 +110,8 @@ function getStatusConfig(status: VerificationStatus) {
         bgColor: "bg-green-50",
         borderColor: "border-green-200",
         badgeVariant: "default" as const,
-        label: "Approved",
-        description: "Your property has been verified successfully.",
+        label: t("verification.status.approved"),
+        description: t("verification.status.approvedDesc"),
       };
     case "REJECTED":
       return {
@@ -119,8 +120,8 @@ function getStatusConfig(status: VerificationStatus) {
         bgColor: "bg-red-50",
         borderColor: "border-red-200",
         badgeVariant: "destructive" as const,
-        label: "Rejected",
-        description: "Your verification was rejected. Please review the feedback and resubmit.",
+        label: t("verification.status.rejected"),
+        description: t("verification.status.rejectedDesc"),
       };
   }
 }
@@ -164,9 +165,11 @@ interface DocumentCardProps {
   onDelete: (id: number) => void;
   isDeleting: boolean;
   canDelete: boolean;
+  t: (key: TranslationKey) => string;
+  language: string;
 }
 
-function DocumentCard({ document, onDelete, isDeleting, canDelete }: DocumentCardProps) {
+function DocumentCard({ document, onDelete, isDeleting, canDelete, t, language }: DocumentCardProps) {
   const isPdf = document.fileName.toLowerCase().endsWith(".pdf");
 
   return (
@@ -183,10 +186,10 @@ function DocumentCard({ document, onDelete, isDeleting, canDelete }: DocumentCar
         <p className="text-sm font-medium truncate">{document.fileName}</p>
         <div className="flex items-center gap-2 mt-1">
           <Badge variant="outline" className="text-xs">
-            {DOCUMENT_TYPE_LABELS[document.documentType]}
+            {t(`verification.docType.${DOC_TYPE_KEY[document.documentType]}` as TranslationKey)}
           </Badge>
           <span className="text-xs text-muted-foreground">
-            {formatDate(document.createdAt)}
+            {formatDate(document.createdAt, language)}
           </span>
         </div>
       </div>
@@ -198,7 +201,7 @@ function DocumentCard({ document, onDelete, isDeleting, canDelete }: DocumentCar
           className="h-8"
         >
           <a href={document.url} target="_blank" rel="noopener noreferrer">
-            View
+            {t("verification.view")}
           </a>
         </Button>
         {canDelete && (
@@ -223,17 +226,19 @@ function DocumentCard({ document, onDelete, isDeleting, canDelete }: DocumentCar
 
 interface VerificationTimelineProps {
   history: VerificationHistoryEntry[];
+  t: (key: TranslationKey) => string;
+  language: string;
 }
 
-function VerificationTimeline({ history }: VerificationTimelineProps) {
+function VerificationTimeline({ history, t, language }: VerificationTimelineProps) {
   if (history.length === 0) return null;
 
   return (
     <div className="space-y-3">
-      <h4 className="text-sm font-medium">Verification History</h4>
+      <h4 className="text-sm font-medium">{t("verification.history")}</h4>
       <div className="relative space-y-4 pl-6 before:absolute before:left-2 before:top-2 before:bottom-2 before:w-px before:bg-border">
         {history.map((entry, index) => {
-          const statusConfig = getStatusConfig(entry.newStatus as VerificationStatus);
+          const statusConfig = getStatusConfig(entry.newStatus as VerificationStatus, t);
           const Icon = statusConfig.icon;
 
           return (
@@ -260,7 +265,7 @@ function VerificationTimeline({ history }: VerificationTimelineProps) {
                     {entry.newStatus}
                   </Badge>
                   <span className="text-xs text-muted-foreground">
-                    {formatDate(entry.createdAt)}
+                    {formatDate(entry.createdAt, language)}
                   </span>
                 </div>
                 {entry.notes && (
@@ -282,6 +287,7 @@ export function VerificationUpload({ listingId, listingTitle }: VerificationUplo
   const [isDragging, setIsDragging] = useState(false);
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { t, language } = useLanguage();
 
   const { data: verificationStatus, isLoading, error, refetch } = useVerificationStatus(listingId);
   const uploadMutation = useUploadVerificationDocument(listingId);
@@ -289,13 +295,13 @@ export function VerificationUpload({ listingId, listingTitle }: VerificationUplo
 
   const validateFile = useCallback((file: File): string | null => {
     if (!ALLOWED_FILE_TYPES.includes(file.type)) {
-      return "Invalid file type. Please upload a PDF, JPEG, PNG, or WebP file.";
+      return t("verification.invalidFileType");
     }
     if (file.size > MAX_FILE_SIZE) {
-      return `File size exceeds ${formatFileSize(MAX_FILE_SIZE)}. Please upload a smaller file.`;
+      return t("verification.fileTooLarge").replace("{size}", formatFileSize(MAX_FILE_SIZE));
     }
     return null;
-  }, []);
+  }, [t]);
 
   const handleFileSelect = useCallback(
     (file: File) => {
@@ -367,7 +373,7 @@ export function VerificationUpload({ listingId, listingTitle }: VerificationUplo
       setUploadProgress(100);
       clearInterval(progressInterval);
 
-      toast.success("Document uploaded successfully");
+      toast.success(t("verification.docUploaded"));
       setSelectedFile(null);
       setUploadProgress(0);
 
@@ -377,23 +383,23 @@ export function VerificationUpload({ listingId, listingTitle }: VerificationUplo
     } catch (err: any) {
       clearInterval(progressInterval);
       setUploadProgress(0);
-      toast.error(err.response?.data?.message || "Failed to upload document");
+      toast.error(err.response?.data?.message || t("verification.uploadFailed"));
     }
-  }, [selectedFile, documentType, uploadMutation]);
+  }, [selectedFile, documentType, uploadMutation, t]);
 
   const handleDelete = useCallback(
     async (documentId: number) => {
       setDeletingId(documentId);
       try {
         await deleteMutation.mutateAsync(documentId);
-        toast.success("Document deleted successfully");
+        toast.success(t("verification.docDeleted"));
       } catch (err: any) {
-        toast.error(err.response?.data?.message || "Failed to delete document");
+        toast.error(err.response?.data?.message || t("verification.deleteFailed"));
       } finally {
         setDeletingId(null);
       }
     },
-    [deleteMutation]
+    [deleteMutation, t]
   );
 
   if (isLoading) {
@@ -410,11 +416,11 @@ export function VerificationUpload({ listingId, listingTitle }: VerificationUplo
     return (
       <Alert variant="destructive">
         <AlertCircle className="h-4 w-4" />
-        <AlertTitle>Error</AlertTitle>
+        <AlertTitle>{t("verification.errorTitle")}</AlertTitle>
         <AlertDescription>
-          Failed to load verification status. Please try again.
+          {t("verification.errorLoadingStatus")}
           <Button variant="link" className="p-0 h-auto ml-2" onClick={() => refetch()}>
-            Retry
+            {t("verification.retry")}
           </Button>
         </AlertDescription>
       </Alert>
@@ -422,7 +428,7 @@ export function VerificationUpload({ listingId, listingTitle }: VerificationUplo
   }
 
   const status = verificationStatus?.verificationStatus || "PENDING";
-  const statusConfig = getStatusConfig(status);
+  const statusConfig = getStatusConfig(status as VerificationStatus, t);
   const StatusIcon = statusConfig.icon;
   const canUpload = status !== "APPROVED";
   const canDelete = status !== "APPROVED";
@@ -446,12 +452,12 @@ export function VerificationUpload({ listingId, listingTitle }: VerificationUplo
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex flex-wrap items-center gap-2 mb-1">
-              <h3 className="text-lg font-semibold">Verification Status</h3>
+              <h3 className="text-lg font-semibold">{t("verification.statusTitle")}</h3>
               <Badge variant={statusConfig.badgeVariant}>{statusConfig.label}</Badge>
             </div>
             <p className="text-sm text-muted-foreground">{statusConfig.description}</p>
             {listingTitle && (
-              <p className="text-sm font-medium mt-2">Property: {listingTitle}</p>
+              <p className="text-sm font-medium mt-2">{t("verification.propertyLabel").replace("{title}", listingTitle)}</p>
             )}
           </div>
         </CardContent>
@@ -461,11 +467,9 @@ export function VerificationUpload({ listingId, listingTitle }: VerificationUplo
       {status === "REJECTED" && verificationStatus?.canResubmit && (
         <Alert className="border-amber-200 bg-amber-50">
           <RefreshCw className="h-4 w-4 text-amber-600" />
-          <AlertTitle className="text-amber-800">Resubmission Available</AlertTitle>
+          <AlertTitle className="text-amber-800">{t("verification.resubmitAvailable")}</AlertTitle>
           <AlertDescription className="text-amber-700">
-            You can upload new documents to resubmit your verification request.
-            Please review the rejection notes above and ensure your new documents
-            meet the requirements.
+            {t("verification.resubmitDesc")}
           </AlertDescription>
         </Alert>
       )}
@@ -474,29 +478,29 @@ export function VerificationUpload({ listingId, listingTitle }: VerificationUplo
       {canUpload && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">Upload Verification Document</CardTitle>
+            <CardTitle className="text-lg">{t("verification.uploadTitle")}</CardTitle>
             <CardDescription>
-              Upload a document to verify your property ownership or authorization
+              {t("verification.uploadDesc")}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {/* Instructions */}
             <Alert>
               <Info className="h-4 w-4" />
-              <AlertTitle>Document Requirements</AlertTitle>
+              <AlertTitle>{t("verification.docRequirements")}</AlertTitle>
               <AlertDescription className="mt-2">
                 <ul className="list-disc list-inside space-y-1 text-sm">
-                  <li>Document must clearly show the property address</li>
-                  <li>Your name must match your account registration</li>
-                  <li>Document should be dated within the last 3 months (for utility bills)</li>
-                  <li>Accepted formats: PDF, JPEG, PNG, WebP (max 10MB)</li>
+                  <li>{t("verification.req1")}</li>
+                  <li>{t("verification.req2")}</li>
+                  <li>{t("verification.req3")}</li>
+                  <li>{t("verification.req4")}</li>
                 </ul>
               </AlertDescription>
             </Alert>
 
             {/* Document Type Selector */}
             <div className="space-y-2">
-              <label className="text-sm font-medium">Document Type</label>
+              <label className="text-sm font-medium">{t("verification.docTypeLabel")}</label>
               <Select
                 value={documentType}
                 onValueChange={(value) => setDocumentType(value as DocumentType)}
@@ -505,17 +509,17 @@ export function VerificationUpload({ listingId, listingTitle }: VerificationUplo
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {(Object.keys(DOCUMENT_TYPE_LABELS) as DocumentType[]).map((type) => (
+                  {DOCUMENT_TYPES.map((type) => (
                     <SelectItem key={type} value={type}>
                       <div className="flex flex-col items-start">
-                        <span>{DOCUMENT_TYPE_LABELS[type]}</span>
+                        <span>{t(`verification.docType.${DOC_TYPE_KEY[type]}` as any)}</span>
                       </div>
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
               <p className="text-xs text-muted-foreground">
-                {DOCUMENT_TYPE_DESCRIPTIONS[documentType]}
+                {t(`verification.docTypeDesc.${DOC_TYPE_KEY[documentType]}` as any)}
               </p>
             </div>
 
@@ -562,13 +566,13 @@ export function VerificationUpload({ listingId, listingTitle }: VerificationUplo
                     )}
                   />
                   <p className="text-sm font-medium">
-                    {isDragging ? "Drop your file here" : "Drag & drop your file here"}
+                    {isDragging ? t("verification.dropHere") : t("verification.dragDrop")}
                   </p>
                   <p className="text-xs text-muted-foreground mt-1">
-                    or click to browse
+                    {t("verification.orClickBrowse")}
                   </p>
                   <p className="text-xs text-muted-foreground mt-2">
-                    PDF, JPEG, PNG, or WebP up to 10MB
+                    {t("verification.acceptedFormatsInfo")}
                   </p>
                 </>
               )}
@@ -579,7 +583,7 @@ export function VerificationUpload({ listingId, listingTitle }: VerificationUplo
               <div className="space-y-2">
                 <Progress value={uploadProgress} className="h-2" />
                 <p className="text-xs text-center text-muted-foreground">
-                  Uploading... {uploadProgress}%
+                  {t("verification.uploading").replace("{progress}", String(uploadProgress))}
                 </p>
               </div>
             )}
@@ -594,12 +598,12 @@ export function VerificationUpload({ listingId, listingTitle }: VerificationUplo
               {uploadMutation.isPending ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                  Uploading...
+                  {t("verification.uploadingButton")}
                 </>
               ) : (
                 <>
                   <Upload className="w-4 h-4 mr-2" />
-                  Upload Document
+                  {t("verification.uploadButton")}
                 </>
               )}
             </Button>
@@ -611,9 +615,9 @@ export function VerificationUpload({ listingId, listingTitle }: VerificationUplo
       {documents.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">Uploaded Documents</CardTitle>
+            <CardTitle className="text-lg">{t("verification.uploadedDocs")}</CardTitle>
             <CardDescription>
-              {documents.length} document{documents.length !== 1 ? "s" : ""} uploaded
+              {t("verification.docCount").replace("{count}", String(documents.length))}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
@@ -624,6 +628,8 @@ export function VerificationUpload({ listingId, listingTitle }: VerificationUplo
                 onDelete={handleDelete}
                 isDeleting={deletingId === doc.id}
                 canDelete={canDelete}
+                t={t}
+                language={language}
               />
             ))}
           </CardContent>
@@ -634,10 +640,10 @@ export function VerificationUpload({ listingId, listingTitle }: VerificationUplo
       {history.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">Verification History</CardTitle>
+            <CardTitle className="text-lg">{t("verification.history")}</CardTitle>
           </CardHeader>
           <CardContent>
-            <VerificationTimeline history={history} />
+            <VerificationTimeline history={history} t={t} language={language} />
           </CardContent>
         </Card>
       )}

@@ -175,7 +175,7 @@ const HowItWorks = () => {
               <p className="text-muted-foreground">{t("howItWorks.directCommunication")}</p>
             </div>
             <div>
-              <div className="text-4xl font-bold text-primary mb-2">Fast</div>
+              <div className="text-4xl font-bold text-primary mb-2">{t("howItWorks.quickConnections")}</div>
               <p className="text-muted-foreground">{t("howItWorks.quickConnections")}</p>
             </div>
           </div>

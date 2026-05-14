@@ -239,27 +239,6 @@ const MyProfile = () => {
           </CardContent>
         </Card>
 
-        {/* Quick Navigation */}
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle>{t("profile.myBookings")}</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <Link to="/bookings">
-              <Button
-                variant="outline"
-                className="w-full justify-start"
-                asChild
-              >
-                <>
-                  {t("profile.myBookings")}
-                  <ArrowRight className="ml-auto h-4 w-4" />
-                </>
-              </Button>
-            </Link>
-          </CardContent>
-        </Card>
-
         {/* Personal Information Form */}
         <Card className="mb-6">
           <CardHeader>
