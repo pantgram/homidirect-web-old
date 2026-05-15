@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.config.database import get_db
 from src.dependencies.auth import get_current_user, verify_booking_ownership
@@ -47,11 +47,12 @@ async def get_booking(
 @router.post("/", status_code=201)
 async def create_booking(
     body: CreateBookingRequest,
+    background_tasks: BackgroundTasks,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
     data = body.model_dump(exclude_none=True)
-    b = await booking_service.create_booking(db, data, current_user)
+    b = await booking_service.create_booking(db, data, current_user, background_tasks)
     return {"booking": {
         "id": b.id, "status": b.status, "scheduledAt": b.scheduled_at.isoformat(),
         "meetLink": b.meet_link, "createdAt": b.created_at.isoformat() if b.created_at else None,
@@ -64,12 +65,13 @@ async def create_booking(
 async def update_booking(
     booking_id: int,
     body: UpdateBookingRequest,
+    background_tasks: BackgroundTasks,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
     await verify_booking_ownership(booking_id, db, current_user)
     data = body.model_dump(exclude_none=True)
-    b = await booking_service.update_booking(db, booking_id, data)
+    b = await booking_service.update_booking(db, booking_id, data, background_tasks)
     if not b:
         raise HTTPException(status_code=404, detail="Booking not found")
     return {"booking": {
@@ -83,10 +85,11 @@ async def update_booking(
 @router.delete("/{booking_id}", status_code=204)
 async def delete_booking(
     booking_id: int,
+    background_tasks: BackgroundTasks,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
     await verify_booking_ownership(booking_id, db, current_user)
-    deleted = await booking_service.delete_booking(db, booking_id)
+    deleted = await booking_service.delete_booking(db, booking_id, background_tasks)
     if not deleted:
         raise HTTPException(status_code=404, detail="Booking not found")

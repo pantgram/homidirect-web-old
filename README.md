@@ -18,7 +18,7 @@ A modern real estate platform connecting landlords and tenants. Built with React
 - **Alembic** for database migrations
 - **JWT** authentication with `python-jose`
 - **Cloudflare R2** for image storage (via `boto3`)
-- **Celery + Redis** for async email delivery
+- **FastAPI BackgroundTasks** for async email delivery
 - **Pydantic v2** for request/response validation
 
 ### Infrastructure
@@ -47,7 +47,6 @@ A modern real estate platform connecting landlords and tenants. Built with React
 - Python >= 3.12
 - uv (Python package manager)
 - PostgreSQL 16 (or Docker)
-- Redis (for Celery task queue)
 
 ## Getting Started
 
@@ -90,9 +89,6 @@ EMAIL_FROM=HomiDirect <donotreply@homidirect.com>
 GOOGLE_CLIENT_ID=your-client-id
 GOOGLE_CLIENT_SECRET=your-client-secret
 GOOGLE_CALLBACK_URL=http://localhost:5000/api/v1/auth/google/callback
-
-# Redis (for Celery)
-REDIS_URL=redis://localhost:6379/0
 ```
 
 ### 3. Start Services
@@ -101,7 +97,7 @@ REDIS_URL=redis://localhost:6379/0
 pnpm docker
 ```
 
-This starts PostgreSQL, Redis, the API, and the Celery worker.
+This starts PostgreSQL and the API.
 
 ### 4. Run Migrations
 
@@ -124,7 +120,6 @@ Or start individually:
 ```bash
 pnpm dev:api    # API at http://localhost:5000
 pnpm dev:web    # Frontend at http://localhost:5173
-pnpm worker     # Celery worker for emails
 ```
 
 ## Scripts
@@ -143,7 +138,6 @@ pnpm worker     # Celery worker for emails
 | `pnpm docker:down` | Stop all Docker services |
 | `pnpm db:generate` | Generate Alembic migration |
 | `pnpm db:migrate` | Run pending migrations |
-| `pnpm worker` | Start Celery worker for async emails |
 | `pnpm clean` | Clean build artifacts |
 
 ## Project Structure
@@ -177,7 +171,7 @@ homidirect/
 │   ├── config/                  # Shared ESLint/TS config
 │   └── shared/                  # Shared TypeScript types
 │
-├── docker-compose.yml           # API, worker, PostgreSQL, Redis
+├── docker-compose.yml           # API, PostgreSQL
 ├── turbo.json                   # Turborepo config
 └── pnpm-workspace.yaml          # Workspace config
 ```

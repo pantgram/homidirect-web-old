@@ -1,18 +1,10 @@
-from typing import TYPE_CHECKING
+
 
 import sqlalchemy as sa
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-
-from src.config.database import Base
-from src.models.enums import (
-    floors_enum,
-    listing_status_enum,
-    property_type_enum,
-    verification_status_enum,
-    zone_type_enum,
-)
-
+from typing import TYPE_CHECKING
 if TYPE_CHECKING:
+
     from src.models.availability_slot import AvailabilitySlot
     from src.models.booking import Booking
     from src.models.conversation import Conversation
@@ -22,6 +14,15 @@ if TYPE_CHECKING:
     from src.models.user import User
     from src.models.verification_document import VerificationDocument
     from src.models.verification_history import VerificationHistory
+from src.config.database import Base
+from src.models.enums import (
+    floors_enum,
+    listing_status_enum,
+    property_type_enum,
+    verification_status_enum,
+    zone_type_enum,
+)
+
 
 
 class Listing(Base):

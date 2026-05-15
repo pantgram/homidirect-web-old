@@ -1,5 +1,6 @@
 import hashlib
 from datetime import datetime, timezone
+from fastapi import BackgroundTasks
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.models.user import User
@@ -96,7 +97,7 @@ async def refresh(db: AsyncSession, refresh_token: str):
     }
 
 
-async def forgot_password(db: AsyncSession, email: str):
+async def forgot_password(db: AsyncSession, email: str, background_tasks: BackgroundTasks):
     result = await db.execute(select(User.id, User.email).where(User.email == email))
     user = result.first()
 
@@ -115,7 +116,7 @@ async def forgot_password(db: AsyncSession, email: str):
     db_user.password_reset_expires = datetime.fromtimestamp(expires_at, tz=timezone.utc)
     db_user.updated_at = datetime.now(timezone.utc)
 
-    send_password_reset_email.delay(user.email, reset_token)
+    background_tasks.add_task(send_password_reset_email, user.email, reset_token)
 
     return {"message": "If an account exists with this email, a reset link has been sent"}
 

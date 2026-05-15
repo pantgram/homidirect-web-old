@@ -16,8 +16,7 @@ dependencies = [
     "python-multipart>=0.0.17",
     "boto3>=1.35.0",
     "httpx>=0.28.0",
-    "celery[redis]>=5.4.0",
-    "aiosmtplib>=3.0.2",
+"aiosmtplib>=3.0.2",
     "slowapi>=0.1.9",
 ]
 

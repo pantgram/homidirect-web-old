@@ -25,8 +25,6 @@ class Settings(BaseSettings):
     google_client_secret: str = ""
     google_callback_url: str = "http://localhost:5000/api/v1/auth/google/callback"
 
-    redis_url: str = "redis://localhost:6379/0"
-
     max_file_size: int = 5 * 1024 * 1024
     max_document_size: int = 10 * 1024 * 1024
     max_images_per_listing: int = 10

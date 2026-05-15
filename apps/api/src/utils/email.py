@@ -1,10 +1,7 @@
 import html
-from celery import Celery
-from aiosmtplib import SMTP
 from email.message import EmailMessage
+from aiosmtplib import SMTP
 from src.config.settings import settings
-
-celery_app = Celery("homidirect", broker=settings.redis_url, backend=settings.redis_url)
 
 
 def _escape(text: str) -> str:
@@ -32,24 +29,7 @@ async def _send_email(to: str, subject: str, body: str) -> None:
         await smtp.send_message(msg)
 
 
-def _send_email_sync(to: str, subject: str, body: str) -> None:
-    import smtplib
-    from email.message import EmailMessage as EM
-
-    msg = EM()
-    msg["From"] = settings.email_from
-    msg["To"] = to
-    msg["Subject"] = subject
-    msg.set_content("Please enable HTML to view this email.")
-    msg.add_alternative(body, subtype="html")
-
-    with smtplib.SMTP_SSL(settings.smtp_host, settings.smtp_port) as server:
-        server.login(settings.smtp_user, settings.smtp_pass)
-        server.send_message(msg)
-
-
-@celery_app.task(ignore_result=True)
-def send_password_reset_email(to: str, token: str) -> None:
+async def send_password_reset_email(to: str, token: str) -> None:
     reset_link = f"{settings.frontend_url}/reset-password?token={token}"
     body = f"""
     <html><body>
@@ -61,11 +41,10 @@ def send_password_reset_email(to: str, token: str) -> None:
     <p>If you did not request this, ignore this email.</p>
     </body></html>
     """
-    _send_email_sync(to, "Password Reset - HomiDirect", body)
+    await _send_email(to, "Password Reset - HomiDirect", body)
 
 
-@celery_app.task(ignore_result=True)
-def send_contact_owner_email(
+async def send_contact_owner_email(
     owner_email: str,
     sender_name: str,
     sender_email: str,
@@ -82,13 +61,10 @@ def send_contact_owner_email(
     <p>{_escape(message)}</p>
     </body></html>
     """
-    msg = _build_message(owner_email, "New Listing Inquiry - HomiDirect", body)
-    msg["Reply-To"] = sender_email
-    _send_email_sync(owner_email, "New Listing Inquiry - HomiDirect", body)
+    await _send_email(owner_email, "New Listing Inquiry - HomiDirect", body)
 
 
-@celery_app.task(ignore_result=True)
-def send_booking_created_email(
+async def send_booking_created_email(
     landlord_email: str,
     landlord_name: str,
     tenant_name: str,
@@ -107,11 +83,10 @@ def send_booking_created_email(
     <p><strong>Booking ID:</strong> {booking_id}</p>
     </body></html>
     """
-    _send_email_sync(landlord_email, f"New Booking Request - {_escape(listing_title)}", body)
+    await _send_email(landlord_email, f"New Booking Request - {_escape(listing_title)}", body)
 
 
-@celery_app.task(ignore_result=True)
-def send_booking_confirmed_email(
+async def send_booking_confirmed_email(
     tenant_email: str,
     tenant_name: str,
     landlord_name: str,
@@ -130,11 +105,10 @@ def send_booking_confirmed_email(
     {meet_btn}
     </body></html>
     """
-    _send_email_sync(tenant_email, f"Booking Confirmed - {_escape(listing_title)}", body)
+    await _send_email(tenant_email, f"Booking Confirmed - {_escape(listing_title)}", body)
 
 
-@celery_app.task(ignore_result=True)
-def send_booking_declined_email(
+async def send_booking_declined_email(
     tenant_email: str,
     tenant_name: str,
     landlord_name: str,
@@ -149,11 +123,10 @@ def send_booking_declined_email(
     <p>Please try booking another available time slot.</p>
     </body></html>
     """
-    _send_email_sync(tenant_email, f"Booking Update - {_escape(listing_title)}", body)
+    await _send_email(tenant_email, f"Booking Update - {_escape(listing_title)}", body)
 
 
-@celery_app.task(ignore_result=True)
-def send_booking_cancelled_email(
+async def send_booking_cancelled_email(
     recipient_email: str,
     recipient_name: str,
     cancelled_by_name: str,
@@ -167,4 +140,4 @@ def send_booking_cancelled_email(
     <p>The booking for <strong>{_escape(listing_title)}</strong> scheduled at {_escape(scheduled_at)} has been cancelled by {_escape(cancelled_by_name)}.</p>
     </body></html>
     """
-    _send_email_sync(recipient_email, f"Booking Cancelled - {_escape(listing_title)}", body)
+    await _send_email(recipient_email, f"Booking Cancelled - {_escape(listing_title)}", body)

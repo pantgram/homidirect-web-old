@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, BackgroundTasks, Depends, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.config.database import get_db
@@ -36,8 +36,8 @@ async def refresh(body: RefreshTokenRequest, db: AsyncSession = Depends(get_db))
 
 @router.post("/forgot-password")
 @limiter.limit("3/minute")
-async def forgot_password(request: Request, body: ForgotPasswordRequest, db: AsyncSession = Depends(get_db)):
-    return await auth_service.forgot_password(db, body.email)
+async def forgot_password(request: Request, body: ForgotPasswordRequest, background_tasks: BackgroundTasks, db: AsyncSession = Depends(get_db)):
+    return await auth_service.forgot_password(db, body.email, background_tasks)
 
 
 @router.post("/reset-password")

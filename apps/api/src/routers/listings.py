@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -132,6 +132,7 @@ async def delete_listing(
 async def contact_owner(
     listing_id: int,
     body: ContactOwnerRequest,
+    background_tasks: BackgroundTasks,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(require_role("TENANT", "BOTH")),
 ):
@@ -139,11 +140,12 @@ async def contact_owner(
     landlord_r = await db.execute(select(UserModel).where(UserModel.id == listing.landlord_id))
     landlord = landlord_r.scalar_one_or_none()
     if landlord:
-        send_contact_owner_email.delay(
-            owner_email=landlord.email,
-            sender_name=body.name,
-            sender_email=body.email,
-            sender_phone=body.phone,
-            message=body.message,
+        background_tasks.add_task(
+            send_contact_owner_email,
+            landlord.email,
+            body.name,
+            body.email,
+            body.phone,
+            body.message,
         )
     return {"message": "Contact email sent"}
