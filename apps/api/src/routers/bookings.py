@@ -82,6 +82,24 @@ async def update_booking(
     }}
 
 
+@router.get("/listing/{listing_id}")
+async def get_bookings_by_listing(
+    listing_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    bookings = await booking_service.get_bookings_by_listing(db, listing_id)
+    return {"bookings": [
+        {
+            "id": b.id, "status": b.status, "scheduledAt": b.scheduled_at.isoformat(),
+            "meetLink": b.meet_link, "createdAt": b.created_at.isoformat() if b.created_at else None,
+            "candidateId": b.candidate_id, "landlordId": b.landlord_id,
+            "listingId": b.listing_id, "availabilitySlotId": b.availability_slot_id,
+        }
+        for b in bookings
+    ]}
+
+
 @router.delete("/{booking_id}", status_code=204)
 async def delete_booking(
     booking_id: int,

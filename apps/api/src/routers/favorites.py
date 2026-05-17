@@ -43,7 +43,7 @@ async def add_favorite(
     current_user: User = Depends(get_current_user),
 ):
     added = await fav_service.add_favorite(db, current_user.id, listing_id)
-    return {"added": added}
+    return {"success": True, "added": added, "message": "Favorite added" if added else "Already favorited"}
 
 
 @router.delete("/{listing_id}")

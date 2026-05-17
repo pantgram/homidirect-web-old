@@ -28,21 +28,21 @@ export const favoritesApi = {
 
   async getFavoriteIds(): Promise<number[]> {
     const response = await apiClient.get<FavoriteIdsResponse>(
-      "/users/favorites/ids"
+      "/users/favorites/ids",
     );
     return response.data.favoriteIds;
   },
 
   async checkFavorite(listingId: number): Promise<boolean> {
     const response = await apiClient.get<FavoriteCheckResponse>(
-      `/users/favorites/${listingId}/check`
+      `/users/favorites/${listingId}/check`,
     );
     return response.data.isFavorited;
   },
 
   async addFavorite(listingId: number): Promise<FavoriteToggleResponse> {
     const response = await apiClient.post<FavoriteToggleResponse>(
-      `/users/favorites/${listingId}`
+      `/users/favorites/${listingId}`,
     );
     return response.data;
   },
@@ -53,7 +53,7 @@ export const favoritesApi = {
 
   async toggleFavorite(
     listingId: number,
-    isFavorited: boolean
+    isFavorited: boolean,
   ): Promise<boolean> {
     if (isFavorited) {
       await this.removeFavorite(listingId);

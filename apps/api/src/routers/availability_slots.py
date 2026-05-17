@@ -26,7 +26,7 @@ async def get_slot(slot_id: int, db: AsyncSession = Depends(get_db)):
     slot = await slot_service.get_slot_by_id(db, slot_id)
     if not slot:
         raise HTTPException(status_code=404, detail="Slot not found")
-    return _format_slot(slot)
+    return {"slot": _format_slot(slot)}
 
 
 @router.post("/", status_code=201)
@@ -37,7 +37,7 @@ async def create_slot(
 ):
     data = {"listing_id": body.listing_id, "start_time": body.start_time, "end_time": body.end_time}
     slot = await slot_service.create_slot(db, data, current_user)
-    return _format_slot(slot)
+    return {"slot": _format_slot(slot)}
 
 
 @router.patch("/{slot_id}")
@@ -49,7 +49,7 @@ async def update_slot(
 ):
     data = body.model_dump(exclude_none=True)
     slot = await slot_service.update_slot(db, slot_id, data, current_user)
-    return _format_slot(slot)
+    return {"slot": _format_slot(slot)}
 
 
 @router.delete("/{slot_id}", status_code=204)

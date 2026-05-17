@@ -28,6 +28,13 @@ async def get_bookings_by_user(db: AsyncSession, user_id: int):
     return result.scalars().all()
 
 
+async def get_bookings_by_listing(db: AsyncSession, listing_id: int):
+    result = await db.execute(
+        select(Booking).where(Booking.listing_id == listing_id)
+    )
+    return result.scalars().all()
+
+
 async def get_booking_by_id(db: AsyncSession, booking_id: int):
     result = await db.execute(select(Booking).where(Booking.id == booking_id))
     return result.scalar_one_or_none()

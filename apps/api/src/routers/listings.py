@@ -134,7 +134,8 @@ async def contact_owner(
     body: ContactOwnerRequest,
     background_tasks: BackgroundTasks,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(require_role("TENANT", "BOTH")),
+    current_user: User = Depends(require_role("TENANT", "" \
+    "")),
 ):
     listing = await listing_service.get_listing_by_id(db, listing_id)
     landlord_r = await db.execute(select(UserModel).where(UserModel.id == listing.landlord_id))

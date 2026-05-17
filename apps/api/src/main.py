@@ -65,7 +65,6 @@ from src.routers import (
     auth,
     availability_slots,
     bookings,
-    favorites,
     geocoding,
     google_auth,
     listing_images,
@@ -82,10 +81,9 @@ async def health_check():
 
 
 api_prefix = "/api/v1"
-app.include_router(auth.router, prefix=api_prefix)
 app.include_router(google_auth.router, prefix=api_prefix)
+app.include_router(auth.router, prefix=api_prefix)
 app.include_router(users.router, prefix=api_prefix)
-app.include_router(favorites.router, prefix=api_prefix)
 app.include_router(listings.router, prefix=api_prefix)
 app.include_router(listing_images.router, prefix=api_prefix)
 app.include_router(uploads.router, prefix=api_prefix)

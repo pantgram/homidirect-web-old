@@ -44,7 +44,7 @@ async def register(db: AsyncSession, first_name: str, last_name: str, email: str
 
 async def login(db: AsyncSession, email: str, password: str):
     result = await db.execute(
-        select(User.id, User.email, User.password, User.token_version).where(User.email == email)
+        select(User.id, User.email, User.role, User.password, User.token_version).where(User.email == email)
     )
     row = result.first()
     if not row:
@@ -56,7 +56,7 @@ async def login(db: AsyncSession, email: str, password: str):
     if not verify_password(password, row.password):
         raise UnauthorizedError("Incorrect password")
 
-    payload = {"id": row.id, "email": row.email, "token_version": row.token_version}
+    payload = {"id": row.id, "email": row.email, "role": row.role, "token_version": row.token_version}
     return {
         "token": {
             "accessToken": create_access_token(payload),

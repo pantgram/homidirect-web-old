@@ -22,18 +22,66 @@ async def get_me(current_user: User = Depends(get_current_user)):
     }
 
 
+@router.get("/favorites")
+async def get_favorites(
+    page: int = 1, limit: int = 15,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    return await fav_service.get_favorites(db, current_user.id, page, limit)
+
+
+@router.get("/favorites/ids")
+async def get_favorite_ids(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    ids = await fav_service.get_favorite_ids(db, current_user.id)
+    return {"favoriteIds": ids}
+
+
+@router.get("/favorites/{listing_id}/check")
+async def check_favorite(
+    listing_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    is_fav = await fav_service.check_favorite(db, current_user.id, listing_id)
+    return {"isFavorited": is_fav}
+
+
+@router.post("/favorites/{listing_id}")
+async def add_favorite(
+    listing_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    added = await fav_service.add_favorite(db, current_user.id, listing_id)
+    return {"success": True, "added": added, "message": "Favorite added" if added else "Already favorited"}
+
+
+@router.delete("/favorites/{listing_id}")
+async def remove_favorite(
+    listing_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    await fav_service.remove_favorite(db, current_user.id, listing_id)
+    return {"removed": True}
+
+
 @router.get("/{user_id}")
 async def get_user(user_id: int, db: AsyncSession = Depends(get_db), current_user: User = Depends(get_current_user)):
     row = await user_service.get_user_by_id(db, user_id)
     if not row:
         raise HTTPException(status_code=404, detail="User not found")
-    return {
+    return {"user": {
         "id": row.id,
         "firstName": row.first_name,
         "lastName": row.last_name,
         "email": row.email,
         "createdAt": row.created_at.isoformat() if row.created_at else None,
-    }
+    }}
 
 
 @router.patch("/{user_id}")
@@ -43,21 +91,21 @@ async def update_user(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    await verify_user_ownership(user_id, current_user)
+    verify_user_ownership(user_id, current_user)
     data = body.model_dump(exclude_none=True)
     if "role" in data and current_user.role != "ADMIN":
         del data["role"]
     user = await user_service.update_user(db, user_id, data)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
-    return {
+    return {"user": {
         "id": user.id,
         "firstName": user.first_name,
         "lastName": user.last_name,
         "email": user.email,
         "role": user.role,
         "createdAt": user.created_at.isoformat() if user.created_at else None,
-    }
+    }}
 
 
 @router.delete("/{user_id}", status_code=204)
@@ -66,7 +114,7 @@ async def delete_user(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    await verify_user_ownership(user_id, current_user)
+    verify_user_ownership(user_id, current_user)
     deleted = await user_service.delete_user(db, user_id)
     if not deleted:
         raise HTTPException(status_code=404, detail="User not found")
