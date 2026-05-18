@@ -44,7 +44,7 @@ export const verificationApi = {
   ): Promise<VerificationDocument> {
     const formData = new FormData();
     formData.append("file", file);
-    formData.append("documentType", documentType);
+    formData.append("document_type", documentType);
 
     const response = await apiClient.post<{ document: VerificationDocument }>(
       `/listings/${listingId}/verification/documents`,
@@ -69,7 +69,7 @@ export const verificationApi = {
     status: "APPROVED" | "REJECTED",
     notes?: string
   ): Promise<void> {
-    await apiClient.post(`/listings/${listingId}/verification/review`, {
+    await apiClient.post(`/admin/verifications/${listingId}/verification/review`, {
       status,
       notes,
     });

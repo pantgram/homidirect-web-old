@@ -1,4 +1,6 @@
-from pydantic import BaseModel, EmailStr, field_validator
+from pydantic import EmailStr, field_validator
+
+from src.schemas.base import CamelModel
 
 VALID_ROLES = {"LANDLORD", "TENANT", "BOTH"}
 
@@ -15,7 +17,7 @@ def _validate_password(v: str) -> str:
     return v
 
 
-class RegisterRequest(BaseModel):
+class RegisterRequest(CamelModel):
     first_name: str
     last_name: str
     email: EmailStr
@@ -35,20 +37,20 @@ class RegisterRequest(BaseModel):
         return v
 
 
-class LoginRequest(BaseModel):
+class LoginRequest(CamelModel):
     email: EmailStr
     password: str
 
 
-class RefreshTokenRequest(BaseModel):
+class RefreshTokenRequest(CamelModel):
     refresh_token: str
 
 
-class ForgotPasswordRequest(BaseModel):
+class ForgotPasswordRequest(CamelModel):
     email: EmailStr
 
 
-class ResetPasswordRequest(BaseModel):
+class ResetPasswordRequest(CamelModel):
     token: str
     password: str
 
@@ -58,34 +60,32 @@ class ResetPasswordRequest(BaseModel):
         return _validate_password(v)
 
 
-class ExchangeCodeRequest(BaseModel):
+class ExchangeCodeRequest(CamelModel):
     code: str
 
 
-class AuthTokens(BaseModel):
+class AuthTokens(CamelModel):
     access_token: str
     refresh_token: str
 
 
-class LoginResponse(BaseModel):
+class LoginResponse(CamelModel):
     token: AuthTokens
 
 
-class RegisterResponse(BaseModel):
+class RegisterResponse(CamelModel):
     user: "UserBrief"
     token: AuthTokens
 
 
-class RefreshResponse(BaseModel):
+class RefreshResponse(CamelModel):
     tokens: AuthTokens
 
 
-class UserBrief(BaseModel):
+class UserBrief(CamelModel):
     id: int
     first_name: str
     last_name: str
     email: str
     role: str
     created_at: str
-
-    model_config = {"from_attributes": True}

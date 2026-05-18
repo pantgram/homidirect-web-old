@@ -28,7 +28,7 @@ export interface Listing {
   listingStatus: ListingStatusType | null;
   dateAvailable: string;
   dateBuilt: number;
-  views_count: number;
+  viewsCount: number;
   country?: string;
   address?: string;
   latitude?: number;

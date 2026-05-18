@@ -4,6 +4,20 @@ import { env } from "@/config/env";
 const TOKEN_KEY = "auth_token";
 const REFRESH_TOKEN_KEY = "refresh_token";
 
+function toSnakeCase(str: string): string {
+  return str.replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`);
+}
+
+function convertParamsToSnakeCase(
+  params: Record<string, unknown>,
+): Record<string, unknown> {
+  const result: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(params)) {
+    result[toSnakeCase(key)] = value;
+  }
+  return result;
+}
+
 export const apiClient = axios.create({
   baseURL: `${env.apiUrl}/api/v1`,
   headers: {
@@ -11,7 +25,6 @@ export const apiClient = axios.create({
   },
 });
 
-// Token management
 export const tokenStorage = {
   getToken: () => localStorage.getItem(TOKEN_KEY),
   setToken: (token: string) => localStorage.setItem(TOKEN_KEY, token),
@@ -24,19 +37,22 @@ export const tokenStorage = {
   },
 };
 
-// Request interceptor - add auth token
 apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     const token = tokenStorage.getToken();
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+    if (config.params) {
+      config.params = convertParamsToSnakeCase(
+        config.params as Record<string, unknown>,
+      );
+    }
     return config;
   },
   (error) => Promise.reject(error),
 );
 
-// Response interceptor - handle token refresh
 let isRefreshing = false;
 let failedQueue: Array<{
   resolve: (token: string) => void;
@@ -61,10 +77,8 @@ apiClient.interceptors.response.use(
       _retry?: boolean;
     };
 
-    // Skip token refresh for auth endpoints (login, register, etc.)
     const isAuthEndpoint = originalRequest.url?.startsWith("/auth/");
 
-    // Handle 401 errors (unauthorized) - but not for auth endpoints
     if (
       error.response?.status === 401 &&
       !originalRequest._retry &&
@@ -93,13 +107,13 @@ apiClient.interceptors.response.use(
 
       try {
         const response = await axios.post(`${env.apiUrl}/api/v1/auth/refresh`, {
-          refreshToken,
+          refresh_token: refreshToken,
         });
         const { tokens } = response.data;
-        tokenStorage.setToken(tokens.accessToken);
-        tokenStorage.setRefreshToken(tokens.refreshToken);
-        processQueue(null, tokens.accessToken);
-        originalRequest.headers.Authorization = `Bearer ${tokens.accessToken}`;
+        tokenStorage.setToken(tokens.access_token);
+        tokenStorage.setRefreshToken(tokens.refresh_token);
+        processQueue(null, tokens.access_token);
+        originalRequest.headers.Authorization = `Bearer ${tokens.access_token}`;
         return apiClient(originalRequest);
       } catch (refreshError) {
         processQueue(refreshError, null);
@@ -115,7 +129,6 @@ apiClient.interceptors.response.use(
   },
 );
 
-// API error type
 export interface ApiError {
   message: string;
   statusCode: number;

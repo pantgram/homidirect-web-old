@@ -12,6 +12,30 @@ from src.utils.errors import ConflictError, NotFoundError
 from src.utils.storage import delete_from_r2, get_key_from_url, upload_to_r2
 
 
+def _format_doc(d):
+    return {
+        "id": d.id,
+        "listing_id": d.listing_id,
+        "document_type": d.document_type,
+        "url": d.url,
+        "file_name": d.file_name,
+        "uploaded_by": d.uploaded_by,
+        "created_at": d.created_at.isoformat(),
+    }
+
+
+def _format_history(h):
+    return {
+        "id": h.id,
+        "listing_id": h.listing_id,
+        "previous_status": h.previous_status,
+        "new_status": h.new_status,
+        "notes": h.notes,
+        "reviewed_by": h.reviewed_by,
+        "created_at": h.created_at.isoformat(),
+    }
+
+
 async def get_verification_status(db: AsyncSession, listing_id: int):
     listing_r = await db.execute(select(Listing).where(Listing.id == listing_id))
     listing = listing_r.scalar_one_or_none()
@@ -25,8 +49,8 @@ async def get_verification_status(db: AsyncSession, listing_id: int):
         "listing_id": listing_id,
         "verification_status": listing.verification_status,
         "verified_at": listing.verified_at.isoformat() if listing.verified_at else None,
-        "documents": docs_r.scalars().all(),
-        "history": history_r.scalars().all(),
+        "documents": [_format_doc(d) for d in docs_r.scalars().all()],
+        "history": [_format_history(h) for h in history_r.scalars().all()],
         "can_resubmit": listing.verification_status == "REJECTED",
     }
 
@@ -134,6 +158,6 @@ async def get_pending_verifications(db: AsyncSession):
             "id": l.id, "title": l.title, "city": l.city,
             "landlord_id": l.landlord_id, "verification_status": l.verification_status,
             "created_at": l.created_at.isoformat() if l.created_at else None,
-            "documents": l.verification_documents,
+            "documents": [_format_doc(d) for d in l.verification_documents],
         })
-    return items
+    return {"listings": items}

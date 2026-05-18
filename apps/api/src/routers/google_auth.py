@@ -77,7 +77,7 @@ async def exchange_auth_code(body: ExchangeCodeRequest):
 
     return {
         "token": {
-            "accessToken": token_data["access_token"],
-            "refreshToken": token_data["refresh_token"],
+            "access_token": token_data["access_token"],
+            "refresh_token": token_data["refresh_token"],
         }
     }

@@ -65,6 +65,7 @@ from src.routers import (
     auth,
     availability_slots,
     bookings,
+    favorites,
     geocoding,
     google_auth,
     listing_images,
@@ -92,3 +93,4 @@ app.include_router(availability_slots.router, prefix=api_prefix)
 app.include_router(verification.router, prefix=api_prefix)
 app.include_router(verification.admin_router, prefix=api_prefix)
 app.include_router(geocoding.router, prefix=api_prefix)
+app.include_router(favorites.router, prefix=api_prefix)

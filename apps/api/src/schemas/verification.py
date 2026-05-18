@@ -1,8 +1,9 @@
-from pydantic import BaseModel
 from datetime import datetime
 
+from src.schemas.base import CamelModel
 
-class VerificationDocumentResponse(BaseModel):
+
+class VerificationDocumentResponse(CamelModel):
     id: int
     listing_id: int
     document_type: str
@@ -11,10 +12,8 @@ class VerificationDocumentResponse(BaseModel):
     uploaded_by: int
     created_at: datetime
 
-    model_config = {"from_attributes": True}
 
-
-class VerificationHistoryResponse(BaseModel):
+class VerificationHistoryResponse(CamelModel):
     id: int
     listing_id: int
     previous_status: str | None
@@ -23,10 +22,8 @@ class VerificationHistoryResponse(BaseModel):
     reviewed_by: int | None
     created_at: datetime
 
-    model_config = {"from_attributes": True}
 
-
-class VerificationStatusResponse(BaseModel):
+class VerificationStatusResponse(CamelModel):
     listing_id: int
     verification_status: str
     verified_at: datetime | None
@@ -35,12 +32,12 @@ class VerificationStatusResponse(BaseModel):
     can_resubmit: bool
 
 
-class ReviewVerificationRequest(BaseModel):
+class ReviewVerificationRequest(CamelModel):
     status: str
     notes: str | None = None
 
 
-class PendingVerificationListing(BaseModel):
+class PendingVerificationListing(CamelModel):
     id: int
     title: str
     city: str
@@ -48,5 +45,3 @@ class PendingVerificationListing(BaseModel):
     verification_status: str
     created_at: datetime
     documents: list[VerificationDocumentResponse]
-
-    model_config = {"from_attributes": True}

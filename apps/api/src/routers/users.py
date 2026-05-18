@@ -14,11 +14,11 @@ router = APIRouter(prefix="/users", tags=["Users"])
 async def get_me(current_user: User = Depends(get_current_user)):
     return {
         "id": current_user.id,
-        "firstName": current_user.first_name,
-        "lastName": current_user.last_name,
+        "first_name": current_user.first_name,
+        "last_name": current_user.last_name,
         "email": current_user.email,
         "role": current_user.role,
-        "createdAt": current_user.created_at.isoformat() if current_user.created_at else None,
+        "created_at": current_user.created_at.isoformat() if current_user.created_at else None,
     }
 
 
@@ -37,7 +37,7 @@ async def get_favorite_ids(
     current_user: User = Depends(get_current_user),
 ):
     ids = await fav_service.get_favorite_ids(db, current_user.id)
-    return {"favoriteIds": ids}
+    return {"favorite_ids": ids}
 
 
 @router.get("/favorites/{listing_id}/check")
@@ -47,7 +47,7 @@ async def check_favorite(
     current_user: User = Depends(get_current_user),
 ):
     is_fav = await fav_service.check_favorite(db, current_user.id, listing_id)
-    return {"isFavorited": is_fav}
+    return {"is_favorited": is_fav}
 
 
 @router.post("/favorites/{listing_id}")
@@ -77,10 +77,11 @@ async def get_user(user_id: int, db: AsyncSession = Depends(get_db), current_use
         raise HTTPException(status_code=404, detail="User not found")
     return {"user": {
         "id": row.id,
-        "firstName": row.first_name,
-        "lastName": row.last_name,
+        "first_name": row.first_name,
+        "last_name": row.last_name,
         "email": row.email,
-        "createdAt": row.created_at.isoformat() if row.created_at else None,
+        "role": row.role,
+        "created_at": row.created_at.isoformat() if row.created_at else None,
     }}
 
 
@@ -93,18 +94,16 @@ async def update_user(
 ):
     verify_user_ownership(user_id, current_user)
     data = body.model_dump(exclude_none=True)
-    if "role" in data and current_user.role != "ADMIN":
-        del data["role"]
     user = await user_service.update_user(db, user_id, data)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     return {"user": {
         "id": user.id,
-        "firstName": user.first_name,
-        "lastName": user.last_name,
+        "first_name": user.first_name,
+        "last_name": user.last_name,
         "email": user.email,
         "role": user.role,
-        "createdAt": user.created_at.isoformat() if user.created_at else None,
+        "created_at": user.created_at.isoformat() if user.created_at else None,
     }}
 
 

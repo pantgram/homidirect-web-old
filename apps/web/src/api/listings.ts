@@ -95,7 +95,6 @@ export const listingsApi = {
     await apiClient.delete(`/listings/${id}`);
   },
 
-  // Listing images
   async getImages(listingId: number): Promise<ListingImage[]> {
     const response = await apiClient.get<{ images: ListingImage[] }>(
       `/listings/${listingId}/images`
@@ -105,7 +104,7 @@ export const listingsApi = {
 
   async uploadImage(listingId: number, file: File): Promise<ListingImage> {
     const formData = new FormData();
-    formData.append("image", file);
+    formData.append("file", file);
     const response = await apiClient.post<{ image: ListingImage }>(
       `/listings/${listingId}/images`,
       formData,
@@ -122,13 +121,12 @@ export const listingsApi = {
     await apiClient.delete(`/listings/${listingId}/images/${imageId}`);
   },
 
-  // Pending image uploads (before listing creation)
   async uploadPendingImage(
     sessionId: string | "new",
     file: File
   ): Promise<UploadPendingImageResponse> {
     const formData = new FormData();
-    formData.append("image", file);
+    formData.append("file", file);
     const response = await apiClient.post<UploadPendingImageResponse>(
       `/uploads/${sessionId}`,
       formData,

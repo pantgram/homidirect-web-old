@@ -9,21 +9,27 @@ from src.schemas.booking import CreateBookingRequest, UpdateBookingRequest
 router = APIRouter(prefix="/bookings", tags=["Bookings"])
 
 
+def _format_booking(b):
+    return {
+        "id": b.id,
+        "status": b.status,
+        "scheduled_at": b.scheduled_at.isoformat(),
+        "meet_link": b.meet_link,
+        "created_at": b.created_at.isoformat() if b.created_at else None,
+        "candidate_id": b.candidate_id,
+        "landlord_id": b.landlord_id,
+        "listing_id": b.listing_id,
+        "availability_slot_id": b.availability_slot_id,
+    }
+
+
 @router.get("/")
 async def get_bookings(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
     bookings = await booking_service.get_bookings_by_user(db, current_user.id)
-    return {"bookings": [
-        {
-            "id": b.id, "status": b.status, "scheduledAt": b.scheduled_at.isoformat(),
-            "meetLink": b.meet_link, "createdAt": b.created_at.isoformat() if b.created_at else None,
-            "candidateId": b.candidate_id, "landlordId": b.landlord_id,
-            "listingId": b.listing_id, "availabilitySlotId": b.availability_slot_id,
-        }
-        for b in bookings
-    ]}
+    return {"bookings": [_format_booking(b) for b in bookings]}
 
 
 @router.get("/{booking_id}")
@@ -36,12 +42,7 @@ async def get_booking(
     b = await booking_service.get_booking_by_id(db, booking_id)
     if not b:
         raise HTTPException(status_code=404, detail="Booking not found")
-    return {"booking": {
-        "id": b.id, "status": b.status, "scheduledAt": b.scheduled_at.isoformat(),
-        "meetLink": b.meet_link, "createdAt": b.created_at.isoformat() if b.created_at else None,
-        "candidateId": b.candidate_id, "landlordId": b.landlord_id,
-        "listingId": b.listing_id, "availabilitySlotId": b.availability_slot_id,
-    }}
+    return {"booking": _format_booking(b)}
 
 
 @router.post("/", status_code=201)
@@ -53,12 +54,7 @@ async def create_booking(
 ):
     data = body.model_dump(exclude_none=True)
     b = await booking_service.create_booking(db, data, current_user, background_tasks)
-    return {"booking": {
-        "id": b.id, "status": b.status, "scheduledAt": b.scheduled_at.isoformat(),
-        "meetLink": b.meet_link, "createdAt": b.created_at.isoformat() if b.created_at else None,
-        "candidateId": b.candidate_id, "landlordId": b.landlord_id,
-        "listingId": b.listing_id, "availabilitySlotId": b.availability_slot_id,
-    }}
+    return {"booking": _format_booking(b)}
 
 
 @router.patch("/{booking_id}")
@@ -74,12 +70,7 @@ async def update_booking(
     b = await booking_service.update_booking(db, booking_id, data, background_tasks)
     if not b:
         raise HTTPException(status_code=404, detail="Booking not found")
-    return {"booking": {
-        "id": b.id, "status": b.status, "scheduledAt": b.scheduled_at.isoformat(),
-        "meetLink": b.meet_link, "createdAt": b.created_at.isoformat() if b.created_at else None,
-        "candidateId": b.candidate_id, "landlordId": b.landlord_id,
-        "listingId": b.listing_id, "availabilitySlotId": b.availability_slot_id,
-    }}
+    return {"booking": _format_booking(b)}
 
 
 @router.get("/listing/{listing_id}")
@@ -89,15 +80,7 @@ async def get_bookings_by_listing(
     current_user: User = Depends(get_current_user),
 ):
     bookings = await booking_service.get_bookings_by_listing(db, listing_id)
-    return {"bookings": [
-        {
-            "id": b.id, "status": b.status, "scheduledAt": b.scheduled_at.isoformat(),
-            "meetLink": b.meet_link, "createdAt": b.created_at.isoformat() if b.created_at else None,
-            "candidateId": b.candidate_id, "landlordId": b.landlord_id,
-            "listingId": b.listing_id, "availabilitySlotId": b.availability_slot_id,
-        }
-        for b in bookings
-    ]}
+    return {"bookings": [_format_booking(b) for b in bookings]}
 
 
 @router.delete("/{booking_id}", status_code=204)

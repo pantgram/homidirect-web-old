@@ -1,15 +1,7 @@
-from pydantic import BaseModel
-from typing import Generic, TypeVar
-
-T = TypeVar("T")
+from src.schemas.base import CamelModel
 
 
-class PaginatedResponse(BaseModel, Generic[T]):
-    data: list[T]
-    pagination: Pagination
-
-
-class Pagination(BaseModel):
+class Pagination(CamelModel):
     page: int
     limit: int
     total: int
@@ -18,10 +10,24 @@ class Pagination(BaseModel):
     has_previous_page: bool
 
 
-class ApiResponse(BaseModel, Generic[T]):
-    data: T
+class PaginatedResponse(CamelModel):
+    data: list
+    pagination: Pagination
+
+    model_config = {
+        "alias_generator": lambda name: (
+            name[0] + "".join(part.capitalize() for part in name.split("_")[1:])
+            if "_" in name else name
+        ),
+        "populate_by_name": True,
+        "from_attributes": True,
+    }
+
+
+class ApiResponse(CamelModel):
+    data: dict | None = None
     message: str | None = None
 
 
-class MessageResponse(BaseModel):
+class MessageResponse(CamelModel):
     message: str

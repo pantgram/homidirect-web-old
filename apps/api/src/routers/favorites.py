@@ -1,11 +1,11 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.config.database import get_db
 from src.dependencies.auth import get_current_user
 from src.models.user import User
 from src.services import favorite as fav_service
 
-router = APIRouter(prefix="/users/favorites", tags=["Favorites"])
+router = APIRouter(prefix="/favorites", tags=["Favorites"])
 
 
 @router.get("/")
@@ -23,7 +23,7 @@ async def get_favorite_ids(
     current_user: User = Depends(get_current_user),
 ):
     ids = await fav_service.get_favorite_ids(db, current_user.id)
-    return {"favoriteIds": ids}
+    return {"favorite_ids": ids}
 
 
 @router.get("/{listing_id}/check")
@@ -33,7 +33,7 @@ async def check_favorite(
     current_user: User = Depends(get_current_user),
 ):
     is_fav = await fav_service.check_favorite(db, current_user.id, listing_id)
-    return {"isFavorited": is_fav}
+    return {"is_favorited": is_fav}
 
 
 @router.post("/{listing_id}")
