@@ -82,10 +82,9 @@ async def health_check():
 
 
 api_prefix = "/api/v1"
-app.include_router(auth.router, prefix=api_prefix)
 app.include_router(google_auth.router, prefix=api_prefix)
+app.include_router(auth.router, prefix=api_prefix)
 app.include_router(users.router, prefix=api_prefix)
-app.include_router(favorites.router, prefix=api_prefix)
 app.include_router(listings.router, prefix=api_prefix)
 app.include_router(listing_images.router, prefix=api_prefix)
 app.include_router(uploads.router, prefix=api_prefix)
@@ -94,3 +93,4 @@ app.include_router(availability_slots.router, prefix=api_prefix)
 app.include_router(verification.router, prefix=api_prefix)
 app.include_router(verification.admin_router, prefix=api_prefix)
 app.include_router(geocoding.router, prefix=api_prefix)
+app.include_router(favorites.router, prefix=api_prefix)

@@ -12,7 +12,6 @@ export interface CreateAvailabilitySlotRequest {
   listingId: number;
   startTime: string;
   endTime: string;
-  isBooked?: boolean;
 }
 
 export interface UpdateAvailabilitySlotRequest {

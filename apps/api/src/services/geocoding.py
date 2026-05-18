@@ -81,8 +81,8 @@ async def search(db: AsyncSession, text: str, country_code: str | None = None, l
             "city": city,
             "country": props.get("country", ""),
             "suburb": props.get("district", ""),
-            "postalCode": props.get("postcode", ""),
-            "resultType": props.get("osm_value", ""),
+            "postal_code": props.get("postcode", ""),
+            "result_type": props.get("osm_value", ""),
             "lat": lat,
             "lon": lon,
         }
@@ -115,7 +115,7 @@ async def reverse(db: AsyncSession, lat: float, lon: float, lang: str = "el"):
         "address": data.get("display_name", ""),
         "city": address.get("city") or address.get("town") or address.get("village", ""),
         "country": address.get("country", ""),
-        "postalCode": address.get("postcode", ""),
+        "postal_code": address.get("postcode", ""),
         "lat": float(data.get("lat", lat)),
         "lon": float(data.get("lon", lon)),
     }

@@ -9,6 +9,18 @@ from src.schemas.availability_slot import CreateAvailabilitySlotRequest, UpdateA
 router = APIRouter(prefix="/availability-slots", tags=["Availability Slots"])
 
 
+def _format_slot(s):
+    return {
+        "id": s.id,
+        "listing_id": s.listing_id,
+        "landlord_id": s.landlord_id,
+        "start_time": s.start_time.isoformat(),
+        "end_time": s.end_time.isoformat(),
+        "is_booked": s.is_booked,
+        "created_at": s.created_at.isoformat(),
+    }
+
+
 @router.get("/listing/{listing_id}/available")
 async def get_available_slots(listing_id: int, db: AsyncSession = Depends(get_db)):
     slots = await slot_service.get_available_slots(db, listing_id)
@@ -26,7 +38,7 @@ async def get_slot(slot_id: int, db: AsyncSession = Depends(get_db)):
     slot = await slot_service.get_slot_by_id(db, slot_id)
     if not slot:
         raise HTTPException(status_code=404, detail="Slot not found")
-    return _format_slot(slot)
+    return {"slot": _format_slot(slot)}
 
 
 @router.post("/", status_code=201)
@@ -37,7 +49,7 @@ async def create_slot(
 ):
     data = {"listing_id": body.listing_id, "start_time": body.start_time, "end_time": body.end_time}
     slot = await slot_service.create_slot(db, data, current_user)
-    return _format_slot(slot)
+    return {"slot": _format_slot(slot)}
 
 
 @router.patch("/{slot_id}")
@@ -49,7 +61,7 @@ async def update_slot(
 ):
     data = body.model_dump(exclude_none=True)
     slot = await slot_service.update_slot(db, slot_id, data, current_user)
-    return _format_slot(slot)
+    return {"slot": _format_slot(slot)}
 
 
 @router.delete("/{slot_id}", status_code=204)
@@ -59,11 +71,3 @@ async def delete_slot(
     current_user: User = Depends(require_role("LANDLORD", "BOTH", "ADMIN")),
 ):
     await slot_service.delete_slot(db, slot_id, current_user)
-
-
-def _format_slot(s):
-    return {
-        "id": s.id, "listingId": s.listing_id, "landlordId": s.landlord_id,
-        "startTime": s.start_time.isoformat(), "endTime": s.end_time.isoformat(),
-        "isBooked": s.is_booked, "createdAt": s.created_at.isoformat(),
-    }

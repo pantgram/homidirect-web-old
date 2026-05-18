@@ -138,6 +138,9 @@ const ListProperty = () => {
     if (!formData.area || parseFloat(formData.area) <= 0) {
       errors.area = t("listForm.validation.areaRequired");
     }
+    if (!formData.city.trim()) {
+      errors.city = t("listForm.validation.addressRequired");
+    }
 
     setFormErrors(errors);
     return Object.keys(errors).length === 0;

@@ -17,10 +17,15 @@ async def get_pending_images(
     current_user: User = Depends(require_role("LANDLORD", "BOTH")),
 ):
     images = await img_service.get_images_by_session_id(db, session_id)
-    return [
-        {"id": i.id, "url": i.url, "uploadSessionId": i.upload_session_id, "createdAt": i.created_at.isoformat()}
+    return {"images": [
+        {
+            "id": i.id,
+            "url": i.url,
+            "upload_session_id": i.upload_session_id,
+            "created_at": i.created_at.isoformat(),
+        }
         for i in images
-    ]
+    ]}
 
 
 @router.post("/{session_id}", status_code=201)
@@ -41,7 +46,15 @@ async def upload_pending_image(
         raise HTTPException(status_code=400, detail="File too large")
 
     img = await img_service.upload_pending_image(db, session_id, file_bytes, file.filename or "image", file.content_type)
-    return {"image": {"id": img.id, "url": img.url, "uploadSessionId": img.upload_session_id, "createdAt": img.created_at.isoformat()}, "uploadSessionId": img.upload_session_id}
+    return {
+        "image": {
+            "id": img.id,
+            "url": img.url,
+            "upload_session_id": img.upload_session_id,
+            "created_at": img.created_at.isoformat(),
+        },
+        "upload_session_id": img.upload_session_id,
+    }
 
 
 @router.delete("/{session_id}/{image_id}", status_code=204)

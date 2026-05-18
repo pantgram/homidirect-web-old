@@ -154,7 +154,7 @@ async def search_listings(db: AsyncSession, params: dict, is_authenticated: bool
         conditions.append(Listing.date_built <= params["max_date_built"])
 
     where = and_(*conditions) if conditions else None
-    if where:
+    if where is not None:
         query = query.where(where)
         count_query = count_query.where(where)
 

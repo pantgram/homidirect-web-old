@@ -144,8 +144,8 @@ const Auth = () => {
     const firstName = nameParts[0] || "";
     const lastName = nameParts.slice(1).join(" ") || nameParts[0] || "";
 
-    // Determine role - LANDLORD if property owner, TENANT otherwise
-    const role = isPropertyOwner ? "LANDLORD" : "TENANT";
+    // Determine role - BOTH if both checked, LANDLORD if property owner, TENANT otherwise
+    const role = isTenant && isPropertyOwner ? "BOTH" : isPropertyOwner ? "LANDLORD" : "TENANT";
 
     try {
       await register({

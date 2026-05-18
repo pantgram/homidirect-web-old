@@ -13,7 +13,13 @@ router = APIRouter(prefix="/listings", tags=["Listing Images"])
 async def get_images(listing_id: int, db: AsyncSession = Depends(get_db)):
     images = await img_service.get_images_by_listing_id(db, listing_id)
     return {"images": [
-        {"id": i.id, "url": i.url, "listingId": i.listing_id, "uploadSessionId": i.upload_session_id, "createdAt": i.created_at.isoformat()}
+        {
+            "id": i.id,
+            "url": i.url,
+            "listing_id": i.listing_id,
+            "upload_session_id": i.upload_session_id,
+            "created_at": i.created_at.isoformat(),
+        }
         for i in images
     ]}
 
@@ -34,7 +40,13 @@ async def upload_image(
         raise HTTPException(status_code=400, detail="File too large")
 
     img = await img_service.upload_listing_image(db, listing_id, file_bytes, file.filename or "image", file.content_type)
-    return {"image": {"id": img.id, "url": img.url, "listingId": img.listing_id, "uploadSessionId": img.upload_session_id, "createdAt": img.created_at.isoformat()}}
+    return {"image": {
+        "id": img.id,
+        "url": img.url,
+        "listing_id": img.listing_id,
+        "upload_session_id": img.upload_session_id,
+        "created_at": img.created_at.isoformat(),
+    }}
 
 
 @router.delete("/{listing_id}/images/{image_id}", status_code=204)

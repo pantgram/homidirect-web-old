@@ -1,17 +1,16 @@
-from pydantic import BaseModel
 from datetime import date, datetime
 
+from src.schemas.base import CamelModel
 
-class ListingImageBasic(BaseModel):
+
+class ListingImageBasic(CamelModel):
     id: int
     url: str
     listing_id: int | None
     created_at: datetime
 
-    model_config = {"from_attributes": True}
 
-
-class ListingResponse(BaseModel):
+class ListingResponse(CamelModel):
     id: int
     title: str
     description: str
@@ -52,14 +51,12 @@ class ListingResponse(BaseModel):
     description_el: str
     description_en: str | None
 
-    model_config = {"from_attributes": True}
-
 
 class ListingSearchResponse(ListingResponse):
     primary_image: ListingImageBasic | None = None
 
 
-class CreateListingRequest(BaseModel):
+class CreateListingRequest(CamelModel):
     title: str
     description: str | None = None
     price: float
@@ -93,7 +90,7 @@ class CreateListingRequest(BaseModel):
     description_en: str | None = None
 
 
-class UpdateListingRequest(BaseModel):
+class UpdateListingRequest(CamelModel):
     title: str | None = None
     description: str | None = None
     price: float | None = None
@@ -125,7 +122,7 @@ class UpdateListingRequest(BaseModel):
     description_en: str | None = None
 
 
-class SearchListingsParams(BaseModel):
+class SearchListingsParams(CamelModel):
     q: str | None = None
     property_type: str | None = None
     city: str | None = None
@@ -161,17 +158,17 @@ class SearchListingsParams(BaseModel):
     limit: int = 15
 
 
-class ContactOwnerRequest(BaseModel):
+class ContactOwnerRequest(CamelModel):
     name: str
     email: str
-    phone: str
+    phone: str | None = None
     message: str
 
 
-class ListingStatsResponse(BaseModel):
+class ListingStatsResponse(CamelModel):
     active_listings_count: int
     property_owners_count: int
 
 
-class ListingIdParam(BaseModel):
+class ListingIdParam(CamelModel):
     listing_id: int

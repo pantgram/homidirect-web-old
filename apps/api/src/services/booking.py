@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+from fastapi import BackgroundTasks
 from sqlalchemy import select, or_
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.models.booking import Booking
@@ -27,12 +28,19 @@ async def get_bookings_by_user(db: AsyncSession, user_id: int):
     return result.scalars().all()
 
 
+async def get_bookings_by_listing(db: AsyncSession, listing_id: int):
+    result = await db.execute(
+        select(Booking).where(Booking.listing_id == listing_id)
+    )
+    return result.scalars().all()
+
+
 async def get_booking_by_id(db: AsyncSession, booking_id: int):
     result = await db.execute(select(Booking).where(Booking.id == booking_id))
     return result.scalar_one_or_none()
 
 
-async def create_booking(db: AsyncSession, data: dict, current_user):
+async def create_booking(db: AsyncSession, data: dict, current_user, background_tasks: BackgroundTasks):
     from src.models.availability_slot import AvailabilitySlot
 
     listing_result = await db.execute(select(Listing).where(Listing.id == data["listing_id"]))
@@ -72,14 +80,15 @@ async def create_booking(db: AsyncSession, data: dict, current_user):
         landlord = landlord_r.scalar_one_or_none()
 
         if landlord and listing and tenant:
-            send_booking_created_email.delay(
-                landlord_email=landlord.email,
-                landlord_name=f"{landlord.first_name} {landlord.last_name}",
-                tenant_name=f"{tenant.first_name} {tenant.last_name}",
-                listing_title=listing.title,
-                listing_id=listing.id,
-                scheduled_at=booking.scheduled_at.isoformat(),
-                booking_id=booking.id,
+            background_tasks.add_task(
+                send_booking_created_email,
+                landlord.email,
+                f"{landlord.first_name} {landlord.last_name}",
+                f"{tenant.first_name} {tenant.last_name}",
+                listing.title,
+                listing.id,
+                booking.scheduled_at.isoformat(),
+                booking.id,
             )
     except Exception:
         pass
@@ -87,7 +96,7 @@ async def create_booking(db: AsyncSession, data: dict, current_user):
     return booking
 
 
-async def update_booking(db: AsyncSession, booking_id: int, data: dict):
+async def update_booking(db: AsyncSession, booking_id: int, data: dict, background_tasks: BackgroundTasks):
     result = await db.execute(select(Booking).where(Booking.id == booking_id))
     booking = result.scalar_one_or_none()
     if not booking:
@@ -114,23 +123,23 @@ async def update_booking(db: AsyncSession, booking_id: int, data: dict):
 
         if tenant and landlord and listing:
             if booking.status == "CONFIRMED":
-                send_booking_confirmed_email.delay(
-                    tenant_email=tenant.email,
-                    tenant_name=f"{tenant.first_name} {tenant.last_name}",
-                    landlord_name=f"{landlord.first_name} {landlord.last_name}",
-                    listing_title=listing.title,
-                    listing_id=listing.id,
-                    scheduled_at=booking.scheduled_at.isoformat(),
-                    meet_link=booking.meet_link,
+                background_tasks.add_task(
+                    send_booking_confirmed_email,
+                    tenant.email,
+                    f"{tenant.first_name} {tenant.last_name}",
+                    f"{landlord.first_name} {landlord.last_name}",
+                    listing.title,
+                    booking.scheduled_at.isoformat(),
+                    booking.meet_link,
                 )
             elif booking.status == "DECLINED":
-                send_booking_declined_email.delay(
-                    tenant_email=tenant.email,
-                    tenant_name=f"{tenant.first_name} {tenant.last_name}",
-                    landlord_name=f"{landlord.first_name} {landlord.last_name}",
-                    listing_title=listing.title,
-                    listing_id=listing.id,
-                    scheduled_at=booking.scheduled_at.isoformat(),
+                background_tasks.add_task(
+                    send_booking_declined_email,
+                    tenant.email,
+                    f"{tenant.first_name} {tenant.last_name}",
+                    f"{landlord.first_name} {landlord.last_name}",
+                    listing.title,
+                    booking.scheduled_at.isoformat(),
                 )
     except Exception:
         pass
@@ -138,7 +147,7 @@ async def update_booking(db: AsyncSession, booking_id: int, data: dict):
     return booking
 
 
-async def delete_booking(db: AsyncSession, booking_id: int) -> bool:
+async def delete_booking(db: AsyncSession, booking_id: int, background_tasks: BackgroundTasks) -> bool:
     from src.models.availability_slot import AvailabilitySlot
 
     result = await db.execute(select(Booking).where(Booking.id == booking_id))
@@ -161,13 +170,13 @@ async def delete_booking(db: AsyncSession, booking_id: int) -> bool:
         listing = listing_r.scalar_one_or_none()
 
         if tenant and landlord and listing:
-            send_booking_cancelled_email.delay(
-                recipient_email=landlord.email,
-                recipient_name=f"{landlord.first_name} {landlord.last_name}",
-                cancelled_by_name=f"{tenant.first_name} {tenant.last_name}",
-                listing_title=listing.title,
-                listing_id=listing.id,
-                scheduled_at=booking.scheduled_at.isoformat(),
+            background_tasks.add_task(
+                send_booking_cancelled_email,
+                landlord.email,
+                f"{landlord.first_name} {landlord.last_name}",
+                f"{tenant.first_name} {tenant.last_name}",
+                listing.title,
+                booking.scheduled_at.isoformat(),
             )
     except Exception:
         pass

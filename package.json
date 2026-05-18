@@ -21,8 +21,7 @@
     "docker": "docker compose up -d",
     "docker:down": "docker compose down",
     "db:migrate": "cd apps/api && uv run alembic upgrade head",
-    "db:generate": "cd apps/api && uv run alembic revision --autogenerate -m",
-    "worker": "cd apps/api && uv run celery -A src.utils.email.celery_app worker --loglevel=info"
+    "db:generate": "cd apps/api && uv run alembic revision --autogenerate -m"
   },
   "devDependencies": {
     "turbo": "^2.6.3",
