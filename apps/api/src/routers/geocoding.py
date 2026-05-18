@@ -17,7 +17,8 @@ async def search(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    return await geocoding.search(db, text, country_code, limit, lang)
+    results = await geocoding.search(db, text, country_code, limit, lang)
+    return {"results": results}
 
 
 @router.get("/reverse")
@@ -28,4 +29,5 @@ async def reverse(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    return await geocoding.reverse(db, lat, lon, lang)
+    result = await geocoding.reverse(db, lat, lon, lang)
+    return {"result": result}

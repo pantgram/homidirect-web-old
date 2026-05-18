@@ -10,6 +10,30 @@ from src.config.settings import settings
 router = APIRouter(prefix="/listings", tags=["Verification"])
 
 
+def _format_doc(d):
+    return {
+        "id": d.id,
+        "listing_id": d.listing_id,
+        "document_type": d.document_type,
+        "url": d.url,
+        "file_name": d.file_name,
+        "uploaded_by": d.uploaded_by,
+        "created_at": d.created_at.isoformat(),
+    }
+
+
+def _format_history(h):
+    return {
+        "id": h.id,
+        "listing_id": h.listing_id,
+        "previous_status": h.previous_status,
+        "new_status": h.new_status,
+        "notes": h.notes,
+        "reviewed_by": h.reviewed_by,
+        "created_at": h.created_at.isoformat(),
+    }
+
+
 @router.get("/{listing_id}/verification")
 async def get_verification_status(
     listing_id: int,
@@ -28,7 +52,7 @@ async def get_documents(
 ):
     await verify_listing_ownership(listing_id, db, current_user)
     docs = await ver_service.get_documents(db, listing_id)
-    return [_format_doc(d) for d in docs]
+    return {"documents": [_format_doc(d) for d in docs]}
 
 
 @router.get("/{listing_id}/verification/history")
@@ -39,7 +63,7 @@ async def get_history(
 ):
     await verify_listing_ownership(listing_id, db, current_user)
     history = await ver_service.get_history(db, listing_id)
-    return [_format_history(h) for h in history]
+    return {"history": [_format_history(h) for h in history]}
 
 
 @router.post("/{listing_id}/verification/documents", status_code=201)
@@ -60,7 +84,7 @@ async def upload_document(
         db, listing_id, document_type, current_user.id,
         file_bytes, file.filename or "document", file.content_type,
     )
-    return _format_doc(doc)
+    return {"document": _format_doc(doc)}
 
 
 @router.delete("/{listing_id}/verification/documents/{document_id}", status_code=204)
@@ -94,19 +118,3 @@ async def get_pending_verifications(
     current_user: User = Depends(require_admin),
 ):
     return await ver_service.get_pending_verifications(db)
-
-
-def _format_doc(d):
-    return {
-        "id": d.id, "listingId": d.listing_id, "documentType": d.document_type,
-        "url": d.url, "fileName": d.file_name, "uploadedBy": d.uploaded_by,
-        "createdAt": d.created_at.isoformat(),
-    }
-
-
-def _format_history(h):
-    return {
-        "id": h.id, "listingId": h.listing_id, "previousStatus": h.previous_status,
-        "newStatus": h.new_status, "notes": h.notes, "reviewedBy": h.reviewed_by,
-        "createdAt": h.created_at.isoformat(),
-    }

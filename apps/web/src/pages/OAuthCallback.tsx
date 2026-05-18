@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { tokenStorage } from "@/api/client";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { apiClient } from "@/api/client";
 
 const OAuthCallback = () => {
   const navigate = useNavigate();
@@ -15,15 +16,26 @@ const OAuthCallback = () => {
     if (processed.current) return;
     processed.current = true;
 
-    const hash = window.location.hash.substring(1);
-    const params = new URLSearchParams(hash);
-    const accessToken = params.get("accessToken");
-    const refreshToken = params.get("refreshToken");
+    const searchParams = new URLSearchParams(location.search);
+    const code = searchParams.get("code");
 
-    if (accessToken && refreshToken) {
-      tokenStorage.setToken(accessToken);
-      tokenStorage.setRefreshToken(refreshToken);
-      window.location.replace("/");
+    if (code) {
+      apiClient
+        .post("/auth/google/exchange", { code })
+        .then((response) => {
+          const { token } = response.data;
+          tokenStorage.setToken(token.access_token);
+          tokenStorage.setRefreshToken(token.refresh_token);
+          window.location.replace("/");
+        })
+        .catch(() => {
+          toast({
+            title: t("auth.error"),
+            description: t("auth.loginFailed"),
+            variant: "destructive",
+          });
+          navigate("/auth", { replace: true });
+        });
     } else {
       toast({
         title: t("auth.error"),
@@ -32,7 +44,7 @@ const OAuthCallback = () => {
       });
       navigate("/auth", { replace: true });
     }
-  }, [navigate, location.state, toast, t]);
+  }, [navigate, location.search, toast, t]);
 
   return (
     <div className="min-h-screen flex items-center justify-center">

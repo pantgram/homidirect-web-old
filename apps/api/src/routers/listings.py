@@ -1,9 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.config.database import get_db
-from src.dependencies.auth import get_optional_user, require_role, verify_listing_ownership
+from src.dependencies.auth import get_optional_user, require_role, verify_listing_ownership, get_current_user
 from src.models.user import User
 from src.models.user import User as UserModel
 from src.schemas.listing import ContactOwnerRequest, CreateListingRequest, UpdateListingRequest
@@ -132,18 +132,20 @@ async def delete_listing(
 async def contact_owner(
     listing_id: int,
     body: ContactOwnerRequest,
+    background_tasks: BackgroundTasks,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(require_role("TENANT", "BOTH")),
+    current_user: User = Depends(get_current_user),
 ):
     listing = await listing_service.get_listing_by_id(db, listing_id)
     landlord_r = await db.execute(select(UserModel).where(UserModel.id == listing.landlord_id))
     landlord = landlord_r.scalar_one_or_none()
     if landlord:
-        send_contact_owner_email.delay(
-            owner_email=landlord.email,
-            sender_name=body.name,
-            sender_email=body.email,
-            sender_phone=body.phone,
-            message=body.message,
+        background_tasks.add_task(
+            send_contact_owner_email,
+            landlord.email,
+            body.name,
+            body.email,
+            body.phone or "",
+            body.message,
         )
     return {"message": "Contact email sent"}

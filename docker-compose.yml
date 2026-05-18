@@ -12,19 +12,7 @@ services:
       - apps/api/.env
     depends_on:
       - db
-      - redis
     command: uv run uvicorn src.main:app --host 0.0.0.0 --port 5000 --reload
-
-  worker:
-    build:
-      context: ./apps/api
-      dockerfile: Dockerfile
-    container_name: homidirect-worker-dev
-    env_file:
-      - apps/api/.env
-    depends_on:
-      - redis
-    command: uv run celery -A src.utils.email.celery_app worker --loglevel=info
 
   db:
     image: postgres:16-alpine
@@ -37,12 +25,6 @@ services:
       - pgdata:/var/lib/postgresql/data
     ports:
       - "5432:5432"
-
-  redis:
-    image: redis:7-alpine
-    container_name: homidirect-redis-dev
-    ports:
-      - "6379:6379"
 
 volumes:
   pgdata:

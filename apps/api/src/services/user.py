@@ -36,7 +36,7 @@ async def update_user(db: AsyncSession, user_id: int, data: dict):
     for key, value in data.items():
         if value is not None:
             setattr(user, key, value)
-    user.updated_at = datetime.now(timezone.utc)
+    user.updated_at = datetime.now(timezone.utc).replace(tzinfo=None)
     await db.flush()
     await db.refresh(user)
     return user

@@ -1,8 +1,9 @@
-from pydantic import BaseModel
 from datetime import datetime
 
+from src.schemas.base import CamelModel
 
-class BookingResponse(BaseModel):
+
+class BookingResponse(CamelModel):
     id: int
     status: str | None
     scheduled_at: datetime
@@ -13,21 +14,19 @@ class BookingResponse(BaseModel):
     listing_id: int
     availability_slot_id: int | None
 
-    model_config = {"from_attributes": True}
 
-
-class CreateBookingRequest(BaseModel):
+class CreateBookingRequest(CamelModel):
     listing_id: int
     scheduled_at: datetime
     meet_link: str | None = None
     availability_slot_id: int | None = None
 
 
-class UpdateBookingRequest(BaseModel):
+class UpdateBookingRequest(CamelModel):
     status: str | None = None
     scheduled_at: datetime | None = None
     meet_link: str | None = None
 
 
-class BookingIdParam(BaseModel):
+class BookingIdParam(CamelModel):
     id: int

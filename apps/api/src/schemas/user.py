@@ -1,17 +1,19 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import EmailStr, field_validator
+
+from src.schemas.base import CamelModel
+
+VALID_ROLES = {"LANDLORD", "TENANT", "BOTH"}
 
 
-class UserResponse(BaseModel):
+class UserResponse(CamelModel):
     id: int
     first_name: str
     last_name: str
     email: str
     created_at: str
 
-    model_config = {"from_attributes": True}
 
-
-class UserWithRoleResponse(BaseModel):
+class UserWithRoleResponse(CamelModel):
     id: int
     first_name: str
     last_name: str
@@ -19,15 +21,20 @@ class UserWithRoleResponse(BaseModel):
     role: str
     created_at: str
 
-    model_config = {"from_attributes": True}
 
-
-class UpdateUserRequest(BaseModel):
+class UpdateUserRequest(CamelModel):
     first_name: str | None = None
     last_name: str | None = None
     email: EmailStr | None = None
     role: str | None = None
 
+    @field_validator("role")
+    @classmethod
+    def validate_role(cls, v: str | None) -> str | None:
+        if v is not None and v not in VALID_ROLES:
+            raise ValueError(f"Role must be one of: {', '.join(sorted(VALID_ROLES))}")
+        return v
 
-class UserIdParam(BaseModel):
+
+class UserIdParam(CamelModel):
     id: int

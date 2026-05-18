@@ -1,8 +1,10 @@
-from pydantic import BaseModel, model_validator
+from pydantic import model_validator
 from datetime import datetime
 
+from src.schemas.base import CamelModel
 
-class AvailabilitySlotResponse(BaseModel):
+
+class AvailabilitySlotResponse(CamelModel):
     id: int
     listing_id: int
     landlord_id: int
@@ -11,10 +13,8 @@ class AvailabilitySlotResponse(BaseModel):
     is_booked: bool
     created_at: datetime
 
-    model_config = {"from_attributes": True}
 
-
-class CreateAvailabilitySlotRequest(BaseModel):
+class CreateAvailabilitySlotRequest(CamelModel):
     listing_id: int
     start_time: datetime
     end_time: datetime
@@ -26,7 +26,7 @@ class CreateAvailabilitySlotRequest(BaseModel):
         return self
 
 
-class UpdateAvailabilitySlotRequest(BaseModel):
+class UpdateAvailabilitySlotRequest(CamelModel):
     start_time: datetime | None = None
     end_time: datetime | None = None
     is_booked: bool | None = None

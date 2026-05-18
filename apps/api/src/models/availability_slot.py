@@ -15,10 +15,10 @@ class AvailabilitySlot(Base):
     id: Mapped[int] = mapped_column(sa.Integer, primary_key=True, autoincrement=True)
     listing_id: Mapped[int] = mapped_column(sa.Integer, sa.ForeignKey("listings.id", ondelete="CASCADE"), nullable=False)
     landlord_id: Mapped[int] = mapped_column(sa.Integer, sa.ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
-    start_time: Mapped[sa.datetime] = mapped_column(sa.TIMESTAMP, nullable=False)
-    end_time: Mapped[sa.datetime] = mapped_column(sa.TIMESTAMP, nullable=False)
+    start_time: Mapped[sa.datetime] = mapped_column(sa.TIMESTAMP(timezone=True), nullable=False)
+    end_time: Mapped[sa.datetime] = mapped_column(sa.TIMESTAMP(timezone=True), nullable=False)
     is_booked: Mapped[bool] = mapped_column(sa.Boolean, nullable=False, server_default="false")
-    created_at: Mapped[sa.datetime] = mapped_column(sa.TIMESTAMP, nullable=False, server_default=sa.func.now())
+    created_at: Mapped[sa.datetime] = mapped_column(sa.TIMESTAMP(timezone=True), nullable=False, server_default=sa.func.now())
 
     listing: Mapped["Listing"] = relationship("Listing", back_populates="availability_slots")
     landlord_user: Mapped["User"] = relationship("User")
