@@ -35,8 +35,8 @@ import type { PropertyType, CreateListingRequest } from "@/api";
 import type { LocationResult } from "@/api/geocoding";
 
 interface ListingFormData {
-  title: string;
-  description: string;
+  titleEl: string;
+  descriptionEl: string;
   propertyType: PropertyType | "";
   price: string;
   address: string;
@@ -51,8 +51,8 @@ interface ListingFormData {
 }
 
 const initialFormData: ListingFormData = {
-  title: "",
-  description: "",
+  titleEl: "",
+  descriptionEl: "",
   propertyType: "",
   price: "",
   address: "",
@@ -117,8 +117,8 @@ const ListProperty = () => {
   const validateForm = (): boolean => {
     const errors: Partial<Record<keyof ListingFormData, string>> = {};
 
-    if (!formData.title.trim()) {
-      errors.title = t("listForm.validation.titleRequired");
+    if (!formData.titleEl.trim()) {
+      errors.titleEl = t("listForm.validation.titleRequired");
     }
     if (!formData.propertyType) {
       errors.propertyType = t("listForm.validation.typeRequired");
@@ -168,8 +168,8 @@ const ListProperty = () => {
     }
 
     const listingData: CreateListingRequest & { uploadSessionId?: string } = {
-      title: formData.title.trim(),
-      description: formData.description.trim(),
+      titleEl: formData.titleEl.trim(),
+      descriptionEl: formData.descriptionEl.trim(),
       propertyType: formData.propertyType as PropertyType,
       price: parseFloat(formData.price),
       address: formData.address.trim(),
@@ -245,17 +245,17 @@ const ListProperty = () => {
               {/* Basic Information */}
               <div className="space-y-4">
                 <div>
-                  <Label htmlFor="title">{t("listForm.propertyTitle")}</Label>
+                  <Label htmlFor="titleEl">{t("listForm.propertyTitle")}</Label>
                   <Input
-                    id="title"
-                    value={formData.title}
+                    id="titleEl"
+                    value={formData.titleEl}
                     onChange={handleInputChange}
                     placeholder={t("listForm.titlePlaceholder")}
-                    className={formErrors.title ? "border-destructive" : ""}
+                    className={formErrors.titleEl ? "border-destructive" : ""}
                   />
-                  {formErrors.title && (
+                  {formErrors.titleEl && (
                     <p className="text-sm text-destructive mt-1">
-                      {formErrors.title}
+                      {formErrors.titleEl}
                     </p>
                   )}
                 </div>
@@ -362,7 +362,11 @@ const ListProperty = () => {
                   latitude={formData.latitude}
                   longitude={formData.longitude}
                   onLocationChange={async (lat, lon) => {
-                    const result = await reverseGeocode(lat, lon, language === "el" ? "el" : "en");
+                    const result = await reverseGeocode(
+                      lat,
+                      lon,
+                      language === "el" ? "el" : "en",
+                    );
                     if (result) {
                       setFormData((prev) => ({
                         ...prev,
@@ -387,29 +391,18 @@ const ListProperty = () => {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
                     <Label htmlFor="bedrooms">{t("listForm.bedrooms")}</Label>
-                    <Select
+                    <Input
+                      id="bedrooms"
+                      type="number"
+                      min="0"
+                      step="1"
                       value={formData.bedrooms}
-                      onValueChange={(value) =>
-                        handleSelectChange("bedrooms", value)
+                      onChange={handleInputChange}
+                      placeholder="2"
+                      className={
+                        formErrors.bedrooms ? "border-destructive" : ""
                       }
-                    >
-                      <SelectTrigger
-                        id="bedrooms"
-                        className={
-                          formErrors.bedrooms ? "border-destructive" : ""
-                        }
-                      >
-                        <SelectValue placeholder={t("common.select")} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="0">0</SelectItem>
-                        <SelectItem value="1">1</SelectItem>
-                        <SelectItem value="2">2</SelectItem>
-                        <SelectItem value="3">3</SelectItem>
-                        <SelectItem value="4">4</SelectItem>
-                        <SelectItem value="5">5+</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    />
                     {formErrors.bedrooms && (
                       <p className="text-sm text-destructive mt-1">
                         {formErrors.bedrooms}
@@ -419,27 +412,18 @@ const ListProperty = () => {
 
                   <div>
                     <Label htmlFor="bathrooms">{t("listForm.bathrooms")}</Label>
-                    <Select
+                    <Input
+                      id="bathrooms"
+                      type="number"
+                      min="0"
+                      step="1"
                       value={formData.bathrooms}
-                      onValueChange={(value) =>
-                        handleSelectChange("bathrooms", value)
+                      onChange={handleInputChange}
+                      placeholder="1"
+                      className={
+                        formErrors.bathrooms ? "border-destructive" : ""
                       }
-                    >
-                      <SelectTrigger
-                        id="bathrooms"
-                        className={
-                          formErrors.bathrooms ? "border-destructive" : ""
-                        }
-                      >
-                        <SelectValue placeholder={t("common.select")} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="1">1</SelectItem>
-                        <SelectItem value="2">2</SelectItem>
-                        <SelectItem value="3">3</SelectItem>
-                        <SelectItem value="4">4+</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    />
                     {formErrors.bathrooms && (
                       <p className="text-sm text-destructive mt-1">
                         {formErrors.bathrooms}
@@ -468,12 +452,12 @@ const ListProperty = () => {
                 </div>
 
                 <div>
-                  <Label htmlFor="description">
+                  <Label htmlFor="descriptionEl">
                     {t("listForm.description")}
                   </Label>
                   <Textarea
-                    id="description"
-                    value={formData.description}
+                    id="descriptionEl"
+                    value={formData.descriptionEl}
                     onChange={handleInputChange}
                     placeholder={t("listForm.descriptionPlaceholder")}
                     className="min-h-[120px]"

@@ -51,12 +51,13 @@ import type {
   AvailabilitySlot,
   PropertyType,
 } from "@/api/types";
+import { getLocalizedTitle, getLocalizedDescription } from "@/types/listing";
 import placeholderImage from "@/assets/property-1.jpg";
 
 const ListingDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { user, isAuthenticated } = useAuth();
   const { toast } = useToast();
 
@@ -331,7 +332,7 @@ const ListingDetail = () => {
               <div className="aspect-[16/10] relative">
                 <img
                   src={getImageUrl(currentImage.url)}
-                  alt={listing.title}
+                  alt={getLocalizedTitle(listing, language)}
                   className="w-full h-full object-cover"
                 />
 
@@ -395,7 +396,7 @@ const ListingDetail = () => {
                     >
                       <img
                         src={getImageUrl(img.url)}
-                        alt={`${listing.title} - ${index + 1}`}
+                        alt={`${getLocalizedTitle(listing, language)} - ${index + 1}`}
                         className="w-full h-full object-cover"
                       />
                     </button>
@@ -423,7 +424,7 @@ const ListingDetail = () => {
               </div>
 
               <h1 className="text-3xl font-bold text-foreground mb-2">
-                {listing.title}
+                {getLocalizedTitle(listing, language)}
               </h1>
 
               <div className="flex items-center text-muted-foreground">
@@ -504,7 +505,7 @@ const ListingDetail = () => {
                   {t("listingDetail.description")}
                 </h2>
                 <p className="text-muted-foreground whitespace-pre-line leading-relaxed">
-                  {listing.description}
+                  {getLocalizedDescription(listing, language)}
                 </p>
               </CardContent>
             </Card>
@@ -733,7 +734,7 @@ const ListingDetail = () => {
       <ContactOwnerDialog
         open={contactDialogOpen}
         onOpenChange={setContactDialogOpen}
-        listingTitle={listing.title}
+        listingTitle={getLocalizedTitle(listing, language)}
         listingId={listing.id}
       />
 
@@ -742,7 +743,7 @@ const ListingDetail = () => {
           open={bookingDialogOpen}
           onOpenChange={setBookingDialogOpen}
           listingId={listing.id}
-          listingTitle={listing.title}
+          listingTitle={getLocalizedTitle(listing, language)}
           onSuccess={handleBookingSuccess}
         />
       )}

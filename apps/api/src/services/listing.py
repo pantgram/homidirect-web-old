@@ -84,8 +84,6 @@ async def search_listings(db: AsyncSession, params: dict, is_authenticated: bool
         search = f"%{q}%"
         conditions.append(
             or_(
-                Listing.title.ilike(search),
-                Listing.description.ilike(search),
                 Listing.title_el.ilike(search),
                 Listing.description_el.ilike(search),
                 Listing.title_en.ilike(search),

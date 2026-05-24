@@ -12,8 +12,6 @@ class ListingImageBasic(CamelModel):
 
 class ListingResponse(CamelModel):
     id: int
-    title: str
-    description: str
     price: float
     city: str
     postal_code: str | None
@@ -57,8 +55,6 @@ class ListingSearchResponse(ListingResponse):
 
 
 class CreateListingRequest(CamelModel):
-    title: str
-    description: str | None = None
     price: float
     city: str
     postal_code: str | None = None
@@ -84,15 +80,13 @@ class CreateListingRequest(CamelModel):
     landlord_id: int
     landlord_phone: str | None = None
     upload_session_id: str | None = None
-    title_el: str | None = None
+    title_el: str
     title_en: str | None = None
     description_el: str | None = None
     description_en: str | None = None
 
 
 class UpdateListingRequest(CamelModel):
-    title: str | None = None
-    description: str | None = None
     price: float | None = None
     city: str | None = None
     postal_code: str | None = None

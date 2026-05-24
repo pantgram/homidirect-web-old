@@ -3,7 +3,6 @@ from src.models.listing import Listing
 from src.models.listing_image import ListingImage
 from src.models.booking import Booking
 from src.models.availability_slot import AvailabilitySlot
-from src.models.conversation import Conversation
 from src.models.interested_listing import InterestedListing
 from src.models.featured_listing_purchase import FeaturedListingPurchase
 from src.models.verification_document import VerificationDocument
@@ -16,7 +15,6 @@ __all__ = [
     "ListingImage",
     "Booking",
     "AvailabilitySlot",
-    "Conversation",
     "InterestedListing",
     "FeaturedListingPurchase",
     "VerificationDocument",
