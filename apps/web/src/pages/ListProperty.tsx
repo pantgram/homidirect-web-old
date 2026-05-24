@@ -35,8 +35,8 @@ import type { PropertyType, CreateListingRequest } from "@/api";
 import type { LocationResult } from "@/api/geocoding";
 
 interface ListingFormData {
-  title: string;
-  description: string;
+  titleEl: string;
+  descriptionEl: string;
   propertyType: PropertyType | "";
   price: string;
   address: string;
@@ -51,8 +51,8 @@ interface ListingFormData {
 }
 
 const initialFormData: ListingFormData = {
-  title: "",
-  description: "",
+  titleEl: "",
+  descriptionEl: "",
   propertyType: "",
   price: "",
   address: "",
@@ -117,8 +117,8 @@ const ListProperty = () => {
   const validateForm = (): boolean => {
     const errors: Partial<Record<keyof ListingFormData, string>> = {};
 
-    if (!formData.title.trim()) {
-      errors.title = t("listForm.validation.titleRequired");
+    if (!formData.titleEl.trim()) {
+      errors.titleEl = t("listForm.validation.titleRequired");
     }
     if (!formData.propertyType) {
       errors.propertyType = t("listForm.validation.typeRequired");
@@ -168,8 +168,8 @@ const ListProperty = () => {
     }
 
     const listingData: CreateListingRequest & { uploadSessionId?: string } = {
-      title: formData.title.trim(),
-      description: formData.description.trim(),
+      titleEl: formData.titleEl.trim(),
+      descriptionEl: formData.descriptionEl.trim(),
       propertyType: formData.propertyType as PropertyType,
       price: parseFloat(formData.price),
       address: formData.address.trim(),
@@ -245,17 +245,17 @@ const ListProperty = () => {
               {/* Basic Information */}
               <div className="space-y-4">
                 <div>
-                  <Label htmlFor="title">{t("listForm.propertyTitle")}</Label>
+                  <Label htmlFor="titleEl">{t("listForm.propertyTitle")}</Label>
                   <Input
-                    id="title"
-                    value={formData.title}
+                    id="titleEl"
+                    value={formData.titleEl}
                     onChange={handleInputChange}
                     placeholder={t("listForm.titlePlaceholder")}
-                    className={formErrors.title ? "border-destructive" : ""}
+                    className={formErrors.titleEl ? "border-destructive" : ""}
                   />
-                  {formErrors.title && (
+                  {formErrors.titleEl && (
                     <p className="text-sm text-destructive mt-1">
-                      {formErrors.title}
+                      {formErrors.titleEl}
                     </p>
                   )}
                 </div>
@@ -468,12 +468,12 @@ const ListProperty = () => {
                 </div>
 
                 <div>
-                  <Label htmlFor="description">
+                  <Label htmlFor="descriptionEl">
                     {t("listForm.description")}
                   </Label>
                   <Textarea
-                    id="description"
-                    value={formData.description}
+                    id="descriptionEl"
+                    value={formData.descriptionEl}
                     onChange={handleInputChange}
                     placeholder={t("listForm.descriptionPlaceholder")}
                     className="min-h-[120px]"

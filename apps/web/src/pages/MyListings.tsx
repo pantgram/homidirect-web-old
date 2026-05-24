@@ -21,10 +21,11 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { listingsApi } from "@/api/listings";
 import type { ListingSearchResult } from "@/api/types";
+import { getLocalizedTitle } from "@/types/listing";
 import placeholderImage from "@/assets/property-1.jpg";
 
 const MyListings = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { user, isAuthenticated, isLoading: isAuthLoading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -246,7 +247,7 @@ const MyListings = () => {
                   <PropertyCard
                     id={listing.id}
                     image={listing.primaryImage?.url || placeholderImage}
-                    title={listing.title}
+                    title={getLocalizedTitle(listing, language)}
                     location={listing.city}
                     price={formatPrice(listing.price)}
                     bedrooms={listing.bedrooms}

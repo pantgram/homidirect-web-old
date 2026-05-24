@@ -10,6 +10,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { listingsApi } from "@/api/listings";
 import { useFavorites } from "@/hooks";
 import { Skeleton } from "@/components/ui/skeleton";
+import { getLocalizedTitle } from "@/types/listing";
 import placeholderImage from "@/assets/property-1.jpg";
 
 const PropertyCardSkeleton = () => (
@@ -28,7 +29,7 @@ const PropertyCardSkeleton = () => (
 );
 
 const Index = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { favoriteIds, handleFavoriteChange } = useFavorites();
 
   const { data: listingsResponse, isLoading } = useQuery({
@@ -87,7 +88,7 @@ const Index = () => {
                   key={listing.id}
                   id={listing.id}
                   image={listing.primaryImage?.url || placeholderImage}
-                  title={listing.title}
+                  title={getLocalizedTitle(listing, language)}
                   location={listing.city}
                   price={listing.price.toLocaleString()}
                   bedrooms={listing.bedrooms}

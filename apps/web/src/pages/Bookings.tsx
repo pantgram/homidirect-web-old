@@ -23,6 +23,7 @@ import { useToast } from "@/hooks/use-toast";
 import { bookingsApi } from "@/api/bookings";
 import { listingsApi } from "@/api/listings";
 import type { Booking } from "@/api/types";
+import { getLocalizedTitle } from "@/types/listing";
 import placeholderImage from "@/assets/property-1.jpg";
 
 const Bookings = () => {
@@ -206,7 +207,7 @@ const Bookings = () => {
                       <div className="flex gap-6">
                         <img
                           src={listing?.images?.[0]?.url || placeholderImage}
-                          alt={listing?.title}
+                          alt={listing ? getLocalizedTitle(listing, language) : ""}
                           className="w-32 h-32 object-cover rounded-lg"
                         />
 
@@ -217,7 +218,7 @@ const Bookings = () => {
                                 to={`/listings/${booking.listingId}`}
                                 className="text-lg font-semibold hover:text-primary transition-colors"
                               >
-                                {listing?.title || t("bookings.unknownListing")}
+                                {listing ? getLocalizedTitle(listing, language) : t("bookings.unknownListing")}
                               </Link>
                               <div className="flex items-center gap-4 mt-1 text-sm text-muted-foreground">
                                 <div className="flex items-center gap-1">

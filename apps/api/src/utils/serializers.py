@@ -27,8 +27,6 @@ async def get_primary_images(db: AsyncSession, listing_ids: list[int]) -> dict:
 def listing_to_dict(listing: Listing) -> dict:
     return {
         "id": listing.id,
-        "title": listing.title,
-        "description": listing.description,
         "price": listing.price,
         "city": listing.city,
         "postal_code": listing.postal_code,

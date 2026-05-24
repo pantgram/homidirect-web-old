@@ -85,7 +85,7 @@ async def create_booking(db: AsyncSession, data: dict, current_user, background_
                 landlord.email,
                 f"{landlord.first_name} {landlord.last_name}",
                 f"{tenant.first_name} {tenant.last_name}",
-                listing.title,
+                listing.title_el,
                 listing.id,
                 booking.scheduled_at.isoformat(),
                 booking.id,
@@ -128,7 +128,7 @@ async def update_booking(db: AsyncSession, booking_id: int, data: dict, backgrou
                     tenant.email,
                     f"{tenant.first_name} {tenant.last_name}",
                     f"{landlord.first_name} {landlord.last_name}",
-                    listing.title,
+                    listing.title_el,
                     booking.scheduled_at.isoformat(),
                     booking.meet_link,
                 )
@@ -138,7 +138,7 @@ async def update_booking(db: AsyncSession, booking_id: int, data: dict, backgrou
                     tenant.email,
                     f"{tenant.first_name} {tenant.last_name}",
                     f"{landlord.first_name} {landlord.last_name}",
-                    listing.title,
+                    listing.title_el,
                     booking.scheduled_at.isoformat(),
                 )
     except Exception:
@@ -175,7 +175,7 @@ async def delete_booking(db: AsyncSession, booking_id: int, background_tasks: Ba
                 landlord.email,
                 f"{landlord.first_name} {landlord.last_name}",
                 f"{tenant.first_name} {tenant.last_name}",
-                listing.title,
+                listing.title_el,
                 booking.scheduled_at.isoformat(),
             )
     except Exception:
