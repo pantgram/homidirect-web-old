@@ -47,8 +47,6 @@ class Settings(BaseSettings):
     @property
     def async_database_url(self) -> str:
         url = self.database_url
-        if url.startswith("postgresql://"):
-            url = url.replace("postgresql://", "postgresql+asyncpg://", 1)
         import urllib.parse
         parsed = urllib.parse.urlparse(url)
         query = urllib.parse.parse_qs(parsed.query)

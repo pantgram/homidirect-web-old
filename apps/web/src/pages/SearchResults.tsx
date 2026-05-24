@@ -21,12 +21,13 @@ import type {
   ListingSearchResult,
   PropertyType,
 } from "@/api/types";
+import { getLocalizedTitle } from "@/types/listing";
 import placeholderImage from "@/assets/property-1.jpg";
 
 const PROPERTY_TYPES = ["apartment", "house", "studio", "room"] as const;
 
 const SearchResults = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { favoriteIds, handleFavoriteChange } = useFavorites();
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -360,7 +361,7 @@ const SearchResults = () => {
                 key={listing.id}
                 id={listing.id}
                 image={listing.primaryImage?.url || placeholderImage}
-                title={listing.title}
+                title={getLocalizedTitle(listing, language)}
                 location={listing.city}
                 price={formatPrice(listing.price)}
                 bedrooms={listing.bedrooms}

@@ -5,7 +5,7 @@ from src.dependencies.auth import get_current_user, verify_user_ownership
 from src.models.user import User
 from src.services import user as user_service
 from src.services import favorite as fav_service
-from src.schemas.user import UserResponse, UserWithRoleResponse, UpdateUserRequest
+from src.schemas.user import UpdateUserRequest
 
 router = APIRouter(prefix="/users", tags=["Users"])
 

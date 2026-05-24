@@ -155,7 +155,7 @@ async def get_pending_verifications(db: AsyncSession):
     items = []
     for l in listings:
         items.append({
-            "id": l.id, "title": l.title, "city": l.city,
+            "id": l.id, "title_el": l.title_el, "city": l.city,
             "landlord_id": l.landlord_id, "verification_status": l.verification_status,
             "created_at": l.created_at.isoformat() if l.created_at else None,
             "documents": [_format_doc(d) for d in l.verification_documents],

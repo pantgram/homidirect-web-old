@@ -85,7 +85,7 @@ async def create_booking(db: AsyncSession, data: dict, current_user, background_
                 landlord.email,
                 f"{landlord.first_name} {landlord.last_name}",
                 f"{tenant.first_name} {tenant.last_name}",
-                listing.title,
+                listing.title_el,
                 listing.id,
                 booking.scheduled_at.isoformat(),
                 booking.id,
@@ -96,13 +96,16 @@ async def create_booking(db: AsyncSession, data: dict, current_user, background_
     return booking
 
 
-async def update_booking(db: AsyncSession, booking_id: int, data: dict, background_tasks: BackgroundTasks):
+async def update_booking(db: AsyncSession, booking_id: int, data: dict,current_user, background_tasks: BackgroundTasks):
     result = await db.execute(select(Booking).where(Booking.id == booking_id))
     booking = result.scalar_one_or_none()
     if not booking:
         return None
 
     if data.get("status"):
+        new_status = data["status"]
+        if new_status in ("CONFIRMED", "DECLINED") and booking.landlord_id != current_user.id:
+            raise ConflictError("Only landlord can confirm or decline bookings")
         allowed = VALID_TRANSITIONS.get(booking.status, [])
         if data["status"] not in allowed:
             raise ConflictError(f"Cannot transition booking from {booking.status} to {data['status']}")
@@ -128,7 +131,7 @@ async def update_booking(db: AsyncSession, booking_id: int, data: dict, backgrou
                     tenant.email,
                     f"{tenant.first_name} {tenant.last_name}",
                     f"{landlord.first_name} {landlord.last_name}",
-                    listing.title,
+                    listing.title_el,
                     booking.scheduled_at.isoformat(),
                     booking.meet_link,
                 )
@@ -138,7 +141,7 @@ async def update_booking(db: AsyncSession, booking_id: int, data: dict, backgrou
                     tenant.email,
                     f"{tenant.first_name} {tenant.last_name}",
                     f"{landlord.first_name} {landlord.last_name}",
-                    listing.title,
+                    listing.title_el,
                     booking.scheduled_at.isoformat(),
                 )
     except Exception:
@@ -175,7 +178,7 @@ async def delete_booking(db: AsyncSession, booking_id: int, background_tasks: Ba
                 landlord.email,
                 f"{landlord.first_name} {landlord.last_name}",
                 f"{tenant.first_name} {tenant.last_name}",
-                listing.title,
+                listing.title_el,
                 booking.scheduled_at.isoformat(),
             )
     except Exception:

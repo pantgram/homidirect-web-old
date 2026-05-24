@@ -7,7 +7,6 @@ if TYPE_CHECKING:
 
     from src.models.availability_slot import AvailabilitySlot
     from src.models.booking import Booking
-    from src.models.conversation import Conversation
     from src.models.featured_listing_purchase import FeaturedListingPurchase
     from src.models.interested_listing import InterestedListing
     from src.models.listing_image import ListingImage
@@ -29,8 +28,6 @@ class Listing(Base):
     __tablename__ = "listings"
 
     id: Mapped[int] = mapped_column(sa.Integer, primary_key=True, autoincrement=True)
-    description: Mapped[str] = mapped_column(sa.Text, nullable=False)
-    title: Mapped[str] = mapped_column(sa.String(100), nullable=False)
     price: Mapped[float] = mapped_column(sa.Float, nullable=False)
     city: Mapped[str] = mapped_column(sa.String(100), nullable=False)
     postal_code: Mapped[str | None] = mapped_column(sa.String(50))
@@ -74,7 +71,6 @@ class Listing(Base):
     bookings: Mapped[list["Booking"]] = relationship("Booking", back_populates="listing")
     interested_users: Mapped[list["InterestedListing"]] = relationship("InterestedListing", back_populates="listing")
     availability_slots: Mapped[list["AvailabilitySlot"]] = relationship("AvailabilitySlot", back_populates="listing")
-    conversations: Mapped[list["Conversation"]] = relationship("Conversation", back_populates="listing")
     verification_documents: Mapped[list["VerificationDocument"]] = relationship("VerificationDocument", back_populates="listing")
     verification_history_entries: Mapped[list["VerificationHistory"]] = relationship("VerificationHistory", back_populates="listing")
     featured_purchases: Mapped[list["FeaturedListingPurchase"]] = relationship("FeaturedListingPurchase", back_populates="listing")
@@ -103,6 +99,6 @@ class Listing(Base):
         sa.Index("listings_available_featured_idx", "available", "is_featured"),
         sa.Index("listings_city_price_idx", "city", "price"),
         sa.Index("listings_type_city_idx", "property_type", "city"),
-        sa.Index("listings_search_en_idx", sa.text("to_tsvector('english', coalesce(title_en, '') || ' ' || coalesce(description, ''))"), postgresql_using="gin"),
-        sa.Index("listings_search_el_idx", sa.text("to_tsvector('greek', coalesce(title_el, '') || ' ' || coalesce(description, ''))"), postgresql_using="gin"),
+        sa.Index("listings_search_en_idx", sa.text("to_tsvector('english', coalesce(title_en, '') || ' ' || coalesce(description_en, ''))"), postgresql_using="gin"),
+        sa.Index("listings_search_el_idx", sa.text("to_tsvector('greek', coalesce(title_el, '') || ' ' || coalesce(description_el, ''))"), postgresql_using="gin"),
     )

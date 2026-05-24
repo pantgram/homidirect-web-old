@@ -27,6 +27,7 @@ import { bookingsApi } from "@/api/bookings";
 import { listingsApi } from "@/api/listings";
 import { availabilitySlotsApi } from "@/api/availability-slots";
 import type { Booking, AvailabilitySlot } from "@/api/types";
+import { getLocalizedTitle } from "@/types/listing";
 import placeholderImage from "@/assets/property-1.jpg";
 
 const ListingBookings = () => {
@@ -240,11 +241,11 @@ const ListingBookings = () => {
                 <div className="flex items-center gap-4">
                   <img
                     src={listing.images?.[0]?.url || placeholderImage}
-                    alt={listing.title}
+                    alt={getLocalizedTitle(listing, language)}
                     className="w-16 h-16 object-cover rounded-lg"
                   />
                   <div>
-                    <h2 className="font-semibold">{listing.title}</h2>
+                    <h2 className="font-semibold">{getLocalizedTitle(listing, language)}</h2>
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <MapPin className="h-4 w-4" />
                       <span>{listing.city}</span>
@@ -298,13 +299,13 @@ const ListingBookings = () => {
                         <div className="flex gap-6">
                           <img
                             src={listing?.images?.[0]?.url || placeholderImage}
-                            alt={listing?.title}
+                            alt={getLocalizedTitle(listing, language)}
                             className="w-32 h-32 object-cover rounded-lg"
                           />
 
                           <div className="space-y-3">
                             <div className="flex items-center gap-4">
-                              <h3 className="font-semibold">{listing?.title}</h3>
+                              <h3 className="font-semibold">{listing ? getLocalizedTitle(listing, language) : ""}</h3>
                               {getStatusBadge(booking.status)}
                             </div>
 

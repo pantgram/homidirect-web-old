@@ -115,6 +115,9 @@ async def forgot_password(db: AsyncSession, email: str, background_tasks: Backgr
     db_user.password_reset_token = hashed_token
     db_user.password_reset_expires = datetime.fromtimestamp(expires_at, tz=timezone.utc)
     db_user.updated_at = datetime.now(timezone.utc)
+    db.add(db_user)
+    await db.flush()
+    await db.refresh(db_user)
 
     background_tasks.add_task(send_password_reset_email, user.email, reset_token)
 

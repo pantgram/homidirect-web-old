@@ -9,12 +9,13 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
+import { getLocalizedTitle } from "@/types/listing";
 
 export default function ListingVerification() {
   const { listingId } = useParams<{ listingId: string }>();
   const navigate = useNavigate();
   const { user, isAuthenticated, isLoading: isAuthLoading } = useAuth();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
 
   const listingIdNum = listingId ? parseInt(listingId, 10) : 0;
   const { data: listing, isLoading: isListingLoading } =
@@ -146,7 +147,7 @@ export default function ListingVerification() {
               <Home className="w-5 h-5 text-muted-foreground" />
             </div>
             <div className="min-w-0">
-              <p className="font-medium truncate">{listing.title}</p>
+              <p className="font-medium truncate">{getLocalizedTitle(listing, language)}</p>
               <p className="text-sm text-muted-foreground">{listing.city}</p>
             </div>
           </div>
@@ -154,7 +155,7 @@ export default function ListingVerification() {
           {/* Verification Upload Component */}
           <VerificationUpload
             listingId={listingIdNum}
-            listingTitle={listing.title}
+             listingTitle={getLocalizedTitle(listing, language)}
           />
         </div>
       </main>

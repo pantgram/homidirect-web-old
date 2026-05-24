@@ -8,10 +8,18 @@ export type ListingStatusType = "Renovated" | "Luxurious" | "Under construction"
 
 export type ZoneType = "Residential" | "Agricultural" | "Commercial" | "Industrial" | "Regeneration";
 
+export type Language = "en" | "el";
+
+export function getLocalizedTitle(listing: { titleEl: string; titleEn?: string }, language: Language): string {
+  return language === "en" && listing.titleEn ? listing.titleEn : listing.titleEl;
+}
+
+export function getLocalizedDescription(listing: { descriptionEl: string; descriptionEn?: string }, language: Language): string {
+  return language === "en" && listing.descriptionEn ? listing.descriptionEn : listing.descriptionEl;
+}
+
 export interface Listing {
   id: number;
-  title: string;
-  description: string;
   price: number;
   city: string;
   postalCode?: string;
@@ -51,8 +59,6 @@ export interface Listing {
 }
 
 export interface CreateListingRequest {
-  title: string;
-  description?: string;
   price: number;
   city: string;
   postalCode?: string;
@@ -76,7 +82,7 @@ export interface CreateListingRequest {
   propertyType: PropertyType;
   available?: boolean;
   landlordPhone?: string;
-  titleEl?: string;
+  titleEl: string;
   titleEn?: string;
   descriptionEl?: string;
   descriptionEn?: string;

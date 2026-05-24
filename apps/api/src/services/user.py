@@ -27,7 +27,7 @@ async def update_user(db: AsyncSession, user_id: int, data: dict):
         existing = result.first()
         if existing and existing.id != user_id:
             raise ConflictError("Email already exists")
-
+    
     result = await db.execute(select(User).where(User.id == user_id))
     user = result.scalar_one_or_none()
     if not user:
