@@ -1,11 +1,18 @@
-from fastapi import APIRouter, Depends, UploadFile, File, Form, HTTPException
+from fastapi import APIRouter, Depends, File, Form, UploadFile
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from src.config.database import get_db
-from src.dependencies.auth import get_current_user, require_role, require_admin, verify_listing_ownership
-from src.models.user import User
-from src.services import verification as ver_service
-from src.schemas.verification import ReviewVerificationRequest
 from src.config.settings import settings
+from src.dependencies.auth import (
+    get_current_user,
+    require_admin,
+    require_role,
+    verify_listing_ownership,
+)
+from src.models.user import User
+from src.schemas.verification import ReviewVerificationRequest
+from src.services import verification as ver_service
+from src.utils.file_validation import validate_document
 
 router = APIRouter(prefix="/listings", tags=["Verification"])
 
@@ -76,13 +83,15 @@ async def upload_document(
 ):
     await verify_listing_ownership(listing_id, db, current_user)
 
-    if file.content_type not in settings.allowed_document_mime_types:
-        raise HTTPException(status_code=400, detail=f"File type {file.content_type} not allowed")
-
     file_bytes = await file.read()
+    detected_type = validate_document(
+        file_bytes, file.filename or "document",
+        file.content_type, settings.max_document_size,
+    )
+
     doc = await ver_service.upload_document(
         db, listing_id, document_type, current_user.id,
-        file_bytes, file.filename or "document", file.content_type,
+        file_bytes, file.filename or "document", detected_type,
     )
     return {"document": _format_doc(doc)}
 

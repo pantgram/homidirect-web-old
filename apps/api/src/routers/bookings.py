@@ -67,7 +67,7 @@ async def update_booking(
 ):
     await verify_booking_ownership(booking_id, db, current_user)
     data = body.model_dump(exclude_none=True)
-    b = await booking_service.update_booking(db, booking_id, data, background_tasks)
+    b = await booking_service.update_booking(db, booking_id, data, current_user, background_tasks)
     if not b:
         raise HTTPException(status_code=404, detail="Booking not found")
     return {"booking": _format_booking(b)}

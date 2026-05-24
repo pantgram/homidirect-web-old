@@ -1,11 +1,14 @@
 import uuid
-from fastapi import APIRouter, Depends, UploadFile, File, HTTPException
+
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from src.config.database import get_db
+from src.config.settings import settings
 from src.dependencies.auth import require_role
 from src.models.user import User
 from src.services import listing_image as img_service
-from src.config.settings import settings
+from src.utils.file_validation import validate_image
 
 router = APIRouter(prefix="/uploads", tags=["Uploads"])
 
@@ -38,14 +41,10 @@ async def upload_pending_image(
     if session_id == "new":
         session_id = str(uuid.uuid4())
 
-    if file.content_type not in settings.allowed_mime_types:
-        raise HTTPException(status_code=400, detail=f"File type {file.content_type} not allowed")
-
     file_bytes = await file.read()
-    if len(file_bytes) > settings.max_file_size:
-        raise HTTPException(status_code=400, detail="File too large")
+    detected_type = validate_image(file_bytes, file.filename or "image", file.content_type, settings.max_file_size)
 
-    img = await img_service.upload_pending_image(db, session_id, file_bytes, file.filename or "image", file.content_type)
+    img = await img_service.upload_pending_image(db, session_id, file_bytes, file.filename or "image", detected_type)
     return {
         "image": {
             "id": img.id,
