@@ -91,7 +91,7 @@ export function LocationMap({
   className,
 }: LocationMapProps) {
   return (
-    <div className={className}>
+    <div className={className} style={{ position: "relative", zIndex: 0, overflow: "hidden" }}>
       <MapContainer
         center={DEFAULT_CENTER}
         zoom={DEFAULT_ZOOM}

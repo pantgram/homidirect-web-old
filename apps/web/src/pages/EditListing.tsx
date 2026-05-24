@@ -78,8 +78,8 @@ const EditListing = () => {
   const deleteImage = useDeleteListingImage();
 
   const [formData, setFormData] = useState<ListingFormData>({
-    title: "",
-    description: "",
+    titleEl: "",
+    descriptionEl: "",
     propertyType: "",
     price: "",
     address: "",
@@ -155,7 +155,7 @@ const EditListing = () => {
   }, [isListingLoading, listing, canEdit, navigate, toast, t]);
 
   const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     const { id, value } = e.target;
     setFormData((prev) => ({ ...prev, [id]: value }));
@@ -299,7 +299,7 @@ const EditListing = () => {
         title: t("imageUpload.tooManyImages"),
         description: t("imageUpload.maxImagesReached").replace(
           "{max}",
-          String(MAX_IMAGES)
+          String(MAX_IMAGES),
         ),
         variant: "destructive",
       });
@@ -335,11 +335,11 @@ const EditListing = () => {
         await handleFiles(files);
       }
     },
-    [handleFiles]
+    [handleFiles],
   );
 
   const handleFileInputChange = async (
-    e: React.ChangeEvent<HTMLInputElement>
+    e: React.ChangeEvent<HTMLInputElement>,
   ) => {
     const files = e.target.files;
     if (files && files.length > 0) {
@@ -511,7 +511,10 @@ const EditListing = () => {
                     onValueChange={(value) => {
                       setFormData((prev) => ({ ...prev, address: value }));
                       if (formErrors.address) {
-                        setFormErrors((prev) => ({ ...prev, address: undefined }));
+                        setFormErrors((prev) => ({
+                          ...prev,
+                          address: undefined,
+                        }));
                       }
                     }}
                     onLocationSelect={(location: LocationResult) => {
@@ -542,7 +545,11 @@ const EditListing = () => {
                   latitude={formData.latitude}
                   longitude={formData.longitude}
                   onLocationChange={async (lat, lon) => {
-                    const result = await reverseGeocode(lat, lon, language === "el" ? "el" : "en");
+                    const result = await reverseGeocode(
+                      lat,
+                      lon,
+                      language === "el" ? "el" : "en",
+                    );
                     if (result) {
                       setFormData((prev) => ({
                         ...prev,
@@ -567,29 +574,18 @@ const EditListing = () => {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
                     <Label htmlFor="bedrooms">{t("listForm.bedrooms")}</Label>
-                    <Select
+                    <Input
+                      id="bedrooms"
+                      type="number"
+                      min="0"
+                      step="1"
                       value={formData.bedrooms}
-                      onValueChange={(value) =>
-                        handleSelectChange("bedrooms", value)
+                      onChange={handleInputChange}
+                      placeholder="2"
+                      className={
+                        formErrors.bedrooms ? "border-destructive" : ""
                       }
-                    >
-                      <SelectTrigger
-                        id="bedrooms"
-                        className={
-                          formErrors.bedrooms ? "border-destructive" : ""
-                        }
-                      >
-                        <SelectValue placeholder={t("common.select")} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="0">0</SelectItem>
-                        <SelectItem value="1">1</SelectItem>
-                        <SelectItem value="2">2</SelectItem>
-                        <SelectItem value="3">3</SelectItem>
-                        <SelectItem value="4">4</SelectItem>
-                        <SelectItem value="5">5+</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    />
                     {formErrors.bedrooms && (
                       <p className="text-sm text-destructive mt-1">
                         {formErrors.bedrooms}
@@ -599,27 +595,18 @@ const EditListing = () => {
 
                   <div>
                     <Label htmlFor="bathrooms">{t("listForm.bathrooms")}</Label>
-                    <Select
+                    <Input
+                      id="bathrooms"
+                      type="number"
+                      min="0"
+                      step="1"
                       value={formData.bathrooms}
-                      onValueChange={(value) =>
-                        handleSelectChange("bathrooms", value)
+                      onChange={handleInputChange}
+                      placeholder="1"
+                      className={
+                        formErrors.bathrooms ? "border-destructive" : ""
                       }
-                    >
-                      <SelectTrigger
-                        id="bathrooms"
-                        className={
-                          formErrors.bathrooms ? "border-destructive" : ""
-                        }
-                      >
-                        <SelectValue placeholder={t("common.select")} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="1">1</SelectItem>
-                        <SelectItem value="2">2</SelectItem>
-                        <SelectItem value="3">3</SelectItem>
-                        <SelectItem value="4">4+</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    />
                     {formErrors.bathrooms && (
                       <p className="text-sm text-destructive mt-1">
                         {formErrors.bathrooms}
@@ -704,7 +691,7 @@ const EditListing = () => {
                     "border-2 border-dashed rounded-lg p-8 text-center transition-colors",
                     isDragging && "border-primary bg-primary/5",
                     !isDragging && "border-border hover:border-primary",
-                    canUploadMore && "cursor-pointer"
+                    canUploadMore && "cursor-pointer",
                   )}
                   onDragOver={handleDragOver}
                   onDragLeave={handleDragLeave}
@@ -734,7 +721,9 @@ const EditListing = () => {
                       <Upload
                         className={cn(
                           "h-12 w-12 mx-auto mb-4",
-                          canUploadMore ? "text-muted-foreground" : "text-muted"
+                          canUploadMore
+                            ? "text-muted-foreground"
+                            : "text-muted",
                         )}
                       />
                       <p
@@ -742,7 +731,7 @@ const EditListing = () => {
                           "text-sm mb-1",
                           canUploadMore
                             ? "text-foreground"
-                            : "text-muted-foreground"
+                            : "text-muted-foreground",
                         )}
                       >
                         {canUploadMore
@@ -833,9 +822,7 @@ const EditListing = () => {
         {/* Availability Slots */}
         {listing && user && (
           <div className="max-w-3xl mx-auto mt-8">
-            <AvailabilitySlotsManager
-              listingId={listingId}
-            />
+            <AvailabilitySlotsManager listingId={listingId} />
           </div>
         )}
       </main>

@@ -362,7 +362,11 @@ const ListProperty = () => {
                   latitude={formData.latitude}
                   longitude={formData.longitude}
                   onLocationChange={async (lat, lon) => {
-                    const result = await reverseGeocode(lat, lon, language === "el" ? "el" : "en");
+                    const result = await reverseGeocode(
+                      lat,
+                      lon,
+                      language === "el" ? "el" : "en",
+                    );
                     if (result) {
                       setFormData((prev) => ({
                         ...prev,
@@ -387,29 +391,18 @@ const ListProperty = () => {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
                     <Label htmlFor="bedrooms">{t("listForm.bedrooms")}</Label>
-                    <Select
+                    <Input
+                      id="bedrooms"
+                      type="number"
+                      min="0"
+                      step="1"
                       value={formData.bedrooms}
-                      onValueChange={(value) =>
-                        handleSelectChange("bedrooms", value)
+                      onChange={handleInputChange}
+                      placeholder="2"
+                      className={
+                        formErrors.bedrooms ? "border-destructive" : ""
                       }
-                    >
-                      <SelectTrigger
-                        id="bedrooms"
-                        className={
-                          formErrors.bedrooms ? "border-destructive" : ""
-                        }
-                      >
-                        <SelectValue placeholder={t("common.select")} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="0">0</SelectItem>
-                        <SelectItem value="1">1</SelectItem>
-                        <SelectItem value="2">2</SelectItem>
-                        <SelectItem value="3">3</SelectItem>
-                        <SelectItem value="4">4</SelectItem>
-                        <SelectItem value="5">5+</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    />
                     {formErrors.bedrooms && (
                       <p className="text-sm text-destructive mt-1">
                         {formErrors.bedrooms}
@@ -419,27 +412,18 @@ const ListProperty = () => {
 
                   <div>
                     <Label htmlFor="bathrooms">{t("listForm.bathrooms")}</Label>
-                    <Select
+                    <Input
+                      id="bathrooms"
+                      type="number"
+                      min="0"
+                      step="1"
                       value={formData.bathrooms}
-                      onValueChange={(value) =>
-                        handleSelectChange("bathrooms", value)
+                      onChange={handleInputChange}
+                      placeholder="1"
+                      className={
+                        formErrors.bathrooms ? "border-destructive" : ""
                       }
-                    >
-                      <SelectTrigger
-                        id="bathrooms"
-                        className={
-                          formErrors.bathrooms ? "border-destructive" : ""
-                        }
-                      >
-                        <SelectValue placeholder={t("common.select")} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="1">1</SelectItem>
-                        <SelectItem value="2">2</SelectItem>
-                        <SelectItem value="3">3</SelectItem>
-                        <SelectItem value="4">4+</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    />
                     {formErrors.bathrooms && (
                       <p className="text-sm text-destructive mt-1">
                         {formErrors.bathrooms}
