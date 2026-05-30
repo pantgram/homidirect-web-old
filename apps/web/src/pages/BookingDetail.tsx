@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import {
-  ArrowLeft,
   Calendar,
   Clock,
   MapPin,
@@ -11,14 +10,16 @@ import {
   CheckCircle,
   XCircle,
   AlertCircle,
-  Loader2,
   Trash2,
 } from "lucide-react";
-import Navigation from "@/components/Navigation";
-import Footer from "@/components/Footer";
+import { PageLayout } from "@/components/layout/PageLayout";
+import { BackButton } from "@/components/shared/BackButton";
+import { BookingStatusBadge } from "@/components/shared/BookingStatusBadge";
+import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
+import { InlineSpinner } from "@/components/shared";
+import { formatDateTime } from "@/utils/format";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -31,21 +32,11 @@ import placeholderImage from "@/assets/property-1.jpg";
 interface ListingWithImages extends Listing {
   images?: ListingImage[];
 }
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 
 const BookingDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { t, language } = useLanguage();
+  const { t, language, locale } = useLanguage();
   const { isAuthenticated, user } = useAuth();
   const { toast } = useToast();
 
@@ -126,89 +117,26 @@ const BookingDetail = () => {
     }
   };
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString(language === "el" ? "el-GR" : "en-US", {
-      weekday: "long",
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
-
-  const getStatusBadge = (status: string) => {
-    const statusConfig: Record<
-      string,
-      { label: string; icon: React.ReactNode; className: string }
-    > = {
-      PENDING: {
-        label: t("bookings.pending"),
-        icon: <Clock className="h-3 w-3" />,
-        className: "bg-yellow-500/10 text-yellow-600 hover:bg-yellow-500/20",
-      },
-      CONFIRMED: {
-        label: t("bookings.confirmed"),
-        icon: <CheckCircle className="h-3 w-3" />,
-        className: "bg-green-500/10 text-green-600 hover:bg-green-500/20",
-      },
-      DECLINED: {
-        label: t("bookings.declined"),
-        icon: <XCircle className="h-3 w-3" />,
-        className: "bg-red-500/10 text-red-600 hover:bg-red-500/20",
-      },
-      CANCELLED: {
-        label: t("bookings.cancelledStatus"),
-        icon: <AlertCircle className="h-3 w-3" />,
-        className: "bg-gray-500/10 text-gray-600 hover:bg-gray-500/20",
-      },
-    };
-
-    const config =
-      statusConfig[status] ||
-      statusConfig.CANCELLED ||
-      ({
-        label: status,
-        icon: <AlertCircle className="h-3 w-3" />,
-        className: "bg-gray-500/10 text-gray-600",
-      } as any);
-
-    return (
-      <Badge className={config.className}>
-        {config.icon}
-        <span className="ml-1">{config.label}</span>
-      </Badge>
-    );
-  };
-
   if (loading) {
     return (
-      <div className="min-h-screen bg-background">
-        <Navigation />
-        <div className="flex justify-center items-center py-32">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        </div>
-        <Footer />
-      </div>
+      <PageLayout>
+        <InlineSpinner />
+      </PageLayout>
     );
   }
 
   if (error || !booking) {
     return (
-      <div className="min-h-screen bg-background">
-        <Navigation />
+      <PageLayout>
         <div className="container mx-auto px-4 py-16 text-center">
           <h1 className="text-2xl font-bold mb-4">
             {error || t("bookingDetail.notFound")}
           </h1>
           <Button onClick={() => navigate("/bookings")}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
             {t("bookingDetail.backToBookings")}
           </Button>
         </div>
-        <Footer />
-      </div>
+      </PageLayout>
     );
   }
 
@@ -216,24 +144,15 @@ const BookingDetail = () => {
   const canCancel = booking.status === "PENDING";
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navigation />
-
-      <main className="container mx-auto px-4 py-8">
-        <Button
-          variant="ghost"
-          onClick={() => navigate(-1)}
-          className="mb-6 -ml-2"
-        >
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          {t("bookingDetail.back")}
-        </Button>
+    <PageLayout>
+      <div className="container mx-auto px-4 py-8">
+        <BackButton label={t("bookingDetail.back")} />
 
         <div className="max-w-4xl mx-auto space-y-6">
           <div className="flex items-start justify-between">
             <div>
               <h1 className="text-3xl font-bold mb-2">{t("bookingDetail.title")}</h1>
-              {getStatusBadge(booking.status)}
+              <BookingStatusBadge status={booking.status} />
             </div>
             {canCancel && (
               <Button
@@ -289,7 +208,12 @@ const BookingDetail = () => {
                   <div>
                     <p className="text-sm text-muted-foreground">{t("bookingDetail.dateAndTime")}</p>
                     <p className="text-lg font-medium">
-                      {formatDate(booking.scheduledAt)}
+                      {formatDateTime(booking.scheduledAt, locale, {
+                        weekday: "long",
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                      })}
                     </p>
                   </div>
                 </div>
@@ -343,29 +267,19 @@ const BookingDetail = () => {
             </Card>
           )}
         </div>
-      </main>
+      </div>
 
-      <AlertDialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>
-              {t("bookingDetail.cancelBooking")}
-            </AlertDialogTitle>
-            <AlertDialogDescription>
-              {t("bookingDetail.cancelConfirm")}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>{t("bookingDetail.noKeepIt")}</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete}>
-              {t("bookingDetail.yesCancel")}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      <Footer />
-    </div>
+      <ConfirmDialog
+        open={showCancelDialog}
+        onOpenChange={setShowCancelDialog}
+        title={t("bookingDetail.cancelBooking")}
+        description={t("bookingDetail.cancelConfirm")}
+        onConfirm={handleDelete}
+        confirmLabel={t("bookingDetail.yesCancel")}
+        cancelLabel={t("bookingDetail.noKeepIt")}
+        destructive
+      />
+    </PageLayout>
   );
 };
 

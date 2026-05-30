@@ -1,3 +1,5 @@
+import type { VerificationStatus } from "./listing";
+
 export type DocumentType =
   | "UTILITY_BILL"
   | "TITLE_DEED"
@@ -27,7 +29,7 @@ export interface VerificationHistoryEntry {
 
 export interface VerificationStatusResponse {
   listingId: number;
-  verificationStatus: "PENDING" | "APPROVED" | "REJECTED";
+  verificationStatus: VerificationStatus;
   verifiedAt: string | null;
   documents: VerificationDocument[];
   history: VerificationHistoryEntry[];
@@ -39,7 +41,7 @@ export interface PendingVerificationListing {
   title: string;
   city: string;
   landlordId: number;
-  verificationStatus: "PENDING" | "APPROVED" | "REJECTED";
+  verificationStatus: VerificationStatus;
   createdAt: string;
   documents: VerificationDocument[];
 }

@@ -5,7 +5,6 @@ import {
   Bed,
   Bath,
   Square,
-  ArrowLeft,
   ChevronLeft,
   ChevronRight,
   Share2,
@@ -14,37 +13,31 @@ import {
   Home,
   Mail,
   Trash2,
-  Loader2,
   CheckCircle,
   Building,
   Clock,
   Pencil,
+  Loader2,
 } from "lucide-react";
-import Navigation from "@/components/Navigation";
-import Footer from "@/components/Footer";
+import { PageLayout } from "@/components/layout/PageLayout";
+import { BackButton } from "@/components/shared/BackButton";
+import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
+import { InlineSpinner } from "@/components/shared";
 import ContactOwnerDialog from "@/components/ContactOwnerDialog";
 import BookingDialog from "@/components/BookingDialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { listingsApi } from "@/api/listings";
 import { favoritesApi } from "@/api/favorites";
 import { availabilitySlotsApi } from "@/api/availability-slots";
-import { env } from "@/config/env";
+import { getImageUrl } from "@/utils/image";
+import { formatPrice, formatArea, formatDate } from "@/utils/format";
+import { getPropertyTypeLabel } from "@/utils/property";
 import type {
   Listing,
   ListingImage,
@@ -57,7 +50,7 @@ import placeholderImage from "@/assets/property-1.jpg";
 const ListingDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { t, language } = useLanguage();
+  const { t, language, locale } = useLanguage();
   const { user, isAuthenticated } = useAuth();
   const { toast } = useToast();
 
@@ -75,37 +68,6 @@ const ListingDetail = () => {
   const [availableSlots, setAvailableSlots] = useState<AvailabilitySlot[]>([]);
 
   const listingId = id ? parseInt(id, 10) : 0;
-
-  const formatPrice = (price: number) => {
-    return price.toLocaleString();
-  };
-
-  const formatArea = (area: number) => {
-    return `${area.toLocaleString()} m\u00B2`;
-  };
-
-  const formatDate = (date: string) => {
-    return new Date(date).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-  };
-
-  const getPropertyTypeLabel = (type: PropertyType) => {
-    const labels: Record<PropertyType, string> = {
-      apartment: t("search.apartment"),
-      house: t("search.house"),
-      studio: t("search.studio"),
-      room: t("search.room"),
-    };
-    return labels[type] || type;
-  };
-
-  const getImageUrl = (url: string) => {
-    if (url.startsWith("http")) return url;
-    return `${env.apiUrl}${url}`;
-  };
 
   const formatSlotDate = (startTime: string) => {
     const date = new Date(startTime);
@@ -280,20 +242,15 @@ const ListingDetail = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background">
-        <Navigation />
-        <div className="flex justify-center items-center py-32">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        </div>
-        <Footer />
-      </div>
+      <PageLayout>
+        <InlineSpinner />
+      </PageLayout>
     );
   }
 
   if (error || !listing) {
     return (
-      <div className="min-h-screen bg-background">
-        <Navigation />
+      <PageLayout>
         <div className="container mx-auto px-4 py-16 text-center">
           <h1 className="text-2xl font-bold text-foreground mb-4">
             {t("listingDetail.notFound")}
@@ -302,28 +259,17 @@ const ListingDetail = () => {
             {error || t("listingDetail.notFoundDesc")}
           </p>
           <Button onClick={() => navigate("/search")}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
             {t("listingDetail.backToSearch")}
           </Button>
         </div>
-        <Footer />
-      </div>
+      </PageLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navigation />
-
-      <main className="container mx-auto px-4 py-8">
-        <Button
-          variant="ghost"
-          onClick={() => navigate(-1)}
-          className="mb-6 -ml-2"
-        >
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          {t("listingDetail.back")}
-        </Button>
+    <PageLayout>
+      <div className="container mx-auto px-4 py-8">
+        <BackButton label={t("listingDetail.back")} />
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-6">
@@ -409,7 +355,7 @@ const ListingDetail = () => {
             <div>
               <div className="flex flex-wrap items-center gap-2 mb-3">
                 <Badge className="bg-primary/10 text-primary hover:bg-primary/20">
-                  {getPropertyTypeLabel(listing.propertyType)}
+                  {getPropertyTypeLabel(listing.propertyType, t)}
                 </Badge>
                 {listing.available ? (
                   <Badge className="bg-green-500/10 text-green-600 hover:bg-green-500/20">
@@ -491,7 +437,7 @@ const ListingDetail = () => {
                       {t("listingDetail.type")}
                     </p>
                     <p className="font-semibold">
-                      {getPropertyTypeLabel(listing.propertyType)}
+                      {getPropertyTypeLabel(listing.propertyType, t)}
                     </p>
                   </div>
                 </CardContent>
@@ -524,7 +470,7 @@ const ListingDetail = () => {
                         {t("listingDetail.propertyType")}
                       </p>
                       <p className="font-medium">
-                        {getPropertyTypeLabel(listing.propertyType)}
+                        {getPropertyTypeLabel(listing.propertyType, t)}
                       </p>
                     </div>
                   </div>
@@ -536,7 +482,7 @@ const ListingDetail = () => {
                         {t("listingDetail.listedOn")}
                       </p>
                       <p className="font-medium">
-                        {formatDate(listing.createdAt)}
+                        {formatDate(listing.createdAt, locale)}
                       </p>
                     </div>
                   </div>
@@ -727,9 +673,7 @@ const ListingDetail = () => {
             </div>
           </div>
         </div>
-      </main>
-
-      <Footer />
+      </div>
 
       <ContactOwnerDialog
         open={contactDialogOpen}
@@ -748,31 +692,17 @@ const ListingDetail = () => {
         />
       )}
 
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{t("myListings.delete")}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {t("myListings.confirmDelete")}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>{t("listingDetail.no")}</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDeleteListing}
-              disabled={deleting}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              {deleting ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                t("myListings.delete")
-              )}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </div>
+      <ConfirmDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        title={t("listingDetail.deleteListing")}
+        description={t("myListings.confirmDelete")}
+        onConfirm={handleDeleteListing}
+        confirmLabel={t("listingDetail.deleteListing")}
+        destructive
+        isLoading={deleting}
+      />
+    </PageLayout>
   );
 };
 

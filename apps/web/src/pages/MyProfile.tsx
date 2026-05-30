@@ -11,8 +11,6 @@ import {
   Pencil,
   ArrowRight,
 } from "lucide-react";
-import Navigation from "@/components/Navigation";
-import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -25,16 +23,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { PageLayout } from "@/components/layout/PageLayout";
+import { RequireAuth } from "@/components/auth/RequireAuth";
+import { PageHeader, ConfirmDialog } from "@/components/shared";
+import { formatDate } from "@/utils/format";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
@@ -43,8 +35,8 @@ import { getApiError } from "@/api/client";
 import type { UserRole } from "@/api/types";
 
 const MyProfile = () => {
-  const { t, language } = useLanguage();
-  const { user, isAuthenticated, isLoading: isAuthLoading, logout } = useAuth();
+  const { t, language, locale } = useLanguage();
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -59,23 +51,15 @@ const MyProfile = () => {
   const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
-    if (!isAuthLoading && !isAuthenticated) {
-      navigate("/auth");
-    }
-  }, [isAuthLoading, isAuthenticated, navigate]);
-
-  useEffect(() => {
     if (user) {
       setFirstName(user.firstName);
       setLastName(user.lastName);
       setEmail(user.email);
-      // Parse role into checkbox states
       setIsTenant(user.role === "TENANT" || user.role === "BOTH");
       setIsLandlord(user.role === "LANDLORD" || user.role === "BOTH");
     }
   }, [user]);
 
-  // Convert checkbox states to role
   const getSelectedRole = (): UserRole => {
     if (isTenant && isLandlord) return "BOTH";
     if (isLandlord) return "LANDLORD";
@@ -105,15 +89,6 @@ const MyProfile = () => {
     return <Badge className={config.className}>{config.label}</Badge>;
   };
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString(language === "el" ? "el-GR" : "en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-  };
-
   const handleSaveChanges = async () => {
     if (!user) return;
 
@@ -130,7 +105,6 @@ const MyProfile = () => {
       toast({
         title: t("profile.updateSuccess"),
       });
-      // Refresh page to get updated user data
       window.location.reload();
     } catch (err) {
       const apiError = getApiError(err);
@@ -184,249 +158,208 @@ const MyProfile = () => {
       email !== user.email ||
       getSelectedRole() !== user.role);
 
-  if (isAuthLoading) {
-    return (
-      <div className="min-h-screen bg-background">
-        <Navigation />
-        <div className="flex justify-center items-center py-24">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        </div>
-        <Footer />
-      </div>
-    );
-  }
-
-  if (!user) {
-    return null;
-  }
-
   return (
-    <div className="min-h-screen bg-background">
-      <Navigation />
+    <RequireAuth>
+      <PageLayout>
+        <div className="container mx-auto px-4 py-8 max-w-3xl">
+          <PageHeader title={t("profile.title")} subtitle={t("profile.subtitle")} />
 
-      <main className="container mx-auto px-4 py-8 max-w-3xl">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground mb-2">
-            {t("profile.title")}
-          </h1>
-          <p className="text-muted-foreground">{t("profile.subtitle")}</p>
+          <Card className="mb-6">
+            <CardHeader>
+              <div className="flex items-center gap-4">
+                <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center">
+                  <User className="h-8 w-8 text-primary" />
+                </div>
+                <div className="flex-1">
+                  <CardTitle className="text-xl">
+                    {user!.firstName} {user!.lastName}
+                  </CardTitle>
+                  <CardDescription>{user!.email}</CardDescription>
+                </div>
+                {getRoleBadge(user!.role)}
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Calendar className="h-4 w-4" />
+                <span>
+                  {t("profile.memberSince")}:{" "}
+                  {formatDate(user!.createdAt, locale, {
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                  })}
+                </span>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Shield className="h-5 w-5" />
+                {t("profile.personalInfo")}
+              </CardTitle>
+              <CardDescription>{t("profile.personalInfoDesc")}</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="firstName">{t("profile.firstName")}</Label>
+                  <Input
+                    id="firstName"
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    placeholder={t("profile.firstName")}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="lastName">{t("profile.lastName")}</Label>
+                  <Input
+                    id="lastName"
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    placeholder={t("profile.lastName")}
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="email">{t("profile.email")}</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder={t("profile.email")}
+                />
+              </div>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label>{t("profile.role")}</Label>
+                  {user!.role !== "ADMIN" && !isEditingRole && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setIsEditingRole(true)}
+                      className="h-auto py-1 px-2 text-xs"
+                    >
+                      <Pencil className="h-3 w-3 mr-1" />
+                      {t("profile.editRole")}
+                    </Button>
+                  )}
+                </div>
+                {isEditingRole && user!.role !== "ADMIN" ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                    <Label
+                      htmlFor="role-tenant"
+                      className={`flex items-start gap-3 p-4 rounded-lg border-2 cursor-pointer transition-colors ${
+                        isTenant
+                          ? "border-primary bg-primary/5"
+                          : "border-muted hover:border-muted-foreground/50"
+                      }`}
+                    >
+                      <Checkbox
+                        id="role-tenant"
+                        checked={isTenant}
+                        onCheckedChange={(checked) =>
+                          setIsTenant(checked === true)
+                        }
+                        className="mt-1"
+                      />
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <Key className="h-4 w-4 text-blue-500" />
+                          <span className="font-medium">
+                            {t("profile.tenant")}
+                          </span>
+                        </div>
+                        <p className="text-sm text-muted-foreground mt-1">
+                          {t("profile.tenantDesc")}
+                        </p>
+                      </div>
+                    </Label>
+                    <Label
+                      htmlFor="role-landlord"
+                      className={`flex items-start gap-3 p-4 rounded-lg border-2 cursor-pointer transition-colors ${
+                        isLandlord
+                          ? "border-primary bg-primary/5"
+                          : "border-muted hover:border-muted-foreground/50"
+                      }`}
+                    >
+                      <Checkbox
+                        id="role-landlord"
+                        checked={isLandlord}
+                        onCheckedChange={(checked) =>
+                          setIsLandlord(checked === true)
+                        }
+                        className="mt-1"
+                      />
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <Home className="h-4 w-4 text-green-500" />
+                          <span className="font-medium">
+                            {t("profile.landlord")}
+                          </span>
+                        </div>
+                        <p className="text-sm text-muted-foreground mt-1">
+                          {t("profile.landlordDesc")}
+                        </p>
+                      </div>
+                    </Label>
+                  </div>
+                ) : (
+                  <div className="pt-1">{getRoleBadge(user!.role)}</div>
+                )}
+              </div>
+              <div className="pt-4">
+                <Button
+                  onClick={handleSaveChanges}
+                  disabled={isSaving || !hasChanges}
+                >
+                  {isSaving ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      {t("profile.saving")}
+                    </>
+                  ) : (
+                    t("profile.saveChanges")
+                  )}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-destructive/50">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-destructive">
+                <AlertTriangle className="h-5 w-5" />
+                {t("profile.dangerZone")}
+              </CardTitle>
+              <CardDescription>{t("profile.deleteAccountDesc")}</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button
+                variant="destructive"
+                onClick={() => setDeleteDialogOpen(true)}
+              >
+                {t("profile.deleteAccount")}
+              </Button>
+            </CardContent>
+          </Card>
         </div>
 
-        {/* Profile Info Card */}
-        <Card className="mb-6">
-          <CardHeader>
-            <div className="flex items-center gap-4">
-              <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center">
-                <User className="h-8 w-8 text-primary" />
-              </div>
-              <div className="flex-1">
-                <CardTitle className="text-xl">
-                  {user.firstName} {user.lastName}
-                </CardTitle>
-                <CardDescription>{user.email}</CardDescription>
-              </div>
-              {getRoleBadge(user.role)}
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Calendar className="h-4 w-4" />
-              <span>
-                {t("profile.memberSince")}: {formatDate(user.createdAt)}
-              </span>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Personal Information Form */}
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Shield className="h-5 w-5" />
-              {t("profile.personalInfo")}
-            </CardTitle>
-            <CardDescription>{t("profile.personalInfoDesc")}</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="firstName">{t("profile.firstName")}</Label>
-                <Input
-                  id="firstName"
-                  value={firstName}
-                  onChange={(e) => setFirstName(e.target.value)}
-                  placeholder={t("profile.firstName")}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="lastName">{t("profile.lastName")}</Label>
-                <Input
-                  id="lastName"
-                  value={lastName}
-                  onChange={(e) => setLastName(e.target.value)}
-                  placeholder={t("profile.lastName")}
-                />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="email">{t("profile.email")}</Label>
-              <Input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder={t("profile.email")}
-              />
-            </div>
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label>{t("profile.role")}</Label>
-                {user.role !== "ADMIN" && !isEditingRole && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setIsEditingRole(true)}
-                    className="h-auto py-1 px-2 text-xs"
-                  >
-                    <Pencil className="h-3 w-3 mr-1" />
-                    {t("profile.editRole")}
-                  </Button>
-                )}
-              </div>
-              {isEditingRole && user.role !== "ADMIN" ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-                  <Label
-                    htmlFor="role-tenant"
-                    className={`flex items-start gap-3 p-4 rounded-lg border-2 cursor-pointer transition-colors ${
-                      isTenant
-                        ? "border-primary bg-primary/5"
-                        : "border-muted hover:border-muted-foreground/50"
-                    }`}
-                  >
-                    <Checkbox
-                      id="role-tenant"
-                      checked={isTenant}
-                      onCheckedChange={(checked) =>
-                        setIsTenant(checked === true)
-                      }
-                      className="mt-1"
-                    />
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2">
-                        <Key className="h-4 w-4 text-blue-500" />
-                        <span className="font-medium">
-                          {t("profile.tenant")}
-                        </span>
-                      </div>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        {t("profile.tenantDesc")}
-                      </p>
-                    </div>
-                  </Label>
-                  <Label
-                    htmlFor="role-landlord"
-                    className={`flex items-start gap-3 p-4 rounded-lg border-2 cursor-pointer transition-colors ${
-                      isLandlord
-                        ? "border-primary bg-primary/5"
-                        : "border-muted hover:border-muted-foreground/50"
-                    }`}
-                  >
-                    <Checkbox
-                      id="role-landlord"
-                      checked={isLandlord}
-                      onCheckedChange={(checked) =>
-                        setIsLandlord(checked === true)
-                      }
-                      className="mt-1"
-                    />
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2">
-                        <Home className="h-4 w-4 text-green-500" />
-                        <span className="font-medium">
-                          {t("profile.landlord")}
-                        </span>
-                      </div>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        {t("profile.landlordDesc")}
-                      </p>
-                    </div>
-                  </Label>
-                </div>
-              ) : (
-                <div className="pt-1">{getRoleBadge(user.role)}</div>
-              )}
-            </div>
-            <div className="pt-4">
-              <Button
-                onClick={handleSaveChanges}
-                disabled={isSaving || !hasChanges}
-              >
-                {isSaving ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    {t("profile.saving")}
-                  </>
-                ) : (
-                  t("profile.saveChanges")
-                )}
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Danger Zone */}
-        <Card className="border-destructive/50">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-destructive">
-              <AlertTriangle className="h-5 w-5" />
-              {t("profile.dangerZone")}
-            </CardTitle>
-            <CardDescription>{t("profile.deleteAccountDesc")}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button
-              variant="destructive"
-              onClick={() => setDeleteDialogOpen(true)}
-            >
-              {t("profile.deleteAccount")}
-            </Button>
-          </CardContent>
-        </Card>
-      </main>
-
-      {/* Delete Confirmation Dialog */}
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>
-              {t("profile.deleteConfirmTitle")}
-            </AlertDialogTitle>
-            <AlertDialogDescription>
-              {t("profile.deleteConfirmDesc")}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeleting}>
-              {t("profile.cancel")}
-            </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDeleteAccount}
-              disabled={isDeleting}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              {isDeleting ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                t("profile.deleteAccount")
-              )}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      <Footer />
-    </div>
+        <ConfirmDialog
+          open={deleteDialogOpen}
+          onOpenChange={setDeleteDialogOpen}
+          title={t("profile.deleteConfirmTitle")}
+          description={t("profile.deleteConfirmDesc")}
+          onConfirm={handleDeleteAccount}
+          confirmLabel={t("profile.deleteAccount")}
+          destructive
+          isLoading={isDeleting}
+        />
+      </PageLayout>
+    </RequireAuth>
   );
 };
 

@@ -12,6 +12,7 @@ interface AuthContextType {
   user: User | null;
   isLoading: boolean;
   isAuthenticated: boolean;
+  isLandlord: boolean;
   login: (data: LoginRequest) => Promise<void>;
   register: (data: RegisterRequest) => Promise<void>;
   logout: () => void;
@@ -34,6 +35,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logoutMutation = useLogout();
 
   const isAuthenticated = authApi.isAuthenticated() && !!user;
+  const isLandlord = !!user && (user.role === "LANDLORD" || user.role === "BOTH" || user.role === "ADMIN");
 
   const login = async (data: LoginRequest) => {
     setError(null);
@@ -73,6 +75,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         user: user ?? null,
         isLoading,
         isAuthenticated,
+        isLandlord,
         login,
         register,
         logout,

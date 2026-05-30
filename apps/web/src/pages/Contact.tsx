@@ -1,12 +1,11 @@
-import Navigation from "@/components/Navigation";
-import Footer from "@/components/Footer";
+import { PageLayout } from "@/components/layout/PageLayout";
+import { BackButton } from "@/components/shared/BackButton";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Link } from "react-router-dom";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { ArrowLeft, Mail, Phone, MapPin } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Mail, Phone, MapPin } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -30,16 +29,9 @@ const Contact = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navigation />
-      
+    <PageLayout>
       <main className="container mx-auto px-4 py-12 max-w-6xl">
-        <Button asChild variant="ghost" className="mb-6">
-          <Link to="/" className="flex items-center gap-2">
-            <ArrowLeft className="h-4 w-4" />
-            {t("contact.backToHome")}
-          </Link>
-        </Button>
+        <BackButton to="/" label={t("contact.backToHome")} />
 
         <div className="grid md:grid-cols-2 gap-12">
           <div>
@@ -85,7 +77,7 @@ const Contact = () => {
 
           <div className="bg-card border border-border rounded-xl p-8">
             <h2 className="text-2xl font-bold text-foreground mb-6">{t("contact.formTitle")}</h2>
-            
+
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
                 <Label htmlFor="name">{t("contact.name")}</Label>
@@ -140,9 +132,7 @@ const Contact = () => {
           </div>
         </div>
       </main>
-
-      <Footer />
-    </div>
+    </PageLayout>
   );
 };
 

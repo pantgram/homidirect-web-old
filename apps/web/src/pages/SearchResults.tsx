@@ -1,9 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Search, SlidersHorizontal, Loader2 } from "lucide-react";
-import Navigation from "@/components/Navigation";
+import { Search, SlidersHorizontal } from "lucide-react";
 import PropertyCard from "@/components/PropertyCard";
-import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -22,6 +20,9 @@ import type {
   PropertyType,
 } from "@/api/types";
 import { getLocalizedTitle } from "@/types/listing";
+import { PageLayout } from "@/components/layout/PageLayout";
+import { Pagination, ErrorState, InlineSpinner } from "@/components/shared";
+import { formatPrice, formatArea } from "@/utils/format";
 import placeholderImage from "@/assets/property-1.jpg";
 
 const PROPERTY_TYPES = ["apartment", "house", "studio", "room"] as const;
@@ -31,7 +32,6 @@ const SearchResults = () => {
   const { favoriteIds, handleFavoriteChange } = useFavorites();
   const [searchParams, setSearchParams] = useSearchParams();
 
-  // Initialize state from URL params
   const [showFilters, setShowFilters] = useState(
     () => !!searchParams.get("type")
   );
@@ -126,7 +126,6 @@ const SearchResults = () => {
   }, [fetchListings]);
 
   const handleSearch = () => {
-    // Update URL params for shareable links
     const params = new URLSearchParams();
     if (searchQuery) params.set("q", searchQuery);
     if (propertyType !== "all") params.set("type", propertyType);
@@ -140,25 +139,9 @@ const SearchResults = () => {
     fetchListings(1);
   };
 
-  const handlePageChange = (page: number) => {
-    fetchListings(page);
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
-
-  const formatPrice = (price: number) => {
-    return price.toLocaleString();
-  };
-
-  const formatArea = (area: number) => {
-    return `${area.toLocaleString()} sq ft`;
-  };
-
   return (
-    <div className="min-h-screen bg-background">
-      <Navigation />
-
+    <PageLayout>
       <main className="container mx-auto px-4 py-8">
-        {/* Search Bar */}
         <div className="bg-card rounded-lg shadow-card p-6 mb-8">
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1 relative">
@@ -184,7 +167,6 @@ const SearchResults = () => {
             </Button>
           </div>
 
-          {/* Filters Panel */}
           {showFilters && (
             <div className="mt-6 pt-6 border-t border-border">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -293,7 +275,6 @@ const SearchResults = () => {
           )}
         </div>
 
-        {/* Results Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
           <div>
             <h1 className="text-3xl font-bold text-foreground mb-2">
@@ -329,31 +310,18 @@ const SearchResults = () => {
           </Select>
         </div>
 
-        {/* Loading State */}
-        {loading && (
-          <div className="flex justify-center items-center py-12">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          </div>
+        {loading && <InlineSpinner />}
+
+        {!loading && error && (
+          <ErrorState message={error} onRetry={() => fetchListings()} />
         )}
 
-        {/* Error State */}
-        {error && !loading && (
-          <div className="text-center py-12">
-            <p className="text-destructive">{error}</p>
-            <Button onClick={() => fetchListings()} className="mt-4">
-              {t("common.tryAgain")}
-            </Button>
-          </div>
-        )}
-
-        {/* Empty State */}
         {!loading && !error && listings.length === 0 && (
           <div className="text-center py-12">
             <p className="text-muted-foreground">{t("search.noResults")}</p>
           </div>
         )}
 
-        {/* Property Grid */}
         {!loading && !error && listings.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
             {listings.map((listing) => (
@@ -376,46 +344,17 @@ const SearchResults = () => {
           </div>
         )}
 
-        {/* Pagination */}
         {!loading && pagination.totalPages > 1 && (
-          <div className="flex justify-center gap-2">
-            <Button
-              variant="outline"
-              disabled={!pagination.hasPreviousPage}
-              onClick={() => handlePageChange(pagination.page - 1)}
-            >
-              {t("search.previous")}
-            </Button>
-            {Array.from(
-              { length: Math.min(pagination.totalPages, 5) },
-              (_, i) => {
-                const pageNum = i + 1;
-                return (
-                  <Button
-                    key={pageNum}
-                    variant={
-                      pagination.page === pageNum ? "default" : "outline"
-                    }
-                    onClick={() => handlePageChange(pageNum)}
-                  >
-                    {pageNum}
-                  </Button>
-                );
-              }
-            )}
-            <Button
-              variant="outline"
-              disabled={!pagination.hasNextPage}
-              onClick={() => handlePageChange(pagination.page + 1)}
-            >
-              {t("search.next")}
-            </Button>
-          </div>
+          <Pagination
+            currentPage={pagination.page}
+            totalPages={pagination.totalPages}
+            hasNextPage={pagination.hasNextPage}
+            hasPreviousPage={pagination.hasPreviousPage}
+            onPageChange={(page) => fetchListings(page)}
+          />
         )}
       </main>
-
-      <Footer />
-    </div>
+    </PageLayout>
   );
 };
 
