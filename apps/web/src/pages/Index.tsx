@@ -1,12 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
-import Navigation from "@/components/Navigation";
 import Hero from "@/components/Hero";
 import PropertyCard from "@/components/PropertyCard";
-import Footer from "@/components/Footer";
+import { PageLayout } from "@/components/layout/PageLayout";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Shield, Users, TrendingDown } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { formatArea } from "@/utils/format";
 import { listingsApi } from "@/api/listings";
 import { useFavorites } from "@/hooks";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -48,8 +48,7 @@ const Index = () => {
   const properties = listingsResponse?.data || [];
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navigation />
+    <PageLayout>
       <Hero />
 
       {/* Featured Properties Section */}
@@ -93,7 +92,7 @@ const Index = () => {
                   price={listing.price.toLocaleString()}
                   bedrooms={listing.bedrooms}
                   bathrooms={listing.bathrooms}
-                  area={`${listing.area.toLocaleString()} sq ft`}
+                  area={formatArea(listing.area)}
                   propertyType={listing.propertyType}
                   featured={listing.isFeatured}
                   isFavorite={favoriteIds.has(listing.id)}
@@ -166,8 +165,7 @@ const Index = () => {
         </div>
       </section>
 
-      <Footer />
-    </div>
+    </PageLayout>
   );
 };
 

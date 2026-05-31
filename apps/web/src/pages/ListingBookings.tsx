@@ -10,12 +10,14 @@ import {
   CheckCircle,
   XCircle,
   ArrowLeft,
-  Loader2,
   Plus,
   Trash2,
 } from "lucide-react";
-import Navigation from "@/components/Navigation";
-import Footer from "@/components/Footer";
+import { PageLayout } from "@/components/layout/PageLayout";
+import { BackButton } from "@/components/shared/BackButton";
+import { BookingStatusBadge } from "@/components/shared/BookingStatusBadge";
+import { InlineSpinner } from "@/components/shared";
+import { formatDateTime } from "@/utils/format";
 import AvailabilitySlotForm from "@/components/AvailabilitySlotForm";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -33,7 +35,7 @@ import placeholderImage from "@/assets/property-1.jpg";
 const ListingBookings = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { t, language } = useLanguage();
+  const { t, language, locale } = useLanguage();
   const { isAuthenticated, user } = useAuth();
   const { toast } = useToast();
 
@@ -142,67 +144,17 @@ const ListingBookings = () => {
     }
   };
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString(language === "el" ? "el-GR" : "en-US", {
-      weekday: "short",
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
-
-  const getStatusBadge = (status: string) => {
-    const statusConfig = {
-      PENDING: {
-        label: t("bookings.pending"),
-        icon: <Clock className="h-3 w-3" />,
-        className: "bg-yellow-500/10 text-yellow-600 hover:bg-yellow-500/20",
-      },
-      CONFIRMED: {
-        label: t("bookings.confirmed"),
-        icon: <CheckCircle className="h-3 w-3" />,
-        className: "bg-green-500/10 text-green-600 hover:bg-green-500/20",
-      },
-      DECLINED: {
-        label: t("bookings.declined"),
-        icon: <XCircle className="h-3 w-3" />,
-        className: "bg-red-500/10 text-red-600 hover:bg-red-500/20",
-      },
-      CANCELLED: {
-        label: t("bookings.cancelledStatus"),
-        icon: <XCircle className="h-3 w-3" />,
-        className: "bg-gray-500/10 text-gray-600 hover:bg-gray-500/20",
-      },
-    };
-
-    const config = statusConfig[status as keyof typeof statusConfig];
-    return (
-      <Badge className={config?.className}>
-        {config?.icon}
-        <span className="ml-1">{config?.label}</span>
-      </Badge>
-    );
-  };
-
   if (loading) {
     return (
-      <div className="min-h-screen bg-background">
-        <Navigation />
-        <div className="flex justify-center items-center py-32">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        </div>
-        <Footer />
-      </div>
+      <PageLayout>
+        <InlineSpinner />
+      </PageLayout>
     );
   }
 
   if (!listing) {
     return (
-      <div className="min-h-screen bg-background">
-        <Navigation />
+      <PageLayout>
         <div className="container mx-auto px-4 py-16 text-center">
           <h1 className="text-2xl font-bold mb-4">{t("listingBookings.listingNotFound")}</h1>
           <Button onClick={() => navigate("/my-listings")}>
@@ -210,24 +162,14 @@ const ListingBookings = () => {
             {t("listingBookings.backToMyListings")}
           </Button>
         </div>
-        <Footer />
-      </div>
+      </PageLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navigation />
-
-      <main className="container mx-auto px-4 py-8">
-        <Button
-          variant="ghost"
-          onClick={() => navigate(`/listings/${id}`)}
-          className="mb-6 -ml-2"
-        >
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          {t("listingBookings.backToListing")}
-        </Button>
+    <PageLayout>
+      <div className="container mx-auto px-4 py-8">
+        <BackButton to={`/listings/${id}`} label={t("listingBookings.backToListing")} />
 
         <div className="max-w-6xl mx-auto space-y-6">
           <div className="flex items-center gap-4">
@@ -306,7 +248,7 @@ const ListingBookings = () => {
                           <div className="space-y-3">
                             <div className="flex items-center gap-4">
                               <h3 className="font-semibold">{listing ? getLocalizedTitle(listing, language) : ""}</h3>
-                              {getStatusBadge(booking.status)}
+                              <BookingStatusBadge status={booking.status} />
                             </div>
 
                             <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -317,7 +259,12 @@ const ListingBookings = () => {
                             <div className="flex items-center gap-2 text-sm">
                               <Clock className="h-4 w-4 text-primary" />
                               <span className="font-medium">
-                                {formatDate(booking.scheduledAt)}
+                                {formatDateTime(booking.scheduledAt, locale, {
+                                  weekday: "short",
+                                  year: "numeric",
+                                  month: "short",
+                                  day: "numeric",
+                                })}
                               </span>
                             </div>
 
@@ -416,19 +363,19 @@ const ListingBookings = () => {
                           <Calendar className="h-5 w-5 text-primary" />
                           <div>
                             <p className="font-medium">
-                              {new Date(slot.startTime).toLocaleDateString(language === "el" ? "el-GR" : "en-US", {
+                              {new Date(slot.startTime).toLocaleDateString(locale, {
                                 weekday: "long",
                                 month: "long",
                                 day: "numeric",
                               })}
                             </p>
                             <p className="text-sm text-muted-foreground">
-                              {new Date(slot.startTime).toLocaleTimeString(language === "el" ? "el-GR" : "en-US", {
+                              {new Date(slot.startTime).toLocaleTimeString(locale, {
                                 hour: "2-digit",
                                 minute: "2-digit",
                               })}{" "}
                               -{" "}
-                              {new Date(slot.endTime).toLocaleTimeString(language === "el" ? "el-GR" : "en-US", {
+                              {new Date(slot.endTime).toLocaleTimeString(locale, {
                                 hour: "2-digit",
                                 minute: "2-digit",
                               })}
@@ -460,7 +407,7 @@ const ListingBookings = () => {
             </div>
           )}
         </div>
-      </main>
+      </div>
 
       {id && (
         <AvailabilitySlotForm
@@ -470,9 +417,7 @@ const ListingBookings = () => {
           onSuccess={fetchSlots}
         />
       )}
-
-      <Footer />
-    </div>
+    </PageLayout>
   );
 };
 

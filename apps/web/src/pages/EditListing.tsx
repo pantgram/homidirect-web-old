@@ -1,8 +1,10 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Loader2, Upload, X, ImageIcon, ArrowLeft } from "lucide-react";
-import Navigation from "@/components/Navigation";
-import Footer from "@/components/Footer";
+import { Loader2, Upload, X, ImageIcon } from "lucide-react";
+import { PageLayout } from "@/components/layout/PageLayout";
+import { InlineSpinner, BackButton } from "@/components/shared";
+import { RequireAuth } from "@/components/auth/RequireAuth";
+import { RequireLandlord } from "@/components/auth/RequireRole";
 import AvailabilitySlotsManager from "@/components/AvailabilitySlotsManager";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -35,7 +37,7 @@ import {
 import { LocationSearch } from "@/components/ui/location-search";
 import { LocationMap } from "@/components/ui/location-map";
 import { reverseGeocode } from "@/api/geocoding";
-import { env } from "@/config/env";
+import { getImageUrl } from "@/utils/image";
 import { cn } from "@/lib/utils";
 import type { PropertyType, UpdateListingRequest, ListingImage } from "@/api";
 import type { LocationResult } from "@/api/geocoding";
@@ -58,7 +60,7 @@ interface ListingFormData {
 }
 
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
-const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+const MAX_FILE_SIZE = 5 * 1024 * 1024;
 const MAX_IMAGES = 10;
 
 const EditListing = () => {
@@ -68,7 +70,7 @@ const EditListing = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const { t, language } = useLanguage();
-  const { user, isAuthenticated, isLoading: isAuthLoading } = useAuth();
+  const { user, isLoading: isAuthLoading } = useAuth();
 
   const { data: listing, isLoading: isListingLoading } = useListing(listingId);
   const { data: images = [], isLoading: isImagesLoading } =
@@ -100,15 +102,10 @@ const EditListing = () => {
   const [uploadingCount, setUploadingCount] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const canAccess =
-    user?.role === "LANDLORD" ||
-    user?.role === "BOTH" ||
-    user?.role === "ADMIN";
   const isOwner = listing && user && listing.landlordId === user.id;
   const isAdmin = user?.role === "ADMIN";
   const canEdit = isOwner || isAdmin;
 
-  // Populate form with existing listing data
   useEffect(() => {
     if (listing) {
       setFormData({
@@ -130,19 +127,6 @@ const EditListing = () => {
     }
   }, [listing]);
 
-  // Redirect if not authorized
-  useEffect(() => {
-    if (!isAuthLoading && (!isAuthenticated || !canAccess)) {
-      toast({
-        title: t("listForm.accessDenied"),
-        description: t("listForm.accessDeniedDesc"),
-        variant: "destructive",
-      });
-      navigate("/my-listings");
-    }
-  }, [isAuthenticated, canAccess, isAuthLoading, navigate, toast, t]);
-
-  // Redirect if not owner
   useEffect(() => {
     if (!isListingLoading && listing && !canEdit) {
       toast({
@@ -254,7 +238,6 @@ const EditListing = () => {
     }
   };
 
-  // Image handling
   const validateFile = (file: File): string | null => {
     if (!ALLOWED_TYPES.includes(file.type)) {
       return t("imageUpload.invalidType");
@@ -367,468 +350,441 @@ const EditListing = () => {
     }
   };
 
-  const getImageUrl = (url: string) => {
-    if (url.startsWith("http")) return url;
-    return `${env.apiUrl}${url}`;
-  };
-
   const isUploading = uploadingCount > 0;
   const canUploadMore = images.length < MAX_IMAGES;
-  const isLoading = isAuthLoading || isListingLoading || isImagesLoading;
   const isSaving = updateListing.isPending;
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-background">
-        <Navigation />
-        <main className="container mx-auto px-4 py-12 flex items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        </main>
-      </div>
-    );
+  if (isAuthLoading) return <PageLayout><InlineSpinner /></PageLayout>;
+
+  if (isListingLoading || isImagesLoading) {
+    return <PageLayout><InlineSpinner /></PageLayout>;
   }
 
-  if (!isAuthenticated || !canAccess || !listing || !canEdit) {
+  if (!listing || !canEdit) {
     return null;
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navigation />
+    <PageLayout>
+      <RequireAuth>
+        <RequireLandlord>
+          <div className="container mx-auto px-4 py-12">
+            <div className="max-w-3xl mx-auto mb-8">
+              <BackButton to="/my-listings" label={t("editListing.backToListings")} />
+              <h1 className="text-4xl font-bold text-foreground mb-4">
+                {t("editListing.title")}
+              </h1>
+              <p className="text-lg text-muted-foreground">
+                {t("editListing.subtitle")}
+              </p>
+            </div>
 
-      <main className="container mx-auto px-4 py-12">
-        {/* Header */}
-        <div className="max-w-3xl mx-auto mb-8">
-          <Button
-            variant="ghost"
-            className="mb-4"
-            onClick={() => navigate("/my-listings")}
-          >
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            {t("editListing.backToListings")}
-          </Button>
-          <h1 className="text-4xl font-bold text-foreground mb-4">
-            {t("editListing.title")}
-          </h1>
-          <p className="text-lg text-muted-foreground">
-            {t("editListing.subtitle")}
-          </p>
-        </div>
+            <Card className="max-w-3xl mx-auto">
+              <CardHeader>
+                <CardTitle>{t("listForm.propertyDetails")}</CardTitle>
+                <CardDescription>
+                  {t("listForm.propertyDetailsDesc")}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handleSubmit} className="space-y-6">
+                  <div className="space-y-4">
+                    <div>
+                      <Label htmlFor="titleEl">{t("listForm.propertyTitle")}</Label>
+                      <Input
+                        id="titleEl"
+                        value={formData.titleEl}
+                        onChange={handleInputChange}
+                        placeholder={t("listForm.titlePlaceholder")}
+                        className={formErrors.titleEl ? "border-destructive" : ""}
+                      />
+                      {formErrors.titleEl && (
+                        <p className="text-sm text-destructive mt-1">
+                          {formErrors.titleEl}
+                        </p>
+                      )}
+                    </div>
 
-        {/* Form */}
-        <Card className="max-w-3xl mx-auto">
-          <CardHeader>
-            <CardTitle>{t("listForm.propertyDetails")}</CardTitle>
-            <CardDescription>
-              {t("listForm.propertyDetailsDesc")}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Basic Information */}
-              <div className="space-y-4">
-                <div>
-                  <Label htmlFor="titleEl">{t("listForm.propertyTitle")}</Label>
-                  <Input
-                    id="titleEl"
-                    value={formData.titleEl}
-                    onChange={handleInputChange}
-                    placeholder={t("listForm.titlePlaceholder")}
-                    className={formErrors.titleEl ? "border-destructive" : ""}
-                  />
-                  {formErrors.titleEl && (
-                    <p className="text-sm text-destructive mt-1">
-                      {formErrors.titleEl}
-                    </p>
-                  )}
-                </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="propertyType">
+                          {t("listForm.propertyType")}
+                        </Label>
+                        <Select
+                          value={formData.propertyType}
+                          onValueChange={(value) =>
+                            handleSelectChange("propertyType", value)
+                          }
+                        >
+                          <SelectTrigger
+                            id="propertyType"
+                            className={
+                              formErrors.propertyType ? "border-destructive" : ""
+                            }
+                          >
+                            <SelectValue placeholder={t("common.selectType")} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="apartment">
+                              {t("listForm.types.apartment")}
+                            </SelectItem>
+                            <SelectItem value="house">
+                              {t("listForm.types.house")}
+                            </SelectItem>
+                            <SelectItem value="studio">
+                              {t("listForm.types.studio")}
+                            </SelectItem>
+                            <SelectItem value="room">
+                              {t("listForm.types.room")}
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
+                        {formErrors.propertyType && (
+                          <p className="text-sm text-destructive mt-1">
+                            {formErrors.propertyType}
+                          </p>
+                        )}
+                      </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="propertyType">
-                      {t("listForm.propertyType")}
-                    </Label>
-                    <Select
-                      value={formData.propertyType}
-                      onValueChange={(value) =>
-                        handleSelectChange("propertyType", value)
-                      }
-                    >
-                      <SelectTrigger
-                        id="propertyType"
-                        className={
-                          formErrors.propertyType ? "border-destructive" : ""
+                      <div>
+                        <Label htmlFor="price">{t("listForm.monthlyRent")}</Label>
+                        <Input
+                          id="price"
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          value={formData.price}
+                          onChange={handleInputChange}
+                          placeholder="1200"
+                          className={formErrors.price ? "border-destructive" : ""}
+                        />
+                        {formErrors.price && (
+                          <p className="text-sm text-destructive mt-1">
+                            {formErrors.price}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    <div>
+                      <Label htmlFor="address">{t("listForm.address")}</Label>
+                      <LocationSearch
+                        value={formData.address}
+                        onValueChange={(value) => {
+                          setFormData((prev) => ({ ...prev, address: value }));
+                          if (formErrors.address) {
+                            setFormErrors((prev) => ({
+                              ...prev,
+                              address: undefined,
+                            }));
+                          }
+                        }}
+                        onLocationSelect={(location: LocationResult) => {
+                          setFormData((prev) => ({
+                            ...prev,
+                            address: location.address,
+                            city: location.city,
+                            postalCode: location.postalCode || prev.postalCode,
+                            country: location.country,
+                            latitude: location.lat,
+                            longitude: location.lon,
+                          }));
+                        }}
+                        placeholder={t("locationSearch.searchAddress")}
+                        searchPlaceholder={t("locationSearch.searchAddress")}
+                        emptyMessage={t("locationSearch.noLocationsFound")}
+                        error={!!formErrors.address}
+                        lang={language === "el" ? "el" : "en"}
+                      />
+                      {formErrors.address && (
+                        <p className="text-sm text-destructive mt-1">
+                          {formErrors.address}
+                        </p>
+                      )}
+                    </div>
+
+                    <LocationMap
+                      latitude={formData.latitude}
+                      longitude={formData.longitude}
+                      onLocationChange={async (lat, lon) => {
+                        const result = await reverseGeocode(
+                          lat,
+                          lon,
+                          language === "el" ? "el" : "en",
+                        );
+                        if (result) {
+                          setFormData((prev) => ({
+                            ...prev,
+                            address: result.address,
+                            city: result.city,
+                            postalCode: result.postalCode || prev.postalCode,
+                            country: result.country,
+                            latitude: result.lat,
+                            longitude: result.lon,
+                          }));
+                        } else {
+                          setFormData((prev) => ({
+                            ...prev,
+                            latitude: lat,
+                            longitude: lon,
+                          }));
+                        }
+                      }}
+                      className="mb-4"
+                    />
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div>
+                        <Label htmlFor="bedrooms">{t("listForm.bedrooms")}</Label>
+                        <Input
+                          id="bedrooms"
+                          type="number"
+                          min="0"
+                          step="1"
+                          value={formData.bedrooms}
+                          onChange={handleInputChange}
+                          placeholder="2"
+                          className={
+                            formErrors.bedrooms ? "border-destructive" : ""
+                          }
+                        />
+                        {formErrors.bedrooms && (
+                          <p className="text-sm text-destructive mt-1">
+                            {formErrors.bedrooms}
+                          </p>
+                        )}
+                      </div>
+
+                      <div>
+                        <Label htmlFor="bathrooms">{t("listForm.bathrooms")}</Label>
+                        <Input
+                          id="bathrooms"
+                          type="number"
+                          min="0"
+                          step="1"
+                          value={formData.bathrooms}
+                          onChange={handleInputChange}
+                          placeholder="1"
+                          className={
+                            formErrors.bathrooms ? "border-destructive" : ""
+                          }
+                        />
+                        {formErrors.bathrooms && (
+                          <p className="text-sm text-destructive mt-1">
+                            {formErrors.bathrooms}
+                          </p>
+                        )}
+                      </div>
+
+                      <div>
+                        <Label htmlFor="area">{t("listForm.area")}</Label>
+                        <Input
+                          id="area"
+                          type="number"
+                          min="0"
+                          step="0.1"
+                          value={formData.area}
+                          onChange={handleInputChange}
+                          placeholder="85"
+                          className={formErrors.area ? "border-destructive" : ""}
+                        />
+                        {formErrors.area && (
+                          <p className="text-sm text-destructive mt-1">
+                            {formErrors.area}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    <div>
+                      <Label htmlFor="descriptionEl">
+                        {t("listForm.description")}
+                      </Label>
+                      <Textarea
+                        id="descriptionEl"
+                        value={formData.descriptionEl}
+                        onChange={handleInputChange}
+                        placeholder={t("listForm.descriptionPlaceholder")}
+                        className="min-h-[120px]"
+                      />
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      <Label htmlFor="available">
+                        {t("editListing.availability")}
+                      </Label>
+                      <Select
+                        value={formData.available ? "available" : "unavailable"}
+                        onValueChange={(value) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            available: value === "available",
+                          }))
                         }
                       >
-                        <SelectValue placeholder={t("common.selectType")} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="apartment">
-                          {t("listForm.types.apartment")}
-                        </SelectItem>
-                        <SelectItem value="house">
-                          {t("listForm.types.house")}
-                        </SelectItem>
-                        <SelectItem value="studio">
-                          {t("listForm.types.studio")}
-                        </SelectItem>
-                        <SelectItem value="room">
-                          {t("listForm.types.room")}
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                    {formErrors.propertyType && (
-                      <p className="text-sm text-destructive mt-1">
-                        {formErrors.propertyType}
-                      </p>
-                    )}
+                        <SelectTrigger id="available" className="w-[180px]">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="available">
+                            {t("editListing.available")}
+                          </SelectItem>
+                          <SelectItem value="unavailable">
+                            {t("editListing.unavailable")}
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
 
-                  <div>
-                    <Label htmlFor="price">{t("listForm.monthlyRent")}</Label>
-                    <Input
-                      id="price"
-                      type="number"
-                      min="0"
-                      step="0.01"
-                      value={formData.price}
-                      onChange={handleInputChange}
-                      placeholder="1200"
-                      className={formErrors.price ? "border-destructive" : ""}
-                    />
-                    {formErrors.price && (
-                      <p className="text-sm text-destructive mt-1">
-                        {formErrors.price}
-                      </p>
-                    )}
-                  </div>
-                </div>
-
-                <div>
-                  <Label htmlFor="address">{t("listForm.address")}</Label>
-                  <LocationSearch
-                    value={formData.address}
-                    onValueChange={(value) => {
-                      setFormData((prev) => ({ ...prev, address: value }));
-                      if (formErrors.address) {
-                        setFormErrors((prev) => ({
-                          ...prev,
-                          address: undefined,
-                        }));
-                      }
-                    }}
-                    onLocationSelect={(location: LocationResult) => {
-                      setFormData((prev) => ({
-                        ...prev,
-                        address: location.address,
-                        city: location.city,
-                        postalCode: location.postalCode || prev.postalCode,
-                        country: location.country,
-                        latitude: location.lat,
-                        longitude: location.lon,
-                      }));
-                    }}
-                    placeholder={t("locationSearch.searchAddress")}
-                    searchPlaceholder={t("locationSearch.searchAddress")}
-                    emptyMessage={t("locationSearch.noLocationsFound")}
-                    error={!!formErrors.address}
-                    lang={language === "el" ? "el" : "en"}
-                  />
-                  {formErrors.address && (
-                    <p className="text-sm text-destructive mt-1">
-                      {formErrors.address}
-                    </p>
-                  )}
-                </div>
-
-                <LocationMap
-                  latitude={formData.latitude}
-                  longitude={formData.longitude}
-                  onLocationChange={async (lat, lon) => {
-                    const result = await reverseGeocode(
-                      lat,
-                      lon,
-                      language === "el" ? "el" : "en",
-                    );
-                    if (result) {
-                      setFormData((prev) => ({
-                        ...prev,
-                        address: result.address,
-                        city: result.city,
-                        postalCode: result.postalCode || prev.postalCode,
-                        country: result.country,
-                        latitude: result.lat,
-                        longitude: result.lon,
-                      }));
-                    } else {
-                      setFormData((prev) => ({
-                        ...prev,
-                        latitude: lat,
-                        longitude: lon,
-                      }));
-                    }
-                  }}
-                  className="mb-4"
-                />
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div>
-                    <Label htmlFor="bedrooms">{t("listForm.bedrooms")}</Label>
-                    <Input
-                      id="bedrooms"
-                      type="number"
-                      min="0"
-                      step="1"
-                      value={formData.bedrooms}
-                      onChange={handleInputChange}
-                      placeholder="2"
-                      className={
-                        formErrors.bedrooms ? "border-destructive" : ""
-                      }
-                    />
-                    {formErrors.bedrooms && (
-                      <p className="text-sm text-destructive mt-1">
-                        {formErrors.bedrooms}
-                      </p>
-                    )}
-                  </div>
-
-                  <div>
-                    <Label htmlFor="bathrooms">{t("listForm.bathrooms")}</Label>
-                    <Input
-                      id="bathrooms"
-                      type="number"
-                      min="0"
-                      step="1"
-                      value={formData.bathrooms}
-                      onChange={handleInputChange}
-                      placeholder="1"
-                      className={
-                        formErrors.bathrooms ? "border-destructive" : ""
-                      }
-                    />
-                    {formErrors.bathrooms && (
-                      <p className="text-sm text-destructive mt-1">
-                        {formErrors.bathrooms}
-                      </p>
-                    )}
-                  </div>
-
-                  <div>
-                    <Label htmlFor="area">{t("listForm.area")}</Label>
-                    <Input
-                      id="area"
-                      type="number"
-                      min="0"
-                      step="0.1"
-                      value={formData.area}
-                      onChange={handleInputChange}
-                      placeholder="85"
-                      className={formErrors.area ? "border-destructive" : ""}
-                    />
-                    {formErrors.area && (
-                      <p className="text-sm text-destructive mt-1">
-                        {formErrors.area}
-                      </p>
-                    )}
-                  </div>
-                </div>
-
-                <div>
-                  <Label htmlFor="descriptionEl">
-                    {t("listForm.description")}
-                  </Label>
-                  <Textarea
-                    id="descriptionEl"
-                    value={formData.descriptionEl}
-                    onChange={handleInputChange}
-                    placeholder={t("listForm.descriptionPlaceholder")}
-                    className="min-h-[120px]"
-                  />
-                </div>
-
-                {/* Availability Toggle */}
-                <div className="flex items-center gap-3">
-                  <Label htmlFor="available">
-                    {t("editListing.availability")}
-                  </Label>
-                  <Select
-                    value={formData.available ? "available" : "unavailable"}
-                    onValueChange={(value) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        available: value === "available",
-                      }))
-                    }
-                  >
-                    <SelectTrigger id="available" className="w-[180px]">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="available">
-                        {t("editListing.available")}
-                      </SelectItem>
-                      <SelectItem value="unavailable">
-                        {t("editListing.unavailable")}
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              {/* Image Upload */}
-              <div className="space-y-4">
-                <div>
-                  <Label>{t("listForm.propertyImages")}</Label>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    {t("listForm.imagesHint")}
-                  </p>
-                </div>
-
-                {/* Upload Zone */}
-                <div
-                  className={cn(
-                    "border-2 border-dashed rounded-lg p-8 text-center transition-colors",
-                    isDragging && "border-primary bg-primary/5",
-                    !isDragging && "border-border hover:border-primary",
-                    canUploadMore && "cursor-pointer",
-                  )}
-                  onDragOver={handleDragOver}
-                  onDragLeave={handleDragLeave}
-                  onDrop={handleDrop}
-                  onClick={() => canUploadMore && fileInputRef.current?.click()}
-                >
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    multiple
-                    accept={ALLOWED_TYPES.join(",")}
-                    onChange={handleFileInputChange}
-                    className="hidden"
-                    disabled={!canUploadMore}
-                  />
-
-                  {isUploading ? (
-                    <div className="flex flex-col items-center gap-2">
-                      <Loader2 className="h-12 w-12 text-primary animate-spin" />
-                      <p className="text-sm text-foreground">
-                        {t("imageUpload.uploading")} ({uploadingCount}{" "}
-                        {t("imageUpload.files")})
+                  <div className="space-y-4">
+                    <div>
+                      <Label>{t("listForm.propertyImages")}</Label>
+                      <p className="text-sm text-muted-foreground mb-4">
+                        {t("listForm.imagesHint")}
                       </p>
                     </div>
-                  ) : (
-                    <>
-                      <Upload
-                        className={cn(
-                          "h-12 w-12 mx-auto mb-4",
-                          canUploadMore
-                            ? "text-muted-foreground"
-                            : "text-muted",
-                        )}
+
+                    <div
+                      className={cn(
+                        "border-2 border-dashed rounded-lg p-8 text-center transition-colors",
+                        isDragging && "border-primary bg-primary/5",
+                        !isDragging && "border-border hover:border-primary",
+                        canUploadMore && "cursor-pointer",
+                      )}
+                      onDragOver={handleDragOver}
+                      onDragLeave={handleDragLeave}
+                      onDrop={handleDrop}
+                      onClick={() => canUploadMore && fileInputRef.current?.click()}
+                    >
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        multiple
+                        accept={ALLOWED_TYPES.join(",")}
+                        onChange={handleFileInputChange}
+                        className="hidden"
+                        disabled={!canUploadMore}
                       />
-                      <p
-                        className={cn(
-                          "text-sm mb-1",
-                          canUploadMore
-                            ? "text-foreground"
-                            : "text-muted-foreground",
-                        )}
-                      >
-                        {canUploadMore
-                          ? t("imageUpload.dragOrClick")
-                          : t("imageUpload.maxReached")}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {t("imageUpload.supportedFormats")} (max 5MB)
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {images.length}/{MAX_IMAGES}{" "}
-                        {t("imageUpload.imagesUploaded")}
-                      </p>
-                    </>
-                  )}
-                </div>
 
-                {/* Image Preview Grid */}
-                {images.length > 0 && (
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                    {images.map((image, index) => (
-                      <div
-                        key={image.id}
-                        className="relative group aspect-square rounded-lg overflow-hidden border border-border bg-muted"
-                      >
-                        <img
-                          src={getImageUrl(image.url)}
-                          alt={`Property image ${index + 1}`}
-                          className="w-full h-full object-cover"
-                        />
-                        {index === 0 && (
-                          <span className="absolute top-2 left-2 bg-primary text-primary-foreground text-xs px-2 py-0.5 rounded">
-                            {t("imageUpload.primary")}
-                          </span>
-                        )}
-                        <Button
-                          type="button"
-                          variant="destructive"
-                          size="icon"
-                          className="absolute top-2 right-2 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleRemoveImage(image.id);
-                          }}
-                          disabled={deleteImage.isPending}
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
+                      {isUploading ? (
+                        <div className="flex flex-col items-center gap-2">
+                          <Loader2 className="h-12 w-12 text-primary animate-spin" />
+                          <p className="text-sm text-foreground">
+                            {t("imageUpload.uploading")} ({uploadingCount}{" "}
+                            {t("imageUpload.files")})
+                          </p>
+                        </div>
+                      ) : (
+                        <>
+                          <Upload
+                            className={cn(
+                              "h-12 w-12 mx-auto mb-4",
+                              canUploadMore
+                                ? "text-muted-foreground"
+                                : "text-muted",
+                            )}
+                          />
+                          <p
+                            className={cn(
+                              "text-sm mb-1",
+                              canUploadMore
+                                ? "text-foreground"
+                                : "text-muted-foreground",
+                            )}
+                          >
+                            {canUploadMore
+                              ? t("imageUpload.dragOrClick")
+                              : t("imageUpload.maxReached")}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {t("imageUpload.supportedFormats")} (max 5MB)
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {images.length}/{MAX_IMAGES}{" "}
+                            {t("imageUpload.imagesUploaded")}
+                          </p>
+                        </>
+                      )}
+                    </div>
+
+                    {images.length > 0 && (
+                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                        {images.map((image, index) => (
+                          <div
+                            key={image.id}
+                            className="relative group aspect-square rounded-lg overflow-hidden border border-border bg-muted"
+                          >
+                            <img
+                              src={getImageUrl(image.url)}
+                              alt={`Property image ${index + 1}`}
+                              className="w-full h-full object-cover"
+                            />
+                            {index === 0 && (
+                              <span className="absolute top-2 left-2 bg-primary text-primary-foreground text-xs px-2 py-0.5 rounded">
+                                {t("imageUpload.primary")}
+                              </span>
+                            )}
+                            <Button
+                              type="button"
+                              variant="destructive"
+                              size="icon"
+                              className="absolute top-2 right-2 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleRemoveImage(image.id);
+                              }}
+                              disabled={deleteImage.isPending}
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        ))}
                       </div>
-                    ))}
+                    )}
+
+                    {images.length === 0 && !isUploading && (
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <ImageIcon className="h-4 w-4" />
+                        <span>{t("imageUpload.noImages")}</span>
+                      </div>
+                    )}
                   </div>
-                )}
 
-                {/* Empty State */}
-                {images.length === 0 && !isUploading && (
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <ImageIcon className="h-4 w-4" />
-                    <span>{t("imageUpload.noImages")}</span>
+                  <div className="flex gap-4">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="flex-1"
+                      onClick={() => navigate("/my-listings")}
+                      disabled={isSaving}
+                    >
+                      {t("common.cancel")}
+                    </Button>
+                    <Button type="submit" className="flex-1" disabled={isSaving}>
+                      {isSaving ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          {t("editListing.saving")}
+                        </>
+                      ) : (
+                        t("editListing.saveChanges")
+                      )}
+                    </Button>
                   </div>
-                )}
-              </div>
+                </form>
+              </CardContent>
+            </Card>
 
-              <div className="flex gap-4">
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="flex-1"
-                  onClick={() => navigate("/my-listings")}
-                  disabled={isSaving}
-                >
-                  {t("common.cancel")}
-                </Button>
-                <Button type="submit" className="flex-1" disabled={isSaving}>
-                  {isSaving ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      {t("editListing.saving")}
-                    </>
-                  ) : (
-                    t("editListing.saveChanges")
-                  )}
-                </Button>
+            {listing && user && (
+              <div className="max-w-3xl mx-auto mt-8">
+                <AvailabilitySlotsManager listingId={listingId} />
               </div>
-            </form>
-          </CardContent>
-        </Card>
-
-        {/* Availability Slots */}
-        {listing && user && (
-          <div className="max-w-3xl mx-auto mt-8">
-            <AvailabilitySlotsManager listingId={listingId} />
+            )}
           </div>
-        )}
-      </main>
-
-      <Footer />
-    </div>
+        </RequireLandlord>
+      </RequireAuth>
+    </PageLayout>
   );
 };
 

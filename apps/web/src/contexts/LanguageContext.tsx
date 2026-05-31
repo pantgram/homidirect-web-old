@@ -6,6 +6,7 @@ export type TranslationKey = keyof (typeof translations)["en"];
 
 interface LanguageContextType {
   language: Language;
+  locale: string;
   setLanguage: (lang: Language) => void;
   t: (key: TranslationKey) => string;
 }
@@ -1740,8 +1741,10 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({
     return translations[language][key] || key;
   };
 
+  const locale = language === "el" ? "el-GR" : "en-US";
+
   return (
-    <LanguageContext.Provider value={{ language, setLanguage, t }}>
+    <LanguageContext.Provider value={{ language, locale, setLanguage, t }}>
       {children}
     </LanguageContext.Provider>
   );

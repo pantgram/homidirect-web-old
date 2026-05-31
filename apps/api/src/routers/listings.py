@@ -3,10 +3,19 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.config.database import get_db
-from src.dependencies.auth import get_optional_user, require_role, verify_listing_ownership, get_current_user
+from src.dependencies.auth import get_current_user, get_optional_user, require_role, verify_listing_ownership
 from src.models.user import User
 from src.models.user import User as UserModel
-from src.schemas.listing import ContactOwnerRequest, CreateListingRequest, UpdateListingRequest
+from src.schemas.common import MessageResponse
+from src.schemas.listing import (
+    ContactOwnerRequest,
+    CreateListingRequest,
+    ListingDetailResponse,
+    ListingListResponse,
+    ListingStatsResponse,
+    PaginatedListingSearchResponse,
+    UpdateListingRequest,
+)
 from src.services import listing as listing_service
 from src.utils.email import send_contact_owner_email
 from src.utils.serializers import listing_to_dict
@@ -14,12 +23,12 @@ from src.utils.serializers import listing_to_dict
 router = APIRouter(prefix="/listings", tags=["Listings"])
 
 
-@router.get("/stats")
+@router.get("/stats", response_model=ListingStatsResponse)
 async def get_stats(db: AsyncSession = Depends(get_db)):
     return await listing_service.get_stats(db)
 
 
-@router.get("/search")
+@router.get("/search", response_model=PaginatedListingSearchResponse)
 async def search_listings(
     q: str | None = None,
     property_type: str | None = None,
@@ -61,12 +70,12 @@ async def search_listings(
     return await listing_service.search_listings(db, params, is_authenticated=current_user is not None)
 
 
-@router.get("/cities")
+@router.get("/cities", response_model=list[str])
 async def get_cities(db: AsyncSession = Depends(get_db)):
     return await listing_service.get_distinct_cities(db)
 
 
-@router.get("/my-listings")
+@router.get("/my-listings", response_model=PaginatedListingSearchResponse)
 async def get_my_listings(
     page: int = 1, limit: int = 15,
     db: AsyncSession = Depends(get_db),
@@ -75,19 +84,19 @@ async def get_my_listings(
     return await listing_service.get_listings_by_landlord(db, current_user.id, page, limit)
 
 
-@router.get("/")
+@router.get("/", response_model=ListingListResponse)
 async def get_all_listings(db: AsyncSession = Depends(get_db)):
     listings = await listing_service.get_all_listings(db)
     return {"listings": [listing_to_dict(l) for l in listings]}
 
 
-@router.get("/{listing_id}")
+@router.get("/{listing_id}", response_model=ListingDetailResponse)
 async def get_listing(listing_id: int, db: AsyncSession = Depends(get_db)):
     listing = await listing_service.get_listing_by_id(db, listing_id)
     return {"listing": listing_to_dict(listing)}
 
 
-@router.post("/", status_code=201)
+@router.post("/", status_code=201, response_model=ListingDetailResponse)
 async def create_listing(
     body: CreateListingRequest,
     db: AsyncSession = Depends(get_db),
@@ -101,7 +110,7 @@ async def create_listing(
     return {"listing": listing_to_dict(listing)}
 
 
-@router.patch("/{listing_id}")
+@router.patch("/{listing_id}", response_model=ListingDetailResponse)
 async def update_listing(
     listing_id: int,
     body: UpdateListingRequest,
@@ -128,7 +137,7 @@ async def delete_listing(
         raise HTTPException(status_code=404, detail="Listing not found")
 
 
-@router.post("/{listing_id}/contact")
+@router.post("/{listing_id}/contact", response_model=MessageResponse)
 async def contact_owner(
     listing_id: int,
     body: ContactOwnerRequest,

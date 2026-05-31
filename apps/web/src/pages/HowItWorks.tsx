@@ -1,5 +1,4 @@
-import Navigation from "@/components/Navigation";
-import Footer from "@/components/Footer";
+import { PageLayout } from "@/components/layout/PageLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Search, FileCheck, MessageSquare, Key, Upload, UserCheck, Calendar, HandshakeIcon } from "lucide-react";
@@ -8,58 +7,23 @@ import { useLanguage } from "@/contexts/LanguageContext";
 
 const HowItWorks = () => {
   const { t } = useLanguage();
-  
+
   const tenantSteps = [
-    {
-      icon: Search,
-      title: t("howItWorks.tenant.step1.title"),
-      description: t("howItWorks.tenant.step1.desc"),
-    },
-    {
-      icon: FileCheck,
-      title: t("howItWorks.tenant.step2.title"),
-      description: t("howItWorks.tenant.step2.desc"),
-    },
-    {
-      icon: MessageSquare,
-      title: t("howItWorks.tenant.step3.title"),
-      description: t("howItWorks.tenant.step3.desc"),
-    },
-    {
-      icon: HandshakeIcon,
-      title: t("howItWorks.tenant.step4.title"),
-      description: t("howItWorks.tenant.step4.desc"),
-    },
+    { icon: Search, title: t("howItWorks.tenant.step1.title"), description: t("howItWorks.tenant.step1.desc") },
+    { icon: FileCheck, title: t("howItWorks.tenant.step2.title"), description: t("howItWorks.tenant.step2.desc") },
+    { icon: MessageSquare, title: t("howItWorks.tenant.step3.title"), description: t("howItWorks.tenant.step3.desc") },
+    { icon: HandshakeIcon, title: t("howItWorks.tenant.step4.title"), description: t("howItWorks.tenant.step4.desc") },
   ];
 
   const ownerSteps = [
-    {
-      icon: Upload,
-      title: t("howItWorks.owner.step1.title"),
-      description: t("howItWorks.owner.step1.desc"),
-    },
-    {
-      icon: UserCheck,
-      title: t("howItWorks.owner.step2.title"),
-      description: t("howItWorks.owner.step2.desc"),
-    },
-    {
-      icon: Calendar,
-      title: t("howItWorks.owner.step3.title"),
-      description: t("howItWorks.owner.step3.desc"),
-    },
-    {
-      icon: Key,
-      title: t("howItWorks.owner.step4.title"),
-      description: t("howItWorks.owner.step4.desc"),
-    },
+    { icon: Upload, title: t("howItWorks.owner.step1.title"), description: t("howItWorks.owner.step1.desc") },
+    { icon: UserCheck, title: t("howItWorks.owner.step2.title"), description: t("howItWorks.owner.step2.desc") },
+    { icon: Calendar, title: t("howItWorks.owner.step3.title"), description: t("howItWorks.owner.step3.desc") },
+    { icon: Key, title: t("howItWorks.owner.step4.title"), description: t("howItWorks.owner.step4.desc") },
   ];
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navigation />
-      
-      {/* Hero Section */}
+    <PageLayout>
       <section className="relative py-20 px-4 bg-gradient-to-br from-primary/10 via-background to-accent/10">
         <div className="container mx-auto max-w-4xl text-center">
           <h1 className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
@@ -71,7 +35,6 @@ const HowItWorks = () => {
         </div>
       </section>
 
-      {/* For Tenants Section */}
       <section className="py-20 px-4 bg-background">
         <div className="container mx-auto max-w-6xl">
           <div className="text-center mb-16">
@@ -115,7 +78,6 @@ const HowItWorks = () => {
         </div>
       </section>
 
-      {/* For Property Owners Section */}
       <section className="py-20 px-4 bg-muted/30">
         <div className="container mx-auto max-w-6xl">
           <div className="text-center mb-16">
@@ -159,7 +121,6 @@ const HowItWorks = () => {
         </div>
       </section>
 
-      {/* Benefits Summary */}
       <section className="py-20 px-4 bg-gradient-to-br from-primary/5 via-background to-accent/5">
         <div className="container mx-auto max-w-4xl text-center">
           <h2 className="text-3xl font-bold mb-6 text-foreground">
@@ -184,9 +145,7 @@ const HowItWorks = () => {
           </Button>
         </div>
       </section>
-
-      <Footer />
-    </div>
+    </PageLayout>
   );
 };
 

@@ -1,14 +1,22 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from src.config.database import get_db
 from src.dependencies.auth import get_current_user
 from src.models.user import User
+from src.schemas.listing import PaginatedListingSearchResponse
+from src.schemas.user import (
+    AddFavoriteResponse,
+    CheckFavoriteResponse,
+    FavoriteIdsResponse,
+    RemoveFavoriteResponse,
+)
 from src.services import favorite as fav_service
 
 router = APIRouter(prefix="/favorites", tags=["Favorites"])
 
 
-@router.get("/")
+@router.get("/", response_model=PaginatedListingSearchResponse)
 async def get_favorites(
     page: int = 1, limit: int = 15,
     db: AsyncSession = Depends(get_db),
@@ -17,7 +25,7 @@ async def get_favorites(
     return await fav_service.get_favorites(db, current_user.id, page, limit)
 
 
-@router.get("/ids")
+@router.get("/ids", response_model=FavoriteIdsResponse)
 async def get_favorite_ids(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
@@ -26,7 +34,7 @@ async def get_favorite_ids(
     return {"favorite_ids": ids}
 
 
-@router.get("/{listing_id}/check")
+@router.get("/{listing_id}/check", response_model=CheckFavoriteResponse)
 async def check_favorite(
     listing_id: int,
     db: AsyncSession = Depends(get_db),
@@ -36,7 +44,7 @@ async def check_favorite(
     return {"is_favorited": is_fav}
 
 
-@router.post("/{listing_id}")
+@router.post("/{listing_id}", response_model=AddFavoriteResponse)
 async def add_favorite(
     listing_id: int,
     db: AsyncSession = Depends(get_db),
@@ -46,7 +54,7 @@ async def add_favorite(
     return {"success": True, "added": added, "message": "Favorite added" if added else "Already favorited"}
 
 
-@router.delete("/{listing_id}")
+@router.delete("/{listing_id}", response_model=RemoveFavoriteResponse)
 async def remove_favorite(
     listing_id: int,
     db: AsyncSession = Depends(get_db),

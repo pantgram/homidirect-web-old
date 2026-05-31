@@ -16,3 +16,20 @@ class PendingImageResponse(CamelModel):
     url: str
     upload_session_id: str
     created_at: datetime
+
+
+class ListingImagesResponse(CamelModel):
+    images: list[ListingImageResponse]
+
+
+class ListingImageDetailResponse(CamelModel):
+    image: ListingImageResponse
+
+
+class PendingImagesResponse(CamelModel):
+    images: list[PendingImageResponse]
+
+
+class UploadPendingImageResponse(CamelModel):
+    image: PendingImageResponse
+    upload_session_id: str

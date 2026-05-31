@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link, useLocation } from "react-router-dom";
-import Navigation from "@/components/Navigation";
+import { PageLayout } from "@/components/layout/PageLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -105,7 +105,6 @@ const Auth = () => {
     const isTenant = formData.get("tenant") === "on";
     const isPropertyOwner = formData.get("propertyOwner") === "on";
 
-    // Validate passwords match
     if (password !== confirmPassword) {
       setIsLoading(false);
       toast({
@@ -116,7 +115,6 @@ const Auth = () => {
       return;
     }
 
-    // Validate password length
     if (password.length < 8) {
       setIsLoading(false);
       toast({
@@ -139,12 +137,10 @@ const Auth = () => {
       return;
     }
 
-    // Parse full name into first and last name
     const nameParts = fullName.trim().split(/\s+/);
     const firstName = nameParts[0] || "";
     const lastName = nameParts.slice(1).join(" ") || nameParts[0] || "";
 
-    // Determine role - BOTH if both checked, LANDLORD if property owner, TENANT otherwise
     const role = isTenant && isPropertyOwner ? "BOTH" : isPropertyOwner ? "LANDLORD" : "TENANT";
 
     try {
@@ -184,9 +180,7 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navigation />
-
+    <PageLayout>
       <div className="container mx-auto px-4 py-16">
         <div className="max-w-md mx-auto">
           <Tabs defaultValue="login" className="w-full">
@@ -209,7 +203,6 @@ const Auth = () => {
                         id="login-email"
                         name="email"
                         type="email"
-                        //placeholder="your@email.com"
                         required
                       />
                     </div>
@@ -229,7 +222,6 @@ const Auth = () => {
                         id="login-password"
                         name="password"
                         type="password"
-                        //placeholder="••••••••"
                         required
                       />
                     </div>
@@ -300,7 +292,6 @@ const Auth = () => {
                         id="signup-name"
                         name="fullName"
                         type="text"
-                       // placeholder="John Doe"
                         required
                       />
                     </div>
@@ -310,7 +301,6 @@ const Auth = () => {
                         id="signup-email"
                         name="email"
                         type="email"
-                       // placeholder="your@email.com"
                         required
                       />
                     </div>
@@ -322,7 +312,6 @@ const Auth = () => {
                         id="signup-password"
                         name="password"
                         type="password"
-                       // placeholder="••••••••"
                         minLength={8}
                         required
                       />
@@ -335,7 +324,6 @@ const Auth = () => {
                         id="signup-confirm"
                         name="confirmPassword"
                         type="password"
-                       // placeholder="••••••••"
                         minLength={8}
                         required
                       />
@@ -416,7 +404,7 @@ const Auth = () => {
           </Tabs>
         </div>
       </div>
-    </div>
+    </PageLayout>
   );
 };
 
