@@ -1,6 +1,7 @@
 from datetime import date, datetime
 
 from src.schemas.base import CamelModel
+from src.schemas.common import Pagination
 
 
 class ListingImageBasic(CamelModel):
@@ -166,3 +167,16 @@ class ListingStatsResponse(CamelModel):
 
 class ListingIdParam(CamelModel):
     listing_id: int
+
+
+class ListingDetailResponse(CamelModel):
+    listing: ListingResponse
+
+
+class ListingListResponse(CamelModel):
+    listings: list[ListingResponse]
+
+
+class PaginatedListingSearchResponse(CamelModel):
+    data: list[ListingSearchResponse]
+    pagination: Pagination

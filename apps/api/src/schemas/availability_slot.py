@@ -1,5 +1,6 @@
-from pydantic import model_validator
 from datetime import datetime
+
+from pydantic import model_validator
 
 from src.schemas.base import CamelModel
 
@@ -36,3 +37,11 @@ class UpdateAvailabilitySlotRequest(CamelModel):
         if self.start_time and self.end_time and self.end_time <= self.start_time:
             raise ValueError("end_time must be after start_time")
         return self
+
+
+class SlotDetailResponse(CamelModel):
+    slot: AvailabilitySlotResponse
+
+
+class SlotsListResponse(CamelModel):
+    slots: list[AvailabilitySlotResponse]

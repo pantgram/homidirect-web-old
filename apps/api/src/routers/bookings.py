@@ -1,10 +1,11 @@
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from src.config.database import get_db
 from src.dependencies.auth import get_current_user, verify_booking_ownership
 from src.models.user import User
+from src.schemas.booking import BookingDetailResponse, BookingsListResponse, CreateBookingRequest, UpdateBookingRequest
 from src.services import booking as booking_service
-from src.schemas.booking import CreateBookingRequest, UpdateBookingRequest
 
 router = APIRouter(prefix="/bookings", tags=["Bookings"])
 
@@ -23,7 +24,7 @@ def _format_booking(b):
     }
 
 
-@router.get("/")
+@router.get("/", response_model=BookingsListResponse)
 async def get_bookings(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
@@ -32,7 +33,7 @@ async def get_bookings(
     return {"bookings": [_format_booking(b) for b in bookings]}
 
 
-@router.get("/{booking_id}")
+@router.get("/{booking_id}", response_model=BookingDetailResponse)
 async def get_booking(
     booking_id: int,
     db: AsyncSession = Depends(get_db),
@@ -45,7 +46,7 @@ async def get_booking(
     return {"booking": _format_booking(b)}
 
 
-@router.post("/", status_code=201)
+@router.post("/", status_code=201, response_model=BookingDetailResponse)
 async def create_booking(
     body: CreateBookingRequest,
     background_tasks: BackgroundTasks,
@@ -57,7 +58,7 @@ async def create_booking(
     return {"booking": _format_booking(b)}
 
 
-@router.patch("/{booking_id}")
+@router.patch("/{booking_id}", response_model=BookingDetailResponse)
 async def update_booking(
     booking_id: int,
     body: UpdateBookingRequest,
@@ -73,7 +74,7 @@ async def update_booking(
     return {"booking": _format_booking(b)}
 
 
-@router.get("/listing/{listing_id}")
+@router.get("/listing/{listing_id}", response_model=BookingsListResponse)
 async def get_bookings_by_listing(
     listing_id: int,
     db: AsyncSession = Depends(get_db),

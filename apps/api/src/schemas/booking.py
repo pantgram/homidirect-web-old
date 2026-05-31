@@ -30,3 +30,11 @@ class UpdateBookingRequest(CamelModel):
 
 class BookingIdParam(CamelModel):
     id: int
+
+
+class BookingDetailResponse(CamelModel):
+    booking: BookingResponse
+
+
+class BookingsListResponse(CamelModel):
+    bookings: list[BookingResponse]

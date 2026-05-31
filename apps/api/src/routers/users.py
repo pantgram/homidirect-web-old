@@ -1,16 +1,26 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from src.config.database import get_db
 from src.dependencies.auth import get_current_user, verify_user_ownership
 from src.models.user import User
-from src.services import user as user_service
+from src.schemas.listing import PaginatedListingSearchResponse
+from src.schemas.user import (
+    AddFavoriteResponse,
+    CheckFavoriteResponse,
+    FavoriteIdsResponse,
+    RemoveFavoriteResponse,
+    UpdateUserRequest,
+    UserDetailResponse,
+    UserWithRoleResponse,
+)
 from src.services import favorite as fav_service
-from src.schemas.user import UpdateUserRequest
+from src.services import user as user_service
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
 
-@router.get("/me")
+@router.get("/me", response_model=UserWithRoleResponse)
 async def get_me(current_user: User = Depends(get_current_user)):
     return {
         "id": current_user.id,
@@ -22,7 +32,7 @@ async def get_me(current_user: User = Depends(get_current_user)):
     }
 
 
-@router.get("/favorites")
+@router.get("/favorites", response_model=PaginatedListingSearchResponse)
 async def get_favorites(
     page: int = 1, limit: int = 15,
     db: AsyncSession = Depends(get_db),
@@ -31,7 +41,7 @@ async def get_favorites(
     return await fav_service.get_favorites(db, current_user.id, page, limit)
 
 
-@router.get("/favorites/ids")
+@router.get("/favorites/ids", response_model=FavoriteIdsResponse)
 async def get_favorite_ids(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
@@ -40,7 +50,7 @@ async def get_favorite_ids(
     return {"favorite_ids": ids}
 
 
-@router.get("/favorites/{listing_id}/check")
+@router.get("/favorites/{listing_id}/check", response_model=CheckFavoriteResponse)
 async def check_favorite(
     listing_id: int,
     db: AsyncSession = Depends(get_db),
@@ -50,7 +60,7 @@ async def check_favorite(
     return {"is_favorited": is_fav}
 
 
-@router.post("/favorites/{listing_id}")
+@router.post("/favorites/{listing_id}", response_model=AddFavoriteResponse)
 async def add_favorite(
     listing_id: int,
     db: AsyncSession = Depends(get_db),
@@ -60,7 +70,7 @@ async def add_favorite(
     return {"success": True, "added": added, "message": "Favorite added" if added else "Already favorited"}
 
 
-@router.delete("/favorites/{listing_id}")
+@router.delete("/favorites/{listing_id}", response_model=RemoveFavoriteResponse)
 async def remove_favorite(
     listing_id: int,
     db: AsyncSession = Depends(get_db),
@@ -70,7 +80,7 @@ async def remove_favorite(
     return {"removed": True}
 
 
-@router.get("/{user_id}")
+@router.get("/{user_id}", response_model=UserDetailResponse)
 async def get_user(user_id: int, db: AsyncSession = Depends(get_db), current_user: User = Depends(get_current_user)):
     row = await user_service.get_user_by_id(db, user_id)
     if not row:
@@ -85,7 +95,7 @@ async def get_user(user_id: int, db: AsyncSession = Depends(get_db), current_use
     }}
 
 
-@router.patch("/{user_id}")
+@router.patch("/{user_id}", response_model=UserDetailResponse)
 async def update_user(
     user_id: int,
     body: UpdateUserRequest,

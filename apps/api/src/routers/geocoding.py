@@ -1,14 +1,16 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from src.config.database import get_db
 from src.dependencies.auth import get_current_user
 from src.models.user import User
+from src.schemas.geocoding import GeocodingReverseResponse, GeocodingSearchResponse
 from src.services import geocoding
 
 router = APIRouter(prefix="/geocoding", tags=["Geocoding"])
 
 
-@router.get("/search")
+@router.get("/search", response_model=GeocodingSearchResponse)
 async def search(
     text: str,
     country_code: str | None = None,
@@ -21,7 +23,7 @@ async def search(
     return {"results": results}
 
 
-@router.get("/reverse")
+@router.get("/reverse", response_model=GeocodingReverseResponse)
 async def reverse(
     lat: float,
     lon: float,

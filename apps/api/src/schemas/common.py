@@ -31,3 +31,8 @@ class ApiResponse(CamelModel):
 
 class MessageResponse(CamelModel):
     message: str
+
+
+class HealthResponse(CamelModel):
+    status: str
+    timestamp: str

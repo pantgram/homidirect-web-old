@@ -10,7 +10,15 @@ from src.dependencies.auth import (
     verify_listing_ownership,
 )
 from src.models.user import User
-from src.schemas.verification import ReviewVerificationRequest
+from src.schemas.verification import (
+    PendingVerificationsResponse,
+    ReviewVerificationRequest,
+    ReviewVerificationResponse,
+    VerificationDocumentDetailResponse,
+    VerificationDocumentsListResponse,
+    VerificationHistoryListResponse,
+    VerificationStatusResponse,
+)
 from src.services import verification as ver_service
 from src.utils.file_validation import validate_document
 
@@ -41,7 +49,7 @@ def _format_history(h):
     }
 
 
-@router.get("/{listing_id}/verification")
+@router.get("/{listing_id}/verification", response_model=VerificationStatusResponse)
 async def get_verification_status(
     listing_id: int,
     db: AsyncSession = Depends(get_db),
@@ -51,7 +59,7 @@ async def get_verification_status(
     return await ver_service.get_verification_status(db, listing_id)
 
 
-@router.get("/{listing_id}/verification/documents")
+@router.get("/{listing_id}/verification/documents", response_model=VerificationDocumentsListResponse)
 async def get_documents(
     listing_id: int,
     db: AsyncSession = Depends(get_db),
@@ -62,7 +70,7 @@ async def get_documents(
     return {"documents": [_format_doc(d) for d in docs]}
 
 
-@router.get("/{listing_id}/verification/history")
+@router.get("/{listing_id}/verification/history", response_model=VerificationHistoryListResponse)
 async def get_history(
     listing_id: int,
     db: AsyncSession = Depends(get_db),
@@ -73,7 +81,7 @@ async def get_history(
     return {"history": [_format_history(h) for h in history]}
 
 
-@router.post("/{listing_id}/verification/documents", status_code=201)
+@router.post("/{listing_id}/verification/documents", status_code=201, response_model=VerificationDocumentDetailResponse)
 async def upload_document(
     listing_id: int,
     document_type: str = Form(...),
@@ -110,7 +118,7 @@ async def delete_document(
 admin_router = APIRouter(prefix="/admin/verifications", tags=["Admin Verification"])
 
 
-@admin_router.post("/{listing_id}/verification/review")
+@admin_router.post("/{listing_id}/verification/review", response_model=ReviewVerificationResponse)
 async def review_verification(
     listing_id: int,
     body: ReviewVerificationRequest,
@@ -121,7 +129,7 @@ async def review_verification(
     return {"message": "Verification reviewed", "verification_status": listing.verification_status}
 
 
-@admin_router.get("/pending")
+@admin_router.get("/pending", response_model=PendingVerificationsResponse)
 async def get_pending_verifications(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(require_admin),

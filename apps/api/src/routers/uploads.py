@@ -7,13 +7,14 @@ from src.config.database import get_db
 from src.config.settings import settings
 from src.dependencies.auth import require_role
 from src.models.user import User
+from src.schemas.listing_image import PendingImagesResponse, UploadPendingImageResponse
 from src.services import listing_image as img_service
 from src.utils.file_validation import validate_image
 
 router = APIRouter(prefix="/uploads", tags=["Uploads"])
 
 
-@router.get("/{session_id}")
+@router.get("/{session_id}", response_model=PendingImagesResponse)
 async def get_pending_images(
     session_id: str,
     db: AsyncSession = Depends(get_db),
@@ -31,7 +32,7 @@ async def get_pending_images(
     ]}
 
 
-@router.post("/{session_id}", status_code=201)
+@router.post("/{session_id}", status_code=201, response_model=UploadPendingImageResponse)
 async def upload_pending_image(
     session_id: str,
     file: UploadFile = File(...),
