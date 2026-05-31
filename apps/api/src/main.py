@@ -11,6 +11,7 @@ from slowapi.util import get_remote_address
 
 from src.config.settings import settings
 from src.middleware.camel_case import CamelCaseMiddleware
+from src.schemas.common import HealthResponse
 from src.utils.errors import AppError
 
 logger = logging.getLogger("homidirect")
@@ -76,7 +77,7 @@ from src.routers import (
 )
 
 
-@app.get("/health")
+@app.get("/health", response_model=HealthResponse)
 async def health_check():
     return {"status": "ok", "timestamp": datetime.now(timezone.utc).isoformat()}
 

@@ -1,10 +1,16 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from src.config.database import get_db
-from src.dependencies.auth import require_role, get_current_user
+from src.dependencies.auth import require_role
 from src.models.user import User
+from src.schemas.availability_slot import (
+    CreateAvailabilitySlotRequest,
+    SlotDetailResponse,
+    SlotsListResponse,
+    UpdateAvailabilitySlotRequest,
+)
 from src.services import availability_slot as slot_service
-from src.schemas.availability_slot import CreateAvailabilitySlotRequest, UpdateAvailabilitySlotRequest
 
 router = APIRouter(prefix="/availability-slots", tags=["Availability Slots"])
 
@@ -21,19 +27,19 @@ def _format_slot(s):
     }
 
 
-@router.get("/listing/{listing_id}/available")
+@router.get("/listing/{listing_id}/available", response_model=SlotsListResponse)
 async def get_available_slots(listing_id: int, db: AsyncSession = Depends(get_db)):
     slots = await slot_service.get_available_slots(db, listing_id)
     return {"slots": [_format_slot(s) for s in slots]}
 
 
-@router.get("/listing/{listing_id}")
+@router.get("/listing/{listing_id}", response_model=SlotsListResponse)
 async def get_slots_by_listing(listing_id: int, db: AsyncSession = Depends(get_db)):
     slots = await slot_service.get_slots_by_listing(db, listing_id)
     return {"slots": [_format_slot(s) for s in slots]}
 
 
-@router.get("/{slot_id}")
+@router.get("/{slot_id}", response_model=SlotDetailResponse)
 async def get_slot(slot_id: int, db: AsyncSession = Depends(get_db)):
     slot = await slot_service.get_slot_by_id(db, slot_id)
     if not slot:
@@ -41,7 +47,7 @@ async def get_slot(slot_id: int, db: AsyncSession = Depends(get_db)):
     return {"slot": _format_slot(slot)}
 
 
-@router.post("/", status_code=201)
+@router.post("/", status_code=201, response_model=SlotDetailResponse)
 async def create_slot(
     body: CreateAvailabilitySlotRequest,
     db: AsyncSession = Depends(get_db),
@@ -52,7 +58,7 @@ async def create_slot(
     return {"slot": _format_slot(slot)}
 
 
-@router.patch("/{slot_id}")
+@router.patch("/{slot_id}", response_model=SlotDetailResponse)
 async def update_slot(
     slot_id: int,
     body: UpdateAvailabilitySlotRequest,

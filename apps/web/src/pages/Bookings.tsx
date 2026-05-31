@@ -1,22 +1,12 @@
 import { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
-import {
-  Loader2,
-  CalendarClock,
-  Clock,
-  MapPin,
-  Home,
-  Trash2,
-  Video,
-  CheckCircle,
-  XCircle,
-  AlertCircle,
-} from "lucide-react";
-import Navigation from "@/components/Navigation";
-import Footer from "@/components/Footer";
+import { CalendarClock, Clock, MapPin, Home, Trash2, Video } from "lucide-react";
+import { PageLayout } from "@/components/layout/PageLayout";
+import { RequireAuth } from "@/components/auth/RequireAuth";
+import { InlineSpinner, BookingStatusBadge } from "@/components/shared";
+import { formatDateTime } from "@/utils/format";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -27,7 +17,7 @@ import { getLocalizedTitle } from "@/types/listing";
 import placeholderImage from "@/assets/property-1.jpg";
 
 const Bookings = () => {
-  const { t, language } = useLanguage();
+  const { t, language, locale } = useLanguage();
   const { isAuthenticated, isLoading: isAuthLoading, user } = useAuth();
   const { toast } = useToast();
 
@@ -68,13 +58,8 @@ const Bookings = () => {
   }, []);
 
   useEffect(() => {
-    if (!isAuthLoading) {
-      if (!isAuthenticated) {
-        return;
-      }
-      fetchBookings();
-    }
-  }, [isAuthLoading, isAuthenticated, fetchBookings]);
+    fetchBookings();
+  }, [fetchBookings]);
 
   const handleDeleteBooking = async (bookingId: number) => {
     if (!confirm(t("bookings.cancelConfirm"))) {
@@ -96,77 +81,17 @@ const Bookings = () => {
     }
   };
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString(language === "el" ? "el-GR" : "en-US", {
-      weekday: "short",
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
-
-  const getStatusBadge = (status: string) => {
-    const statusConfig = {
-      PENDING: {
-        label: t("bookings.pending"),
-        icon: <Clock className="h-3 w-3" />,
-        className: "bg-yellow-500/10 text-yellow-600 hover:bg-yellow-500/20",
-      },
-      CONFIRMED: {
-        label: t("bookings.confirmed"),
-        icon: <CheckCircle className="h-3 w-3" />,
-        className: "bg-green-500/10 text-green-600 hover:bg-green-500/20",
-      },
-      DECLINED: {
-        label: t("bookings.declined"),
-        icon: <XCircle className="h-3 w-3" />,
-        className: "bg-red-500/10 text-red-600 hover:bg-red-500/20",
-      },
-      CANCELLED: {
-        label: t("bookings.cancelledStatus"),
-        icon: <AlertCircle className="h-3 w-3" />,
-        className: "bg-gray-500/10 text-gray-600 hover:bg-gray-500/20",
-      },
-    };
-
-    const config = statusConfig[status as keyof typeof statusConfig];
+  if (loading) {
     return (
-      <Badge className={config?.className}>
-        {config?.icon}
-        <span className="ml-1">{config?.label}</span>
-      </Badge>
-    );
-  };
-
-  if (isAuthLoading || loading) {
-    return (
-      <div className="min-h-screen bg-background">
-        <Navigation />
-        <div className="flex justify-center items-center py-32">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        </div>
-        <Footer />
-      </div>
-    );
-  }
-
-  if (!isAuthenticated) {
-    return (
-      <div className="min-h-screen bg-background">
-        <Navigation />
-        <Footer />
-      </div>
+      <PageLayout>
+        <InlineSpinner />
+      </PageLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navigation />
-
-      <main className="container mx-auto px-4 py-8">
+    <PageLayout>
+      <div className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
           <div className="flex items-center gap-4 mb-8">
             <h1 className="text-3xl font-bold">{t("bookings.title")}</h1>
@@ -231,14 +156,14 @@ const Bookings = () => {
                                 </div>
                               </div>
                             </div>
-                            {getStatusBadge(booking.status)}
+                            <BookingStatusBadge status={booking.status} />
                           </div>
 
                           <div className="flex items-center gap-6 text-sm">
                             <div className="flex items-center gap-2">
                               <Clock className="h-4 w-4 text-primary" />
                               <span className="font-medium">
-                                {formatDate(booking.scheduledAt)}
+                                {formatDateTime(booking.scheduledAt, locale)}
                               </span>
                             </div>
                           </div>
@@ -286,11 +211,15 @@ const Bookings = () => {
             </div>
           )}
         </div>
-      </main>
-
-      <Footer />
-    </div>
+      </div>
+    </PageLayout>
   );
 };
 
-export default Bookings;
+const BookingsPage = () => (
+  <RequireAuth>
+    <Bookings />
+  </RequireAuth>
+);
+
+export default BookingsPage;

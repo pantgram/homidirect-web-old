@@ -6,7 +6,7 @@ from fastapi.responses import RedirectResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.config.database import get_db
-from src.schemas.auth import ExchangeCodeRequest
+from src.schemas.auth import ExchangeCodeRequest, ExchangeCodeResponse
 from src.services import google_auth
 
 router = APIRouter(prefix="/auth/google", tags=["Google Auth"])
@@ -63,7 +63,7 @@ async def google_auth_callback(code: str, state: str, db: AsyncSession = Depends
     return RedirectResponse(redirect_url)
 
 
-@router.post("/exchange")
+@router.post("/exchange", response_model=ExchangeCodeResponse)
 async def exchange_auth_code(body: ExchangeCodeRequest):
     entry = _auth_code_store.pop(body.code, None)
     if not entry:

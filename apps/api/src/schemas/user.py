@@ -38,3 +38,25 @@ class UpdateUserRequest(CamelModel):
 
 class UserIdParam(CamelModel):
     id: int
+
+
+class UserDetailResponse(CamelModel):
+    user: UserWithRoleResponse
+
+
+class FavoriteIdsResponse(CamelModel):
+    favorite_ids: list[int]
+
+
+class CheckFavoriteResponse(CamelModel):
+    is_favorited: bool
+
+
+class AddFavoriteResponse(CamelModel):
+    success: bool
+    added: bool
+    message: str
+
+
+class RemoveFavoriteResponse(CamelModel):
+    removed: bool

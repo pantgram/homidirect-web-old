@@ -1,12 +1,10 @@
 import hashlib
-import json
 import math
 from datetime import datetime, timezone, timedelta
-from sqlalchemy import select, and_
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 import httpx
 from src.models.geocoding_cache import GeocodingCache
-from src.config.settings import settings
 
 
 def _haversine(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
@@ -49,45 +47,55 @@ async def search(db: AsyncSession, text: str, country_code: str | None = None, l
     if cached:
         return cached.results
 
+    params: dict = {
+        "q": text,
+        "format": "json",
+        "addressdetails": 1,
+        "limit": min(limit, 20),
+        "accept-language": lang,
+    }
+    if country_code:
+        params["countrycodes"] = country_code.lower()
+
     async with httpx.AsyncClient() as client:
         resp = await client.get(
-            "https://photon.komoot.io/api/",
-            params={"q": text, "limit": min(limit, 20), "lang": lang},
+            "https://nominatim.openstreetmap.org/search",
+            params=params,
+            headers={"User-Agent": "HomiDirect/1.0"},
         )
         resp.raise_for_status()
         data = resp.json()
 
-    raw = data.get("features", [])
     results = []
     seen = []
-    for f in raw:
-        props = f.get("properties", {})
-        coords = f.get("geometry", {}).get("coordinates", [None, None])
-        lat, lon = coords[1], coords[0]
+    for item in data:
+        address = item.get("address", {})
+        city = address.get("city") or address.get("town") or address.get("village", "")
+        lat = float(item["lat"])
+        lon = float(item["lon"])
 
-        city = props.get("city") or props.get("name", "")
         duplicate = False
         for s in seen:
-            if s.get("city", "").lower() == city.lower() and _haversine(s["lat"], s["lon"], lat or 0, lon or 0) < 5:
+            if s["city"].lower() == city.lower() and _haversine(s["lat"], s["lon"], lat, lon) < 5:
                 duplicate = True
                 break
         if duplicate:
             continue
 
         entry = {
-            "place_id": props.get("osm_id"),
-            "formatted": props.get("name", ""),
-            "address": props.get("street", ""),
+            "place_id": item.get("place_id"),
+            "formatted": item.get("display_name", ""),
+            "address": address.get("road", ""),
             "city": city,
-            "country": props.get("country", ""),
-            "suburb": props.get("district", ""),
-            "postal_code": props.get("postcode", ""),
-            "result_type": props.get("osm_value", ""),
+            "country": address.get("country", ""),
+            "suburb": address.get("suburb") or address.get("neighbourhood", ""),
+            "postal_code": address.get("postcode", ""),
+            "result_type": item.get("type", ""),
             "lat": lat,
             "lon": lon,
         }
         results.append(entry)
-        seen.append({"city": city, "lat": lat or 0, "lon": lon or 0})
+        seen.append({"city": city, "lat": lat, "lon": lon})
 
     await _set_cache(db, query_hash, text, country_code, lang, results)
     return results[:limit]

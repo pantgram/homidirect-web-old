@@ -5,13 +5,14 @@ from src.config.database import get_db
 from src.config.settings import settings
 from src.dependencies.auth import require_role, verify_listing_ownership
 from src.models.user import User
+from src.schemas.listing_image import ListingImageDetailResponse, ListingImagesResponse
 from src.services import listing_image as img_service
 from src.utils.file_validation import validate_image
 
 router = APIRouter(prefix="/listings", tags=["Listing Images"])
 
 
-@router.get("/{listing_id}/images")
+@router.get("/{listing_id}/images", response_model=ListingImagesResponse)
 async def get_images(listing_id: int, db: AsyncSession = Depends(get_db)):
     images = await img_service.get_images_by_listing_id(db, listing_id)
     return {"images": [
@@ -26,7 +27,7 @@ async def get_images(listing_id: int, db: AsyncSession = Depends(get_db)):
     ]}
 
 
-@router.post("/{listing_id}/images", status_code=201)
+@router.post("/{listing_id}/images", status_code=201, response_model=ListingImageDetailResponse)
 async def upload_image(
     listing_id: int,
     file: UploadFile = File(...),

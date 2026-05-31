@@ -45,3 +45,34 @@ class PendingVerificationListing(CamelModel):
     verification_status: str
     created_at: datetime
     documents: list[VerificationDocumentResponse]
+
+
+class VerificationDocumentsListResponse(CamelModel):
+    documents: list[VerificationDocumentResponse]
+
+
+class VerificationHistoryListResponse(CamelModel):
+    history: list[VerificationHistoryResponse]
+
+
+class VerificationDocumentDetailResponse(CamelModel):
+    document: VerificationDocumentResponse
+
+
+class ReviewVerificationResponse(CamelModel):
+    message: str
+    verification_status: str
+
+
+class PendingVerificationItemResponse(CamelModel):
+    id: int
+    title_el: str
+    city: str
+    landlord_id: int
+    verification_status: str
+    created_at: str
+    documents: list[VerificationDocumentResponse]
+
+
+class PendingVerificationsResponse(CamelModel):
+    listings: list[PendingVerificationItemResponse]

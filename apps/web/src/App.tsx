@@ -6,8 +6,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { PageLoader } from "@/components/layout/PageLoader";
 
-// Lazy load all pages for code splitting
 const Index = lazy(() => import("./pages/Index"));
 const SearchResults = lazy(() => import("./pages/SearchResults"));
 const ListProperty = lazy(() => import("./pages/ListProperty"));
@@ -33,6 +33,12 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient();
 
+const withSuspense = (Component: React.LazyExoticComponent<() => JSX.Element | null>) => (
+  <Suspense fallback={<PageLoader />}>
+    <Component />
+  </Suspense>
+);
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
@@ -41,39 +47,30 @@ const App = () => (
           <Toaster />
           <Sonner />
           <BrowserRouter>
-            <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
             <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/search" element={<SearchResults />} />
-              <Route
-                path="/list-property-info"
-                element={<ListPropertyInfo />}
-              />
-              <Route path="/list-property" element={<ListProperty />} />
-              <Route path="/listings/:id" element={<ListingDetail />} />
-              <Route
-                path="/listings/:listingId/verification"
-                element={<ListingVerification />}
-              />
-              <Route path="/how-it-works" element={<HowItWorks />} />
-              <Route path="/auth" element={<Auth />} />
-              <Route path="/auth/callback" element={<OAuthCallback />} />
-              <Route path="/forgot-password" element={<ForgotPassword />} />
-              <Route path="/reset-password" element={<ResetPassword />} />
-              <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-              <Route path="/terms-of-service" element={<TermsOfService />} />
-              <Route path="/contact" element={<Contact />} />
-              <Route path="/my-listings" element={<MyListings />} />
-              <Route path="/listings/:id/edit" element={<EditListing />} />
-              <Route path="/profile" element={<MyProfile />} />
-              <Route path="/my-favorites" element={<Favorites />} />
-              <Route path="/bookings" element={<Bookings />} />
-              <Route path="/bookings/:id" element={<BookingDetail />} />
-              <Route path="/listings/:id/bookings" element={<ListingBookings />} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
+              <Route path="/" element={withSuspense(Index)} />
+              <Route path="/search" element={withSuspense(SearchResults)} />
+              <Route path="/list-property-info" element={withSuspense(ListPropertyInfo)} />
+              <Route path="/list-property" element={withSuspense(ListProperty)} />
+              <Route path="/listings/:id" element={withSuspense(ListingDetail)} />
+              <Route path="/listings/:listingId/verification" element={withSuspense(ListingVerification)} />
+              <Route path="/how-it-works" element={withSuspense(HowItWorks)} />
+              <Route path="/auth" element={withSuspense(Auth)} />
+              <Route path="/auth/callback" element={withSuspense(OAuthCallback)} />
+              <Route path="/forgot-password" element={withSuspense(ForgotPassword)} />
+              <Route path="/reset-password" element={withSuspense(ResetPassword)} />
+              <Route path="/privacy-policy" element={withSuspense(PrivacyPolicy)} />
+              <Route path="/terms-of-service" element={withSuspense(TermsOfService)} />
+              <Route path="/contact" element={withSuspense(Contact)} />
+              <Route path="/my-listings" element={withSuspense(MyListings)} />
+              <Route path="/listings/:id/edit" element={withSuspense(EditListing)} />
+              <Route path="/profile" element={withSuspense(MyProfile)} />
+              <Route path="/my-favorites" element={withSuspense(Favorites)} />
+              <Route path="/bookings" element={withSuspense(Bookings)} />
+              <Route path="/bookings/:id" element={withSuspense(BookingDetail)} />
+              <Route path="/listings/:id/bookings" element={withSuspense(ListingBookings)} />
+              <Route path="*" element={withSuspense(NotFound)} />
             </Routes>
-            </Suspense>
           </BrowserRouter>
         </TooltipProvider>
       </LanguageProvider>

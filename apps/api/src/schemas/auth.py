@@ -89,3 +89,7 @@ class UserBrief(CamelModel):
     email: str
     role: str
     created_at: str
+
+
+class ExchangeCodeResponse(CamelModel):
+    token: AuthTokens

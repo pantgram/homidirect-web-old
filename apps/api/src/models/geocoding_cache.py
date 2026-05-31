@@ -12,8 +12,8 @@ class GeocodingCache(Base):
     country_code: Mapped[str | None] = mapped_column(sa.String(2))
     lang: Mapped[str | None] = mapped_column(sa.String(2))
     results: Mapped[dict] = mapped_column(sa.JSON, nullable=False)
-    created_at: Mapped[sa.datetime] = mapped_column(sa.TIMESTAMP, nullable=False, server_default=sa.func.now())
-    expires_at: Mapped[sa.datetime] = mapped_column(sa.TIMESTAMP, nullable=False)
+    created_at: Mapped[sa.datetime] = mapped_column(sa.TIMESTAMP(timezone=True), nullable=False, server_default=sa.func.now())
+    expires_at: Mapped[sa.datetime] = mapped_column(sa.TIMESTAMP(timezone=True), nullable=False)
 
     __table_args__ = (
         sa.Index("geocoding_cache_hash_idx", "query_hash"),

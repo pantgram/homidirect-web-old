@@ -1,5 +1,5 @@
 import { Home, EuroIcon, MapPin, ArrowRight } from "lucide-react";
-import Navigation from "@/components/Navigation";
+import { PageLayout } from "@/components/layout/PageLayout";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -15,15 +15,10 @@ import { useAuth } from "@/contexts/AuthContext";
 const ListPropertyInfo = () => {
   const navigate = useNavigate();
   const { t } = useLanguage();
-  const { user, isAuthenticated } = useAuth();
-
-  const isPropertyOwner =
-    user?.role === "LANDLORD" ||
-    user?.role === "BOTH" ||
-    user?.role === "ADMIN";
+  const { user, isAuthenticated, isLandlord } = useAuth();
 
   const handleGetStarted = () => {
-    if (!isAuthenticated || !isPropertyOwner) {
+    if (!isAuthenticated || !isLandlord) {
       navigate("/auth");
     } else {
       navigate("/list-property");
@@ -31,10 +26,8 @@ const ListPropertyInfo = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navigation />
-
-      <main className="container mx-auto px-4 py-12">
+    <PageLayout showFooter={false}>
+      <div className="container mx-auto px-4 py-12">
         {/* Header */}
         <div className="max-w-3xl mx-auto mb-12 text-center">
           <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
@@ -148,7 +141,7 @@ const ListPropertyInfo = () => {
               </p>
             </div>
           )}
-          {isAuthenticated && !isPropertyOwner && (
+          {isAuthenticated && !isLandlord && (
             <div className="bg-muted/50 rounded-lg p-6 mb-6">
               <p className="text-sm text-muted-foreground mb-4">
                 {t("listInfo.tenantAccount")}
@@ -156,15 +149,14 @@ const ListPropertyInfo = () => {
             </div>
           )}
           <Button size="lg" onClick={handleGetStarted} className="group">
-            {!isAuthenticated || !isPropertyOwner
+            {!isAuthenticated || !isLandlord
               ? t("listInfo.registerButton")
               : t("listInfo.startListing")}
             <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
           </Button>
         </div>
-      </main>
+      </div>
 
-      {/* Footer */}
       <footer className="bg-card border-t border-border mt-20">
         <div className="container mx-auto px-4 py-8">
           <p className="text-center text-muted-foreground text-sm">
@@ -172,7 +164,7 @@ const ListPropertyInfo = () => {
           </p>
         </div>
       </footer>
-    </div>
+    </PageLayout>
   );
 };
 
