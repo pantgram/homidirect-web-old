@@ -18,10 +18,10 @@ class FeaturedListingPurchase(Base):
     amount: Mapped[float] = mapped_column(sa.Float, nullable=False)
     currency: Mapped[str] = mapped_column(sa.String(3), nullable=False, server_default="EUR")
     status: Mapped[str] = mapped_column(featured_purchase_status_enum, nullable=False, server_default="PENDING")
-    starts_at: Mapped[sa.datetime] = mapped_column(sa.TIMESTAMP, nullable=False)
-    expires_at: Mapped[sa.datetime] = mapped_column(sa.TIMESTAMP, nullable=False)
+    starts_at: Mapped[sa.DateTime] = mapped_column(sa.TIMESTAMP, nullable=False)
+    expires_at: Mapped[sa.DateTime] = mapped_column(sa.TIMESTAMP, nullable=False)
     payment_reference: Mapped[str | None] = mapped_column(sa.String(255))
-    created_at: Mapped[sa.datetime] = mapped_column(sa.TIMESTAMP, nullable=False, server_default=sa.func.now())
+    created_at: Mapped[sa.DateTime] = mapped_column(sa.TIMESTAMP, nullable=False, server_default=sa.func.now())
 
     listing: Mapped["Listing"] = relationship("Listing", back_populates="featured_purchases")
     purchaser: Mapped["User"] = relationship("User")

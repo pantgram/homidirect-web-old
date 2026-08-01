@@ -29,11 +29,12 @@ class Settings(BaseSettings):
     max_document_size: int = 10 * 1024 * 1024
     max_images_per_listing: int = 10
     max_images_per_session: int = 10
-    allowed_mime_types: list[str] = ["image/jpeg", "image/png", "image/webp"]
+    allowed_mime_types: list[str] = ["image/jpeg", "image/png", "image/webp", "image/gif"]
     allowed_document_mime_types: list[str] = [
         "image/jpeg",
         "image/png",
         "image/webp",
+        "image/gif",
         "application/pdf",
     ]
     pending_image_expiry_hours: int = 24

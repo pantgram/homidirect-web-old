@@ -41,3 +41,5 @@ __pycache__/
 .cache/
 tmp/
 temp/
+
+.ruff_cache/

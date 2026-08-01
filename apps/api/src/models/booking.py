@@ -15,9 +15,9 @@ class Booking(Base):
 
     id: Mapped[int] = mapped_column(sa.Integer, primary_key=True, autoincrement=True)
     status: Mapped[str | None] = mapped_column(booking_status_enum, server_default="PENDING")
-    scheduled_at: Mapped[sa.datetime] = mapped_column(sa.TIMESTAMP, nullable=False)
+    scheduled_at: Mapped[sa.DateTime] = mapped_column(sa.TIMESTAMP, nullable=False)
     meet_link: Mapped[str | None] = mapped_column(sa.String(255))
-    created_at: Mapped[sa.datetime | None] = mapped_column(sa.TIMESTAMP, server_default=sa.func.now())
+    created_at: Mapped[sa.DateTime | None] = mapped_column(sa.TIMESTAMP, server_default=sa.func.now())
     candidate_id: Mapped[int] = mapped_column(sa.Integer, sa.ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     landlord_id: Mapped[int] = mapped_column(sa.Integer, sa.ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     listing_id: Mapped[int] = mapped_column(sa.Integer, sa.ForeignKey("listings.id", ondelete="CASCADE"), nullable=False)
