@@ -18,7 +18,7 @@ class VerificationDocument(Base):
     url: Mapped[str] = mapped_column(sa.String(500), nullable=False)
     file_name: Mapped[str] = mapped_column(sa.String(255), nullable=False)
     uploaded_by: Mapped[int] = mapped_column(sa.Integer, sa.ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
-    created_at: Mapped[sa.datetime] = mapped_column(sa.TIMESTAMP, nullable=False, server_default=sa.func.now())
+    created_at: Mapped[sa.DateTime] = mapped_column(sa.TIMESTAMP, nullable=False, server_default=sa.func.now())
 
     listing: Mapped["Listing"] = relationship("Listing", back_populates="verification_documents")
     uploader: Mapped["User"] = relationship("User")

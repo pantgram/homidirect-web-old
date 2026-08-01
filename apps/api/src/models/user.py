@@ -25,10 +25,10 @@ class User(Base):
     auth_provider: Mapped[str] = mapped_column(auth_provider_enum, nullable=False, server_default="EMAIL")
     email_verified: Mapped[bool] = mapped_column(sa.Boolean, nullable=False, server_default="false")
     password_reset_token: Mapped[str | None] = mapped_column(sa.String(255))
-    password_reset_expires: Mapped[sa.datetime | None] = mapped_column(sa.TIMESTAMP)
+    password_reset_expires: Mapped[sa.TIMESTAMP | None] = mapped_column(sa.TIMESTAMP)
     token_version: Mapped[int] = mapped_column(sa.Integer, nullable=False, server_default="0")
-    created_at: Mapped[sa.datetime] = mapped_column(sa.TIMESTAMP, nullable=False, server_default=sa.func.now())
-    updated_at: Mapped[sa.datetime] = mapped_column(sa.TIMESTAMP, nullable=False, server_default=sa.func.now(), onupdate=sa.func.now())
+    created_at: Mapped[sa.DateTime] = mapped_column(sa.TIMESTAMP, nullable=False, server_default=sa.func.now())
+    updated_at: Mapped[sa.DateTime] = mapped_column(sa.TIMESTAMP, nullable=False, server_default=sa.func.now(), onupdate=sa.func.now())
 
     listings: Mapped[list["Listing"]] = relationship("Listing", foreign_keys="[Listing.landlord_id]", back_populates="landlord")
     verified_listings: Mapped[list["Listing"]] = relationship("Listing", foreign_keys="[Listing.verified_by]", back_populates="verified_by_user")

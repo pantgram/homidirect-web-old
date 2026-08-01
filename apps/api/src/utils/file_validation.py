@@ -1,6 +1,6 @@
 import pathlib
 
-import magic
+import filetype
 
 from src.utils.errors import ValidationError
 
@@ -33,7 +33,13 @@ def validate_file(
     if ext not in allowed_extensions:
         raise ValidationError(f"File extension '{ext}' is not allowed")
 
-    detected_type = EXTENSION_MIME_OVERRIDES.get(ext) or magic.from_buffer(file_bytes, mime=True)
+    detected_type = EXTENSION_MIME_OVERRIDES.get(ext)
+    if not detected_type:
+        kind = filetype.guess(file_bytes)
+        detected_type = kind.mime if kind else None
+
+    if not detected_type:
+        raise ValidationError("File type could not be determined")
 
     if detected_type not in allowed_mime_types:
         raise ValidationError(f"File type '{detected_type}' is not allowed")

@@ -18,7 +18,7 @@ class VerificationHistory(Base):
     new_status: Mapped[str] = mapped_column(verification_status_enum, nullable=False)
     notes: Mapped[str | None] = mapped_column(sa.Text)
     reviewed_by: Mapped[int | None] = mapped_column(sa.Integer, sa.ForeignKey("users.id", ondelete="SET NULL"))
-    created_at: Mapped[sa.datetime] = mapped_column(sa.TIMESTAMP, nullable=False, server_default=sa.func.now())
+    created_at: Mapped[sa.DateTime] = mapped_column(sa.TIMESTAMP, nullable=False, server_default=sa.func.now())
 
     listing: Mapped["Listing"] = relationship("Listing", back_populates="verification_history_entries")
     reviewer: Mapped["User | None"] = relationship("User")
