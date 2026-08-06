@@ -1,5 +1,5 @@
-from pydantic_settings import BaseSettings
 from pydantic import computed_field
+from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
@@ -24,6 +24,9 @@ class Settings(BaseSettings):
     google_client_id: str = ""
     google_client_secret: str = ""
     google_callback_url: str = "http://localhost:5000/api/v1/auth/google/callback"
+
+    geoapify_api_key: str = ""
+    geoapify_request_timeout: float = 5.0
 
     max_file_size: int = 5 * 1024 * 1024
     max_document_size: int = 10 * 1024 * 1024
