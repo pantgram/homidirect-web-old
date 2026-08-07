@@ -1,7 +1,8 @@
 import * as React from "react";
-import { Check, ChevronsUpDown, Loader2, MapPin } from "lucide-react";
+import { Check, ChevronsUpDown, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Command,
   CommandEmpty,
@@ -46,112 +47,104 @@ export function LocationSearch({
   lang = "el",
 }: LocationSearchProps) {
   const [open, setOpen] = React.useState(false);
-  const { query, setQuery, results, isLoading } = useLocationSearch({
+  const [focused, setFocused] = React.useState(false);
+  const containerRef = React.useRef<HTMLDivElement>(null);
+  const { setQuery, results, isLoading } = useLocationSearch({
     countryCode,
     lang,
     debounceMs: 300,
-    minChars: 2,
+    minChars: 3,
   });
+
+  React.useEffect(() => {
+    setQuery(value);
+  }, [value, setQuery]);
 
   const handleSelect = (location: LocationResult) => {
     onValueChange(location.formatted);
     onLocationSelect?.(location);
     setOpen(false);
-    setQuery("");
+    setFocused(false);
   };
 
-  const handleOpenChange = (newOpen: boolean) => {
-    setOpen(newOpen);
-    if (!newOpen) {
-      setQuery("");
+  const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    if (containerRef.current?.contains(e.relatedTarget as Node)) {
+      return;
     }
+    setFocused(false);
   };
+
+  const showDropdown = focused && !disabled;
 
   return (
-    <Popover open={open} onOpenChange={handleOpenChange}>
-      <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          role="combobox"
-          aria-expanded={open}
-          disabled={disabled}
-          className={cn(
-            "w-full justify-between font-normal h-auto min-h-10",
-            !value && "text-muted-foreground",
-            error && "border-destructive",
-            className
-          )}
-        >
-          {value ? (
-            <span className="flex items-center text-left">
-              <MapPin className="mr-2 h-4 w-4 shrink-0 text-muted-foreground" />
-              <span className="truncate">{value}</span>
-            </span>
+    <div ref={containerRef} className={cn("relative", className)}>
+      <Input
+        type="text"
+        value={value}
+        onChange={(e) => onValueChange(e.target.value)}
+        onFocus={() => {
+          setFocused(true);
+          setOpen(true);
+        }}
+        onBlur={handleBlur}
+        placeholder={placeholder || searchPlaceholder}
+        disabled={disabled}
+        aria-expanded={open}
+        aria-autocomplete="list"
+        autoComplete="off"
+        className={cn("w-full font-normal", error && "border-destructive")}
+      />
+
+      {showDropdown && (
+        <div className="absolute z-50 mt-1 w-full rounded-md border bg-popover text-popover-foreground shadow-md">
+          {isLoading ? (
+            <div className="flex items-center justify-center py-6">
+              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+              <span className="text-sm text-muted-foreground">
+                {lang === "el" ? "Αναζήτηση..." : "Searching..."}
+              </span>
+            </div>
+          ) : results.length === 0 ? (
+            <div className="py-6 text-center text-sm text-muted-foreground">
+              {value.trim().length < 3
+                ? lang === "el"
+                  ? "Πληκτρολογήστε τουλάχιστον 3 χαρακτήρες για αναζήτηση..."
+                  : "Type at least 3 characters to search..."
+                : emptyMessage}
+            </div>
           ) : (
-            placeholder
+            <div className="max-h-60 overflow-auto p-1">
+              {results.map((location) => (
+                <div
+                  key={location.placeId}
+                  role="option"
+                  aria-selected={value === location.formatted}
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    handleSelect(location);
+                  }}
+                  className={cn(
+                    "relative flex w-full cursor-pointer select-none items-start rounded-sm py-3 pl-8 pr-2 text-sm outline-none hover:bg-accent hover:text-accent-foreground",
+                  )}
+                >
+                  <Check
+                    className={cn(
+                      "absolute left-2 top-3 h-4 w-4 shrink-0",
+                      value === location.formatted
+                        ? "opacity-100"
+                        : "opacity-0",
+                    )}
+                  />
+                  <span className="truncate font-medium">
+                    {location.formatted}
+                  </span>
+                </div>
+              ))}
+            </div>
           )}
-          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent
-        className="p-0"
-        align="start"
-        style={{ minWidth: "350px" }}
-      >
-        <Command shouldFilter={false}>
-          <CommandInput
-            placeholder={searchPlaceholder}
-            value={query}
-            onValueChange={setQuery}
-          />
-          <CommandList>
-            {isLoading ? (
-              <div className="flex items-center justify-center py-6">
-                <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                <span className="text-sm text-muted-foreground">
-                  {lang === "el" ? "Αναζήτηση..." : "Searching..."}
-                </span>
-              </div>
-            ) : results.length === 0 ? (
-              <CommandEmpty>
-                {query.length < 2
-                  ? lang === "el"
-                    ? "Πληκτρολογήστε για αναζήτηση..."
-                    : "Type to search..."
-                  : emptyMessage}
-              </CommandEmpty>
-            ) : (
-              <CommandGroup>
-                {results.map((location) => (
-                  <CommandItem
-                    key={location.placeId}
-                    value={location.placeId}
-                    onSelect={() => handleSelect(location)}
-                    className="flex flex-col items-start py-3"
-                  >
-                    <div className="flex items-center w-full">
-                      <Check
-                        className={cn(
-                          "mr-2 h-4 w-4 shrink-0",
-                          value === location.formatted
-                            ? "opacity-100"
-                            : "opacity-0"
-                        )}
-                      />
-                      <div className="flex flex-col flex-1 min-w-0">
-                        <span className="truncate font-medium">
-                          {location.formatted}
-                        </span>
-                      </div>
-                    </div>
-                  </CommandItem>
-                ))}
-              </CommandGroup>
-            )}
-          </CommandList>
-        </Command>
-      </PopoverContent>
-    </Popover>
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -207,7 +200,7 @@ export function CountrySearch({
             "w-full justify-between font-normal h-10",
             !value && "text-muted-foreground",
             error && "border-destructive",
-            className
+            className,
           )}
         >
           {value || placeholder}
@@ -238,7 +231,7 @@ export function CountrySearch({
                     <Check
                       className={cn(
                         "mr-2 h-4 w-4",
-                        value === country.name ? "opacity-100" : "opacity-0"
+                        value === country.name ? "opacity-100" : "opacity-0",
                       )}
                     />
                     {country.name}

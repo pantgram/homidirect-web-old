@@ -14,7 +14,7 @@ interface UseLocationSearchOptions {
 }
 
 export function useLocationSearch(options: UseLocationSearchOptions = {}) {
-  const { countryCode, debounceMs = 300, minChars = 2, lang = "el" } = options;
+  const { countryCode, debounceMs = 300, minChars = 3, lang = "el" } = options;
 
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<LocationResult[]>([]);
@@ -54,7 +54,7 @@ export function useLocationSearch(options: UseLocationSearchOptions = {}) {
         setIsLoading(false);
       }
     },
-    [countryCode, lang, minChars]
+    [countryCode, lang, minChars],
   );
 
   useEffect(() => {
@@ -113,7 +113,7 @@ export function useCountrySearch(lang: "en" | "el" = "en") {
 
   const filteredCountries = query
     ? countries.filter((c) =>
-        c.name.toLowerCase().includes(query.toLowerCase())
+        c.name.toLowerCase().includes(query.toLowerCase()),
       )
     : countries;
 

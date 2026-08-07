@@ -1,4 +1,5 @@
 import logging
+from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 
 from fastapi import FastAPI, Request
@@ -9,12 +10,19 @@ from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
 
+from src.config.database import engine
 from src.config.settings import settings
 from src.middleware.camel_case import CamelCaseMiddleware
 from src.schemas.common import HealthResponse
 from src.utils.errors import AppError
 
 logger = logging.getLogger("homidirect")
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    yield
+    await engine.dispose()
 
 
 async def _app_error_handler(request: Request, exc: AppError) -> JSONResponse:
@@ -46,7 +54,7 @@ async def _generic_error_handler(request: Request, exc: Exception) -> JSONRespon
 
 limiter = Limiter(key_func=get_remote_address)
 
-app = FastAPI(title="HomiDirect API", version="1.0.0")
+app = FastAPI(title="HomiDirect API", version="1.0.0", lifespan=lifespan)
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 app.add_exception_handler(RequestValidationError, _validation_error_handler)
