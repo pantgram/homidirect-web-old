@@ -56,6 +56,7 @@ export interface Listing {
   titleEn?: string;
   descriptionEl: string;
   descriptionEn?: string;
+  images?: ListingImage[];
 }
 
 export interface CreateListingRequest {
@@ -88,7 +89,7 @@ export interface CreateListingRequest {
   descriptionEn?: string;
 }
 
-export interface UpdateListingRequest extends Partial<CreateListingRequest> {}
+export type UpdateListingRequest = Partial<CreateListingRequest>;
 
 export interface ListingsQueryParams {
   city?: string;

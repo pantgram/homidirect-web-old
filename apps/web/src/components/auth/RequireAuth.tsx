@@ -3,7 +3,7 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage, type TranslationKey } from "@/contexts/LanguageContext";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "@/lib/toast";
 import { PageLoader } from "@/components/layout/PageLoader";
 
 interface RequireAuthProps {
@@ -20,7 +20,6 @@ export function RequireAuth({
   const { isAuthenticated, isLoading } = useAuth();
   const navigate = useNavigate();
   const { t } = useLanguage();
-  const { toast } = useToast();
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -33,7 +32,7 @@ export function RequireAuth({
       });
       navigate(redirectTo, { replace: true });
     }
-  }, [isAuthenticated, isLoading, navigate, redirectTo, toast, t, messageKey]);
+  }, [isAuthenticated, isLoading, navigate, redirectTo, t, messageKey]);
 
   if (isLoading) {
     return <PageLoader />;

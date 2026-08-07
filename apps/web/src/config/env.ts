@@ -1,9 +1,14 @@
+import { z } from "zod";
+
+const envSchema = z.object({
+  apiUrl: z.string().url().default("http://localhost:5000"),
+});
+
+const parsed = envSchema.parse({
+  apiUrl: import.meta.env.VITE_API_URL || undefined,
+});
+
 export const env = {
-  apiUrl: import.meta.env.VITE_API_URL || "http://localhost:3000",
-  socketUrl: import.meta.env.VITE_SOCKET_URL || "ws://localhost:3000",
+  apiUrl: parsed.apiUrl,
   isDev: import.meta.env.DEV,
 } as const;
-
-if (import.meta.env.DEV) {
-  console.log("🚀 Environment:", env.apiUrl);
-}

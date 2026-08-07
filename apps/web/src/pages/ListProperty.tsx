@@ -20,19 +20,18 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "@/lib/toast";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useAuth } from "@/contexts/AuthContext";
 import { ImageUpload } from "@/components/listing/ImageUpload";
 import { useCreateListing } from "@/hooks/useListings";
 import { LocationSearch } from "@/components/ui/location-search";
 import { LocationMap } from "@/components/ui/location-map";
 import { reverseGeocode } from "@/api/geocoding";
 import { PageLayout } from "@/components/layout/PageLayout";
-import { RequireAuth } from "@/components/auth/RequireAuth";
 import { PageHeader } from "@/components/shared";
 import type { PendingImage } from "@/api/listings";
 import type { PropertyType, CreateListingRequest } from "@/api";
+import { getApiError } from "@/api";
 import type { LocationResult } from "@/api/geocoding";
 
 interface ListingFormData {
@@ -68,10 +67,8 @@ const initialFormData: ListingFormData = {
 };
 
 const ListProperty = () => {
-  const { toast } = useToast();
   const navigate = useNavigate();
   const { t, language } = useLanguage();
-  const { user } = useAuth();
   const createListing = useCreateListing();
 
   const [formData, setFormData] = useState<ListingFormData>(initialFormData);
@@ -175,10 +172,10 @@ const ListProperty = () => {
         description: t("listForm.listedDesc"),
       });
       navigate(`/listings/${newListing.id}/verification`);
-    } catch (err: any) {
+    } catch (err) {
       toast({
         title: t("listForm.error"),
-        description: err.response?.data?.message || t("listForm.errorDesc"),
+        description: getApiError(err).message || t("listForm.errorDesc"),
         variant: "destructive",
       });
     }
@@ -186,7 +183,6 @@ const ListProperty = () => {
 
   return (
     <PageLayout>
-      <RequireAuth redirectTo="/list-property-info">
         <div className="container mx-auto px-4 py-12">
           <div className="max-w-3xl mx-auto">
             <PageHeader title={t("listForm.title")} subtitle={t("listForm.subtitle")} />
@@ -465,7 +461,6 @@ const ListProperty = () => {
             </CardContent>
           </Card>
         </div>
-      </RequireAuth>
     </PageLayout>
   );
 };

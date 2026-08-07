@@ -13,17 +13,17 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "@/lib/toast";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
+import { getApiError } from "@/api";
 import { env } from "@/config/env";
 
 const Auth = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { toast } = useToast();
   const { t } = useLanguage();
-  const { login, register, isLoading: authLoading } = useAuth();
+  const { login, register } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
@@ -45,7 +45,7 @@ const Auth = () => {
       });
       navigate("/auth", { replace: true });
     }
-  }, [location.search, toast, t, navigate]);
+  }, [location.search, t, navigate]);
 
   const handleGoogleSignIn = () => {
     window.location.href = `${env.apiUrl}/api/v1/auth/google`;
@@ -76,12 +76,8 @@ const Auth = () => {
       } else {
         navigate("/");
       }
-    } catch (error: any) {
-      console.error("Login error:", error);
-      const errorMessage =
-        error.response?.data?.message ||
-        t("auth.loginFailed") ||
-        "Login failed";
+    } catch (error) {
+      const errorMessage = getApiError(error).message || t("auth.loginFailed");
       toast({
         title: t("auth.error") || "Error",
         description: errorMessage,
@@ -165,13 +161,10 @@ const Auth = () => {
       } else {
         navigate("/");
       }
-    } catch (error: any) {
+    } catch (error) {
       toast({
         title: t("auth.error") || "Error",
-        description:
-          error.response?.data?.message ||
-          t("auth.signupFailed") ||
-          "Registration failed",
+        description: getApiError(error).message || t("auth.signupFailed"),
         variant: "destructive",
       });
     } finally {

@@ -8,7 +8,7 @@ import type {
   SearchListingsParams,
   ListingSearchResult,
   PaginatedResponse,
-} from "./types";
+} from "@/types";
 
 export interface PendingImage {
   id: number;

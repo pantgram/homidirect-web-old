@@ -18,7 +18,7 @@ import type {
   SearchListingsParams,
   ListingSearchResult,
   PropertyType,
-} from "@/api/types";
+} from "@/types";
 import { getLocalizedTitle } from "@/types/listing";
 import { PageLayout } from "@/components/layout/PageLayout";
 import { Pagination, ErrorState, InlineSpinner } from "@/components/shared";
@@ -104,7 +104,6 @@ const SearchResults = () => {
         });
       } catch (err) {
         setError(t("search.errorLoading"));
-        console.error("Failed to fetch listings:", err);
       } finally {
         setLoading(false);
       }

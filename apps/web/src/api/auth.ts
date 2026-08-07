@@ -11,7 +11,7 @@ import type {
   ForgotPasswordResponse,
   ResetPasswordRequest,
   ResetPasswordResponse,
-} from "./types";
+} from "@/types";
 
 export const authApi = {
   async login(data: LoginRequest): Promise<LoginResponse> {

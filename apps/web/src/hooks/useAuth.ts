@@ -1,6 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { authApi, type LoginRequest, type RegisterRequest, type User } from "@/api";
-import { getApiError } from "@/api/client";
+import { authApi, type LoginRequest, type RegisterRequest } from "@/api";
 
 export const authKeys = {
   all: ["auth"] as const,
@@ -10,14 +9,7 @@ export const authKeys = {
 export function useCurrentUser() {
   return useQuery({
     queryKey: authKeys.user(),
-    queryFn: async () => {
-      try {
-        return await authApi.getMe();
-      } catch (error) {
-        console.error("Failed to fetch current user:", error);
-        throw error;
-      }
-    },
+    queryFn: () => authApi.getMe(),
     enabled: authApi.isAuthenticated(),
     retry: false,
     staleTime: 5 * 60 * 1000, // 5 minutes
@@ -32,10 +24,6 @@ export function useLogin() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: authKeys.user() });
     },
-    onError: (error) => {
-      console.error("Login mutation error:", error);
-      return getApiError(error);
-    },
   });
 }
 
@@ -46,9 +34,6 @@ export function useRegister() {
     mutationFn: (data: RegisterRequest) => authApi.register(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: authKeys.user() });
-    },
-    onError: (error) => {
-      return getApiError(error);
     },
   });
 }

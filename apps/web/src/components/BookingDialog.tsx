@@ -2,11 +2,10 @@ import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "@/lib/toast";
 import { bookingsApi } from "@/api/bookings";
 import { availabilitySlotsApi } from "@/api/availability-slots";
-import type { AvailabilitySlot } from "@/api/types";
+import type { AvailabilitySlot } from "@/types";
 import { Calendar as CalendarIcon, Clock, Loader2 } from "lucide-react";
 import { addDays, format, isBefore } from "date-fns";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -26,7 +25,6 @@ const BookingDialog = ({
   listingTitle,
   onSuccess,
 }: BookingDialogProps) => {
-  const { toast } = useToast();
   const { t, language } = useLanguage();
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [selectedSlot, setSelectedSlot] = useState<AvailabilitySlot | null>(null);
@@ -43,7 +41,6 @@ const BookingDialog = ({
         const slots = await availabilitySlotsApi.getAvailableSlotsByListingId(listingId);
         setAvailableSlots(slots);
       } catch (err) {
-        console.error("Failed to fetch availability slots:", err);
         toast({
           title: t("bookingDialog.failedLoadSlots"),
           variant: "destructive",
@@ -54,7 +51,7 @@ const BookingDialog = ({
     };
 
     fetchSlots();
-  }, [listingId, toast]);
+  }, [listingId, t]);
 
   const handleSubmit = async () => {
     if (!selectedSlot) {
@@ -80,7 +77,6 @@ const BookingDialog = ({
       onOpenChange(false);
       onSuccess?.();
     } catch (err) {
-      console.error("Failed to create booking:", err);
       toast({
         title: t("bookingDialog.failed"),
         variant: "destructive",

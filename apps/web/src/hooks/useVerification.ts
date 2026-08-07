@@ -4,7 +4,6 @@ import {
   type DocumentType,
   type VerificationStatusResponse,
   type VerificationDocument,
-  type PendingVerificationListing,
 } from "@/api";
 
 export const verificationKeys = {
@@ -30,13 +29,6 @@ export function useVerificationDocuments(listingId: number) {
     queryKey: verificationKeys.documents(listingId),
     queryFn: () => verificationApi.getDocuments(listingId),
     enabled: !!listingId,
-  });
-}
-
-export function usePendingVerifications() {
-  return useQuery<PendingVerificationListing[]>({
-    queryKey: verificationKeys.pending(),
-    queryFn: () => verificationApi.getPendingVerifications(),
   });
 }
 
@@ -74,30 +66,6 @@ export function useDeleteVerificationDocument(listingId: number) {
       });
       queryClient.invalidateQueries({
         queryKey: verificationKeys.documents(listingId),
-      });
-    },
-  });
-}
-
-export function useReviewVerification() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: ({
-      listingId,
-      status,
-      notes,
-    }: {
-      listingId: number;
-      status: "APPROVED" | "REJECTED";
-      notes?: string;
-    }) => verificationApi.reviewVerification(listingId, status, notes),
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({
-        queryKey: verificationKeys.status(variables.listingId),
-      });
-      queryClient.invalidateQueries({
-        queryKey: verificationKeys.pending(),
       });
     },
   });

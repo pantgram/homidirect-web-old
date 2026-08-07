@@ -1,7 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   listingsApi,
-  type Listing,
   type UpdateListingRequest,
   type ListingsQueryParams,
   type CreateListingWithSessionRequest,
@@ -57,18 +56,6 @@ export function useUpdateListing() {
         listingKeys.detail(updatedListing.id),
         updatedListing
       );
-    },
-  });
-}
-
-export function useDeleteListing() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (id: number) => listingsApi.delete(id),
-    onSuccess: (_, id) => {
-      queryClient.invalidateQueries({ queryKey: listingKeys.lists() });
-      queryClient.removeQueries({ queryKey: listingKeys.detail(id) });
     },
   });
 }

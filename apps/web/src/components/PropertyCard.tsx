@@ -1,9 +1,8 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   MapPin,
   Bed,
-  EuroIcon,
   Bath,
   Square,
   Heart,
@@ -13,9 +12,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "@/lib/toast";
 import { favoritesApi } from "@/api/favorites";
-import type { PropertyType } from "@/api/types";
+import type { PropertyType } from "@/types";
 
 interface PropertyCardProps {
   id?: number;
@@ -58,7 +57,6 @@ const PropertyCard = ({
     return labels[type] || type;
   };
   const { isAuthenticated } = useAuth();
-  const { toast } = useToast();
   const navigate = useNavigate();
 
   const [isFavorite, setIsFavorite] = useState(initialIsFavorite);
@@ -91,7 +89,6 @@ const PropertyCard = ({
         title: newFavoriteState ? t("favorites.added") : t("favorites.removed"),
       });
     } catch (err) {
-      console.error("Failed to toggle favorite:", err);
       toast({
         title: t("favorites.removeFailed"),
         variant: "destructive",
@@ -162,7 +159,7 @@ const PropertyCard = ({
               </div>
             </div>
             <div className="text-right">
-              <div className="text-2x1 font-bold text-primary whitespace-nowrap">{price} €</div>
+              <div className="text-2xl font-bold text-primary whitespace-nowrap">{price} €</div>
               <div className="text-xs text-muted-foreground">
                 {t("propertyCard.perMonth")}
               </div>

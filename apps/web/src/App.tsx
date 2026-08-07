@@ -1,12 +1,13 @@
-import { lazy, Suspense } from "react";
-import { Toaster } from "@/components/ui/toaster";
+import { lazy, Suspense, useEffect } from "react";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { PageLoader } from "@/components/layout/PageLoader";
+import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
+import { setAuthExpiredHandler } from "@/api/client";
 
 const Index = lazy(() => import("./pages/Index"));
 const SearchResults = lazy(() => import("./pages/SearchResults"));
@@ -31,7 +32,16 @@ const BookingDetail = lazy(() => import("./pages/BookingDetail"));
 const ListingBookings = lazy(() => import("./pages/ListingBookings"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 60 * 1000, // 1 minute
+      gcTime: 5 * 60 * 1000, // 5 minutes
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 const withSuspense = (Component: React.LazyExoticComponent<() => JSX.Element | null>) => (
   <Suspense fallback={<PageLoader />}>
@@ -39,21 +49,41 @@ const withSuspense = (Component: React.LazyExoticComponent<() => JSX.Element | n
   </Suspense>
 );
 
+function AuthExpiredListener() {
+  const navigate = useNavigate();
+  useEffect(() => {
+    setAuthExpiredHandler(() => navigate("/auth", { replace: true }));
+  }, [navigate]);
+  return null;
+}
+
+const protectedElement = (
+  Component: React.LazyExoticComponent<() => JSX.Element | null>,
+  opts: { requireLandlord?: boolean; authRedirectTo?: string } = {},
+) => (
+  <ProtectedRoute
+    requireLandlord={opts.requireLandlord}
+    authRedirectTo={opts.authRedirectTo}
+  >
+    {withSuspense(Component)}
+  </ProtectedRoute>
+);
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
       <LanguageProvider>
         <TooltipProvider>
-          <Toaster />
           <Sonner />
           <BrowserRouter>
+            <AuthExpiredListener />
             <Routes>
               <Route path="/" element={withSuspense(Index)} />
               <Route path="/search" element={withSuspense(SearchResults)} />
               <Route path="/list-property-info" element={withSuspense(ListPropertyInfo)} />
-              <Route path="/list-property" element={withSuspense(ListProperty)} />
+              <Route path="/list-property" element={protectedElement(ListProperty, { requireLandlord: true, authRedirectTo: "/list-property-info" })} />
               <Route path="/listings/:id" element={withSuspense(ListingDetail)} />
-              <Route path="/listings/:listingId/verification" element={withSuspense(ListingVerification)} />
+              <Route path="/listings/:listingId/verification" element={protectedElement(ListingVerification, { requireLandlord: true })} />
               <Route path="/how-it-works" element={withSuspense(HowItWorks)} />
               <Route path="/auth" element={withSuspense(Auth)} />
               <Route path="/auth/callback" element={withSuspense(OAuthCallback)} />
@@ -62,13 +92,13 @@ const App = () => (
               <Route path="/privacy-policy" element={withSuspense(PrivacyPolicy)} />
               <Route path="/terms-of-service" element={withSuspense(TermsOfService)} />
               <Route path="/contact" element={withSuspense(Contact)} />
-              <Route path="/my-listings" element={withSuspense(MyListings)} />
-              <Route path="/listings/:id/edit" element={withSuspense(EditListing)} />
-              <Route path="/profile" element={withSuspense(MyProfile)} />
-              <Route path="/my-favorites" element={withSuspense(Favorites)} />
-              <Route path="/bookings" element={withSuspense(Bookings)} />
-              <Route path="/bookings/:id" element={withSuspense(BookingDetail)} />
-              <Route path="/listings/:id/bookings" element={withSuspense(ListingBookings)} />
+              <Route path="/my-listings" element={protectedElement(MyListings, { requireLandlord: true })} />
+              <Route path="/listings/:id/edit" element={protectedElement(EditListing, { requireLandlord: true })} />
+              <Route path="/profile" element={protectedElement(MyProfile)} />
+              <Route path="/my-favorites" element={protectedElement(Favorites)} />
+              <Route path="/bookings" element={protectedElement(Bookings)} />
+              <Route path="/bookings/:id" element={protectedElement(BookingDetail)} />
+              <Route path="/listings/:id/bookings" element={protectedElement(ListingBookings, { requireLandlord: true })} />
               <Route path="*" element={withSuspense(NotFound)} />
             </Routes>
           </BrowserRouter>

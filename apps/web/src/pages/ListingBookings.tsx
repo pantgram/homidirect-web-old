@@ -4,7 +4,6 @@ import {
   Calendar,
   Clock,
   MapPin,
-  Home,
   User,
   Video,
   CheckCircle,
@@ -23,12 +22,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useAuth } from "@/contexts/AuthContext";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "@/lib/toast";
 import { bookingsApi } from "@/api/bookings";
 import { listingsApi } from "@/api/listings";
 import { availabilitySlotsApi } from "@/api/availability-slots";
-import type { Booking, AvailabilitySlot } from "@/api/types";
+import type { Booking, AvailabilitySlot, Listing } from "@/types";
 import { getLocalizedTitle } from "@/types/listing";
 import placeholderImage from "@/assets/property-1.jpg";
 
@@ -36,14 +34,12 @@ const ListingBookings = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { t, language, locale } = useLanguage();
-  const { isAuthenticated, user } = useAuth();
-  const { toast } = useToast();
 
-  const [listing, setListing] = useState<any>(null);
+  const [listing, setListing] = useState<Listing | null>(null);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [availabilitySlots, setAvailabilitySlots] = useState<AvailabilitySlot[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"bookings" | "slots">("bookings");
   const [updating, setUpdating] = useState<number | null>(null);
   const [showSlotForm, setShowSlotForm] = useState(false);
@@ -53,8 +49,8 @@ const ListingBookings = () => {
     try {
       const slotsData = await availabilitySlotsApi.getByListingId(parseInt(id));
       setAvailabilitySlots(slotsData);
-    } catch (err) {
-      console.error("Failed to fetch slots:", err);
+    } catch {
+      // ignore — slots will show as empty
     }
   };
 
@@ -75,7 +71,6 @@ const ListingBookings = () => {
         const slotsData = await availabilitySlotsApi.getByListingId(parseInt(id));
         setAvailabilitySlots(slotsData);
       } catch (err) {
-        console.error("Failed to fetch data:", err);
         setError(t("listingBookings.errorLoading"));
       } finally {
         setLoading(false);
@@ -83,7 +78,7 @@ const ListingBookings = () => {
     };
 
     fetchData();
-  }, [id]);
+  }, [id, t]);
 
   const handleUpdateStatus = async (bookingId: number, status: "CONFIRMED" | "DECLINED") => {
     setUpdating(bookingId);
@@ -94,7 +89,6 @@ const ListingBookings = () => {
         title: status === "CONFIRMED" ? t("listingBookings.bookingConfirmed") : t("listingBookings.bookingDeclined"),
       });
     } catch (err) {
-      console.error("Failed to update booking:", err);
       toast({
         title: t("listingBookings.updateFailed"),
         variant: "destructive",
@@ -116,7 +110,6 @@ const ListingBookings = () => {
         title: t("listingBookings.bookingCancelled"),
       });
     } catch (err) {
-      console.error("Failed to cancel booking:", err);
       toast({
         title: t("listingBookings.cancelFailed"),
         variant: "destructive",
@@ -136,7 +129,6 @@ const ListingBookings = () => {
         title: t("listingBookings.slotDeleted"),
       });
     } catch (err) {
-      console.error("Failed to delete slot:", err);
       toast({
         title: t("listingBookings.deleteSlotFailed"),
         variant: "destructive",

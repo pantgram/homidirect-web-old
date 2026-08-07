@@ -2,14 +2,11 @@ import { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import {
   Calendar,
-  Clock,
   MapPin,
   Home,
-  User,
   Video,
   CheckCircle,
   XCircle,
-  AlertCircle,
   Trash2,
 } from "lucide-react";
 import { PageLayout } from "@/components/layout/PageLayout";
@@ -22,10 +19,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "@/lib/toast";
 import { bookingsApi } from "@/api/bookings";
 import { listingsApi } from "@/api/listings";
-import type { Booking, Listing, ListingImage } from "@/api/types";
+import type { Booking, Listing, ListingImage } from "@/types";
 import { getLocalizedTitle } from "@/types/listing";
 import placeholderImage from "@/assets/property-1.jpg";
 
@@ -37,8 +34,7 @@ const BookingDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { t, language, locale } = useLanguage();
-  const { isAuthenticated, user } = useAuth();
-  const { toast } = useToast();
+  const { user } = useAuth();
 
   const [booking, setBooking] = useState<Booking | null>(null);
   const [listing, setListing] = useState<ListingWithImages | null>(null);

@@ -3,8 +3,6 @@ import { useNavigate, useParams } from "react-router-dom";
 import { Loader2, Upload, X, ImageIcon } from "lucide-react";
 import { PageLayout } from "@/components/layout/PageLayout";
 import { InlineSpinner, BackButton } from "@/components/shared";
-import { RequireAuth } from "@/components/auth/RequireAuth";
-import { RequireLandlord } from "@/components/auth/RequireRole";
 import AvailabilitySlotsManager from "@/components/AvailabilitySlotsManager";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,7 +22,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "@/lib/toast";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import {
@@ -39,7 +37,8 @@ import { LocationMap } from "@/components/ui/location-map";
 import { reverseGeocode } from "@/api/geocoding";
 import { getImageUrl } from "@/utils/image";
 import { cn } from "@/lib/utils";
-import type { PropertyType, UpdateListingRequest, ListingImage } from "@/api";
+import type { PropertyType, UpdateListingRequest } from "@/api";
+import { getApiError } from "@/api";
 import type { LocationResult } from "@/api/geocoding";
 
 interface ListingFormData {
@@ -67,7 +66,6 @@ const EditListing = () => {
   const { id } = useParams<{ id: string }>();
   const listingId = id ? parseInt(id, 10) : 0;
 
-  const { toast } = useToast();
   const navigate = useNavigate();
   const { t, language } = useLanguage();
   const { user, isLoading: isAuthLoading } = useAuth();
@@ -136,7 +134,7 @@ const EditListing = () => {
       });
       navigate("/my-listings");
     }
-  }, [isListingLoading, listing, canEdit, navigate, toast, t]);
+  }, [isListingLoading, listing, canEdit, navigate, t]);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
@@ -229,16 +227,16 @@ const EditListing = () => {
         description: t("editListing.updatedDesc"),
       });
       navigate("/my-listings");
-    } catch (err: any) {
+    } catch (err) {
       toast({
         title: t("editListing.error"),
-        description: err.response?.data?.message || t("editListing.errorDesc"),
+        description: getApiError(err).message || t("editListing.errorDesc"),
         variant: "destructive",
       });
     }
   };
 
-  const validateFile = (file: File): string | null => {
+  const validateFile = useCallback((file: File): string | null => {
     if (!ALLOWED_TYPES.includes(file.type)) {
       return t("imageUpload.invalidType");
     }
@@ -246,9 +244,9 @@ const EditListing = () => {
       return t("imageUpload.fileTooLarge");
     }
     return null;
-  };
+  }, [t]);
 
-  const uploadFileToListing = async (file: File): Promise<boolean> => {
+  const uploadFileToListing = useCallback(async (file: File): Promise<boolean> => {
     const error = validateFile(file);
     if (error) {
       toast({
@@ -262,18 +260,17 @@ const EditListing = () => {
     try {
       await uploadImage.mutateAsync({ listingId, file });
       return true;
-    } catch (err: any) {
+    } catch (err) {
       toast({
         title: t("imageUpload.uploadError"),
-        description:
-          err.response?.data?.message || t("imageUpload.uploadFailed"),
+        description: getApiError(err).message || t("imageUpload.uploadFailed"),
         variant: "destructive",
       });
       return false;
     }
-  };
+  }, [validateFile, t, uploadImage, listingId]);
 
-  const handleFiles = async (files: FileList | File[]) => {
+  const handleFiles = useCallback(async (files: FileList | File[]) => {
     const fileArray = Array.from(files);
     const remainingSlots = MAX_IMAGES - images.length;
 
@@ -296,7 +293,7 @@ const EditListing = () => {
     }
 
     setUploadingCount(0);
-  };
+  }, [images, t, uploadFileToListing]);
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -340,11 +337,10 @@ const EditListing = () => {
         title: t("imageUpload.imageRemoved"),
         description: t("imageUpload.imageRemovedDesc"),
       });
-    } catch (err: any) {
+    } catch (err) {
       toast({
         title: t("imageUpload.removeError"),
-        description:
-          err.response?.data?.message || t("imageUpload.removeFailed"),
+        description: getApiError(err).message || t("imageUpload.removeFailed"),
         variant: "destructive",
       });
     }
@@ -366,8 +362,6 @@ const EditListing = () => {
 
   return (
     <PageLayout>
-      <RequireAuth>
-        <RequireLandlord>
           <div className="container mx-auto px-4 py-12">
             <div className="max-w-3xl mx-auto mb-8">
               <BackButton to="/my-listings" label={t("editListing.backToListings")} />
@@ -782,8 +776,6 @@ const EditListing = () => {
               </div>
             )}
           </div>
-        </RequireLandlord>
-      </RequireAuth>
     </PageLayout>
   );
 };

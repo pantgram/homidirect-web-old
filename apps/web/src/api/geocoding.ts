@@ -53,7 +53,6 @@ export async function searchLocations(
 
     return response.data.results || [];
   } catch (error) {
-    console.error("Error fetching locations:", error);
     return [];
   }
 }
@@ -76,7 +75,6 @@ export async function reverseGeocode(
 
     return response.data.result;
   } catch (error) {
-    console.error("Error reverse geocoding:", error);
     return null;
   }
 }

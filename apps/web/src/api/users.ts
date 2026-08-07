@@ -1,5 +1,5 @@
 import { apiClient } from "./client";
-import type { User, UpdateUserRequest } from "./types";
+import type { User, UpdateUserRequest } from "@/types";
 
 export type { UpdateUserRequest };
 

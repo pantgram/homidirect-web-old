@@ -37,6 +37,23 @@ export const tokenStorage = {
   },
 };
 
+type AuthExpiredHandler = () => void;
+
+let authExpiredHandler: AuthExpiredHandler | null = null;
+
+export function setAuthExpiredHandler(handler: AuthExpiredHandler): void {
+  authExpiredHandler = handler;
+}
+
+function handleAuthExpired(): void {
+  tokenStorage.clearTokens();
+  if (authExpiredHandler) {
+    authExpiredHandler();
+  } else {
+    window.location.assign("/auth");
+  }
+}
+
 apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     const token = tokenStorage.getToken();
@@ -100,25 +117,23 @@ apiClient.interceptors.response.use(
 
       const refreshToken = tokenStorage.getRefreshToken();
       if (!refreshToken) {
-        tokenStorage.clearTokens();
-        window.location.href = "/auth";
+        handleAuthExpired();
         return Promise.reject(error);
       }
 
       try {
         const response = await axios.post(`${env.apiUrl}/api/v1/auth/refresh`, {
-          refresh_token: refreshToken,
+          refreshToken,
         });
         const { tokens } = response.data;
-        tokenStorage.setToken(tokens.access_token);
-        tokenStorage.setRefreshToken(tokens.refresh_token);
-        processQueue(null, tokens.access_token);
-        originalRequest.headers.Authorization = `Bearer ${tokens.access_token}`;
+        tokenStorage.setToken(tokens.accessToken);
+        tokenStorage.setRefreshToken(tokens.refreshToken);
+        processQueue(null, tokens.accessToken);
+        originalRequest.headers.Authorization = `Bearer ${tokens.accessToken}`;
         return apiClient(originalRequest);
       } catch (refreshError) {
         processQueue(refreshError, null);
-        tokenStorage.clearTokens();
-        window.location.href = "/auth";
+        handleAuthExpired();
         return Promise.reject(refreshError);
       } finally {
         isRefreshing = false;

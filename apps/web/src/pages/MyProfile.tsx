@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import {
   Loader2,
   User,
@@ -9,7 +9,6 @@ import {
   Home,
   Key,
   Pencil,
-  ArrowRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,21 +23,19 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { PageLayout } from "@/components/layout/PageLayout";
-import { RequireAuth } from "@/components/auth/RequireAuth";
 import { PageHeader, ConfirmDialog } from "@/components/shared";
 import { formatDate } from "@/utils/format";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "@/lib/toast";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { usersApi } from "@/api/users";
 import { getApiError } from "@/api/client";
-import type { UserRole } from "@/api/types";
+import type { UserRole } from "@/types";
 
 const MyProfile = () => {
-  const { t, language, locale } = useLanguage();
+  const { t, locale } = useLanguage();
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-  const { toast } = useToast();
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -122,7 +119,6 @@ const MyProfile = () => {
           variant: "destructive",
         });
       }
-      console.error("Failed to update profile:", err);
     } finally {
       setIsSaving(false);
     }
@@ -144,7 +140,6 @@ const MyProfile = () => {
         title: t("profile.deleteError"),
         variant: "destructive",
       });
-      console.error("Failed to delete account:", err);
     } finally {
       setIsDeleting(false);
       setDeleteDialogOpen(false);
@@ -159,8 +154,7 @@ const MyProfile = () => {
       getSelectedRole() !== user.role);
 
   return (
-    <RequireAuth>
-      <PageLayout>
+    <PageLayout>
         <div className="container mx-auto px-4 py-8 max-w-3xl">
           <PageHeader title={t("profile.title")} subtitle={t("profile.subtitle")} />
 
@@ -359,7 +353,6 @@ const MyProfile = () => {
           isLoading={isDeleting}
         />
       </PageLayout>
-    </RequireAuth>
   );
 };
 

@@ -5,13 +5,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "@/lib/toast";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { authApi } from "@/api/auth";
+import { getApiError } from "@/api";
 import { ArrowLeft, CheckCircle } from "lucide-react";
 
 const ResetPassword = () => {
-  const { toast } = useToast();
   const { t } = useLanguage();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -63,10 +63,10 @@ const ResetPassword = () => {
         title: t("auth.passwordResetSuccess"),
         description: t("auth.passwordResetSuccessDesc"),
       });
-    } catch (error: any) {
+    } catch (error) {
       toast({
         title: t("auth.error") || "Error",
-        description: error.response?.data?.message || t("auth.resetFailed") || "Failed to reset password",
+        description: getApiError(error).message || t("auth.resetFailed"),
         variant: "destructive",
       });
     } finally {

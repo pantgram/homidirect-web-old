@@ -2,29 +2,25 @@ import { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { CalendarClock, Clock, MapPin, Home, Trash2, Video } from "lucide-react";
 import { PageLayout } from "@/components/layout/PageLayout";
-import { RequireAuth } from "@/components/auth/RequireAuth";
 import { InlineSpinner, BookingStatusBadge } from "@/components/shared";
 import { formatDateTime } from "@/utils/format";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useAuth } from "@/contexts/AuthContext";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "@/lib/toast";
 import { bookingsApi } from "@/api/bookings";
 import { listingsApi } from "@/api/listings";
-import type { Booking } from "@/api/types";
+import type { Booking, Listing } from "@/types";
 import { getLocalizedTitle } from "@/types/listing";
 import placeholderImage from "@/assets/property-1.jpg";
 
 const Bookings = () => {
   const { t, language, locale } = useLanguage();
-  const { isAuthenticated, isLoading: isAuthLoading, user } = useAuth();
-  const { toast } = useToast();
 
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [listings, setListings] = useState<Record<number, any>>({});
+  const [listings, setListings] = useState<Record<number, Listing>>({});
 
   const fetchBookings = useCallback(async () => {
     setLoading(true);
@@ -35,15 +31,15 @@ const Bookings = () => {
       setBookings(allBookings);
 
       const listingIds = [...new Set(allBookings.map((b) => b.listingId))];
-      const listingsData: Record<number, any> = {};
+      const listingsData: Record<number, Listing> = {};
 
       await Promise.all(
         listingIds.map(async (id) => {
           try {
             const listing = await listingsApi.getById(id);
             listingsData[id] = listing;
-          } catch (err) {
-            console.error(`Failed to fetch listing ${id}:`, err);
+          } catch {
+            // skip listings that fail to load
           }
         }),
       );
@@ -51,11 +47,10 @@ const Bookings = () => {
       setListings(listingsData);
     } catch (err) {
       setError(t("bookings.errorLoading"));
-      console.error("Failed to fetch bookings:", err);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     fetchBookings();
@@ -73,7 +68,6 @@ const Bookings = () => {
         title: t("bookings.cancelled"),
       });
     } catch (err) {
-      console.error("Failed to cancel booking:", err);
       toast({
         title: t("bookings.cancelFailed"),
         variant: "destructive",
@@ -216,10 +210,6 @@ const Bookings = () => {
   );
 };
 
-const BookingsPage = () => (
-  <RequireAuth>
-    <Bookings />
-  </RequireAuth>
-);
+const BookingsPage = () => <Bookings />;
 
 export default BookingsPage;

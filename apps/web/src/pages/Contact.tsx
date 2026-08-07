@@ -3,29 +3,41 @@ import { BackButton } from "@/components/shared/BackButton";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Mail, Phone, MapPin } from "lucide-react";
-import { useState } from "react";
-import { useToast } from "@/hooks/use-toast";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Mail } from "lucide-react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { contactSchema, type ContactFormValues } from "@/lib/validation";
+import { toast } from "@/lib/toast";
+
+const CONTACT_EMAIL = "support@homidirect.com";
 
 const Contact = () => {
   const { t } = useLanguage();
-  const { toast } = useToast();
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    subject: "",
-    message: "",
+  const form = useForm<ContactFormValues>({
+    resolver: zodResolver(contactSchema),
+    defaultValues: { name: "", email: "", subject: "", message: "" },
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const onSubmit = (values: ContactFormValues) => {
+    const subject = encodeURIComponent(values.subject || t("contact.subject"));
+    const body = encodeURIComponent(
+      `${values.message}\n\n— ${values.name} (${values.email})`,
+    );
+    window.location.href = `mailto:${CONTACT_EMAIL}?subject=${subject}&body=${body}`;
     toast({
       title: t("contact.messageSent"),
       description: t("contact.messageSentDesc"),
     });
-    setFormData({ name: "", email: "", subject: "", message: "" });
+    form.reset();
   };
 
   return (
@@ -45,31 +57,12 @@ const Contact = () => {
                 </div>
                 <div>
                   <h3 className="font-semibold text-foreground mb-1">{t("contact.email")}</h3>
-                  <p className="text-muted-foreground">support@homidirect.com</p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
-                  <Phone className="h-5 w-5 text-primary" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-foreground mb-1">{t("contact.phone")}</h3>
-                  <p className="text-muted-foreground">+1 (555) 123-4567</p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
-                  <MapPin className="h-5 w-5 text-primary" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-foreground mb-1">{t("contact.address")}</h3>
-                  <p className="text-muted-foreground">
-                    123 Main Street<br />
-                    New York, NY 10001<br />
-                    United States
-                  </p>
+                  <a
+                    href={`mailto:${CONTACT_EMAIL}`}
+                    className="text-muted-foreground hover:text-primary hover:underline"
+                  >
+                    {CONTACT_EMAIL}
+                  </a>
                 </div>
               </div>
             </div>
@@ -78,57 +71,69 @@ const Contact = () => {
           <div className="bg-card border border-border rounded-xl p-8">
             <h2 className="text-2xl font-bold text-foreground mb-6">{t("contact.formTitle")}</h2>
 
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div>
-                <Label htmlFor="name">{t("contact.name")}</Label>
-                <Input
-                  id="name"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder={t("contact.namePlaceholder")}
-                  required
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t("contact.name")}</FormLabel>
+                      <FormControl>
+                        <Input placeholder={t("contact.namePlaceholder")} {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-              </div>
 
-              <div>
-                <Label htmlFor="email">{t("contact.emailLabel")}</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  placeholder={t("contact.emailPlaceholder")}
-                  required
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t("contact.emailLabel")}</FormLabel>
+                      <FormControl>
+                        <Input type="email" placeholder={t("contact.emailPlaceholder")} {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-              </div>
 
-              <div>
-                <Label htmlFor="subject">{t("contact.subject")}</Label>
-                <Input
-                  id="subject"
-                  value={formData.subject}
-                  onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-                  placeholder={t("contact.subjectPlaceholder")}
-                  required
+                <FormField
+                  control={form.control}
+                  name="subject"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t("contact.subject")}</FormLabel>
+                      <FormControl>
+                        <Input placeholder={t("contact.subjectPlaceholder")} {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-              </div>
 
-              <div>
-                <Label htmlFor="message">{t("contact.message")}</Label>
-                <Textarea
-                  id="message"
-                  value={formData.message}
-                  onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                  placeholder={t("contact.messagePlaceholder")}
-                  rows={5}
-                  required
+                <FormField
+                  control={form.control}
+                  name="message"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t("contact.message")}</FormLabel>
+                      <FormControl>
+                        <Textarea rows={5} placeholder={t("contact.messagePlaceholder")} {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-              </div>
 
-              <Button type="submit" className="w-full" size="lg">
-                {t("contact.sendMessage")}
-              </Button>
-            </form>
+                <Button type="submit" className="w-full" size="lg" disabled={form.formState.isSubmitting}>
+                  {t("contact.sendMessage")}
+                </Button>
+              </form>
+            </Form>
           </div>
         </div>
       </main>

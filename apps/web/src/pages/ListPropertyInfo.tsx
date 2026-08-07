@@ -15,7 +15,7 @@ import { useAuth } from "@/contexts/AuthContext";
 const ListPropertyInfo = () => {
   const navigate = useNavigate();
   const { t } = useLanguage();
-  const { user, isAuthenticated, isLandlord } = useAuth();
+  const { isAuthenticated, isLandlord } = useAuth();
 
   const handleGetStarted = () => {
     if (!isAuthenticated || !isLandlord) {

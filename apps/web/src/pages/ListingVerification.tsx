@@ -1,15 +1,11 @@
 import { useParams } from "react-router-dom";
 import { Home, ShieldCheck } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { VerificationUpload } from "@/components/verification";
 import { useListing } from "@/hooks";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { PageLayout } from "@/components/layout/PageLayout";
 import { PageLoader } from "@/components/layout/PageLoader";
-import { RequireAuth } from "@/components/auth/RequireAuth";
-import { RequireLandlord } from "@/components/auth/RequireRole";
 import { BackButton } from "@/components/shared";
 import { getLocalizedTitle } from "@/types/listing";
 
@@ -42,8 +38,6 @@ export default function ListingVerification() {
 
   return (
     <PageLayout>
-      <RequireAuth>
-        <RequireLandlord>
           <div className="container mx-auto px-4 py-6 sm:py-8">
             <div className="max-w-2xl mx-auto">
               <div className="mb-6 sm:mb-8">
@@ -80,8 +74,6 @@ export default function ListingVerification() {
               />
             </div>
           </div>
-        </RequireLandlord>
-      </RequireAuth>
     </PageLayout>
   );
 }

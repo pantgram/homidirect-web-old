@@ -20,7 +20,23 @@ export default tseslint.config(
     rules: {
       ...reactHooks.configs.recommended.rules,
       "react-refresh/only-export-components": ["warn", { allowConstantExport: true }],
-      "@typescript-eslint/no-unused-vars": "off",
+      "@typescript-eslint/no-unused-vars": [
+        "error",
+        {
+          argsIgnorePattern: "^_",
+          varsIgnorePattern: "^_",
+          caughtErrors: "none",
+          ignoreRestSiblings: true,
+        },
+      ],
+    },
+  },
+  {
+    // Context providers (export provider + hook) and shadcn ui primitives
+    // (export component + variants/constants) legitimately export non-components.
+    files: ["src/contexts/**", "src/components/ui/**"],
+    rules: {
+      "react-refresh/only-export-components": "off",
     },
   },
 );

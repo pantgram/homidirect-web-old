@@ -1,4 +1,4 @@
-import { apiClient, getApiError } from "./client";
+import { apiClient } from "./client";
 import type {
   Booking,
   CreateBookingRequest,

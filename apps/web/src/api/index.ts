@@ -8,7 +8,7 @@ export { favoritesApi } from "./favorites";
 export { bookingsApi } from "./bookings";
 export { availabilitySlotsApi } from "./availability-slots";
 
-export * from "./types";
+export * from "@/types";
 
 export type {
   PendingImage,

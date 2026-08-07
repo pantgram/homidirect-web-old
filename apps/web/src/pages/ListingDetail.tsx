@@ -31,7 +31,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "@/lib/toast";
 import { listingsApi } from "@/api/listings";
 import { favoritesApi } from "@/api/favorites";
 import { availabilitySlotsApi } from "@/api/availability-slots";
@@ -42,8 +42,7 @@ import type {
   Listing,
   ListingImage,
   AvailabilitySlot,
-  PropertyType,
-} from "@/api/types";
+} from "@/types";
 import { getLocalizedTitle, getLocalizedDescription } from "@/types/listing";
 import placeholderImage from "@/assets/property-1.jpg";
 
@@ -52,7 +51,6 @@ const ListingDetail = () => {
   const navigate = useNavigate();
   const { t, language, locale } = useLanguage();
   const { user, isAuthenticated } = useAuth();
-  const { toast } = useToast();
 
   const [listing, setListing] = useState<Listing | null>(null);
   const [images, setImages] = useState<ListingImage[]>([]);
