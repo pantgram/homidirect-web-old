@@ -44,6 +44,7 @@ import type {
   VerificationHistoryEntry,
   VerificationStatus,
 } from "@/api";
+import { getApiError } from "@/api";
 
 interface VerificationUploadProps {
   listingId: number;
@@ -380,10 +381,10 @@ export function VerificationUpload({ listingId, listingTitle }: VerificationUplo
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
       }
-    } catch (err: any) {
+    } catch (err) {
       clearInterval(progressInterval);
       setUploadProgress(0);
-      toast.error(err.response?.data?.message || t("verification.uploadFailed"));
+      toast.error(getApiError(err).message || t("verification.uploadFailed"));
     }
   }, [selectedFile, documentType, uploadMutation, t]);
 
@@ -393,8 +394,8 @@ export function VerificationUpload({ listingId, listingTitle }: VerificationUplo
       try {
         await deleteMutation.mutateAsync(documentId);
         toast.success(t("verification.docDeleted"));
-      } catch (err: any) {
-        toast.error(err.response?.data?.message || t("verification.deleteFailed"));
+      } catch (err) {
+        toast.error(getApiError(err).message || t("verification.deleteFailed"));
       } finally {
         setDeletingId(null);
       }
@@ -512,14 +513,14 @@ export function VerificationUpload({ listingId, listingTitle }: VerificationUplo
                   {DOCUMENT_TYPES.map((type) => (
                     <SelectItem key={type} value={type}>
                       <div className="flex flex-col items-start">
-                        <span>{t(`verification.docType.${DOC_TYPE_KEY[type]}` as any)}</span>
+                        <span>{t(`verification.docType.${DOC_TYPE_KEY[type]}` as TranslationKey)}</span>
                       </div>
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
               <p className="text-xs text-muted-foreground">
-                {t(`verification.docTypeDesc.${DOC_TYPE_KEY[documentType]}` as any)}
+                {t(`verification.docTypeDesc.${DOC_TYPE_KEY[documentType]}` as TranslationKey)}
               </p>
             </div>
 

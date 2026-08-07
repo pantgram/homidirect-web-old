@@ -3,10 +3,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Calendar } from "@/components/ui/calendar";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "@/lib/toast";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { availabilitySlotsApi } from "@/api/availability-slots";
-import type { AvailabilitySlot } from "@/api/types";
+import type { AvailabilitySlot } from "@/types";
 import AvailabilitySlotForm from "@/components/AvailabilitySlotForm";
 import { Calendar as CalendarIcon, Clock, Trash2, Plus, Loader2, List } from "lucide-react";
 import { format, isPast, isSameDay, addMonths, subMonths } from "date-fns";
@@ -18,8 +18,7 @@ interface AvailabilitySlotsManagerProps {
 const AvailabilitySlotsManager = ({
   listingId,
 }: AvailabilitySlotsManagerProps) => {
-  const { toast } = useToast();
-  const { t, language } = useLanguage();
+  const { t } = useLanguage();
   const [slots, setSlots] = useState<AvailabilitySlot[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -33,7 +32,6 @@ const AvailabilitySlotsManager = ({
       const data = await availabilitySlotsApi.getByListingId(listingId);
       setSlots(data);
     } catch (err) {
-      console.error("Failed to fetch availability slots:", err);
       toast({
         title: t("availabilitySlots.loadingSlots"),
         variant: "destructive",
@@ -41,7 +39,7 @@ const AvailabilitySlotsManager = ({
     } finally {
       setLoading(false);
     }
-  }, [listingId, toast, t]);
+  }, [listingId, t]);
 
   useEffect(() => {
     fetchSlots();
@@ -60,7 +58,6 @@ const AvailabilitySlotsManager = ({
         title: t("availabilitySlots.deleted"),
       });
     } catch (err) {
-      console.error("Failed to delete slot:", err);
       toast({
         title: t("availabilitySlots.deleteFailed"),
         variant: "destructive",
@@ -95,30 +92,8 @@ const AvailabilitySlotsManager = ({
     };
   };
 
-  const formatSlotDateTime = (startTime: string, endTime: string) => {
-    const start = new Date(startTime);
-    const end = new Date(endTime);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    
-    const isToday = start.toDateString() === today.toDateString();
-    
-    return {
-      date: isToday ? "Today" : format(start, "MMM d, yyyy"),
-      time: `${format(start, "HH:mm")} - ${format(end, "HH:mm")}`,
-    };
-  };
-
   const pastSlots = slots.filter((slot) => isPast(new Date(slot.endTime)));
   const upcomingSlots = slots.filter((slot) => !isPast(new Date(slot.endTime)));
-
-  const formatSlotTimeShort = (startTime: string) => {
-    const d = new Date(startTime);
-    return d.toLocaleTimeString(language === "el" ? "el-GR" : "en-US", {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
 
   return (
     <Card>

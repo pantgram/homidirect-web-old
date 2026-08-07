@@ -17,8 +17,8 @@ const Navigation = () => {
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
-            <img src="/logo.png" alt="HomiDirect" className="h-20 w-30" />
-            <div className="flex items-center text-4xl font-sans tracking-tight text-slate-450">
+            <img src="/logo.png" alt="" className="h-16 w-auto" />
+            <div className="flex items-center text-4xl font-sans tracking-tight text-slate-500">
               <span className="font-extrabold">Homi</span>
               <span className="font-light">Direct</span>
             </div>

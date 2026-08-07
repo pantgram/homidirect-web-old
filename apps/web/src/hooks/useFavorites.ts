@@ -17,8 +17,8 @@ export const useFavorites = () => {
       try {
         const ids = await favoritesApi.getFavoriteIds();
         setFavoriteIds(new Set(ids));
-      } catch (err) {
-        console.error("Failed to fetch favorite IDs:", err);
+      } catch {
+        // ignore — favorites set is best-effort
       } finally {
         setIsLoading(false);
       }

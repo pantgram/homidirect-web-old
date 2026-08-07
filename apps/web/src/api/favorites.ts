@@ -1,5 +1,5 @@
 import { apiClient } from "./client";
-import type { ListingSearchResult, PaginatedResponse } from "./types";
+import type { ListingSearchResult, PaginatedResponse } from "@/types";
 
 export interface FavoriteToggleResponse {
   success: boolean;

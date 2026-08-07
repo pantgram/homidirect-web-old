@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "@/lib/toast";
 import { tokenStorage } from "@/api/client";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { apiClient } from "@/api/client";
@@ -8,7 +8,6 @@ import { apiClient } from "@/api/client";
 const OAuthCallback = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { toast } = useToast();
   const { t } = useLanguage();
   const processed = useRef(false);
 
@@ -44,7 +43,7 @@ const OAuthCallback = () => {
       });
       navigate("/auth", { replace: true });
     }
-  }, [navigate, location.search, toast, t]);
+  }, [navigate, location.search, t]);
 
   return (
     <div className="min-h-screen flex items-center justify-center">

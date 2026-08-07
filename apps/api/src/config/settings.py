@@ -40,7 +40,7 @@ class Settings(BaseSettings):
         "image/gif",
         "application/pdf",
     ]
-    pending_image_expiry_hours: int = 24
+    pending_image_expiry_hours: int = 2
 
     @computed_field
     @property

@@ -5,12 +5,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Calendar } from "@/components/ui/calendar";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "@/lib/toast";
 import { availabilitySlotsApi } from "@/api/availability-slots";
 import { Loader2, Clock } from "lucide-react";
-import { format, isSameDay, isPast } from "date-fns";
+import { format, isSameDay } from "date-fns";
 
-import type { AvailabilitySlot } from "@/api/types";
+import type { AvailabilitySlot } from "@/types";
 
 interface AvailabilitySlotFormProps {
   open: boolean;
@@ -25,14 +25,13 @@ const AvailabilitySlotForm = ({
   listingId,
   onSuccess,
 }: AvailabilitySlotFormProps) => {
-  const { toast } = useToast();
   const { t, language } = useLanguage();
   const [date, setDate] = useState("");
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [loadingSlots, setLoadingSlots] = useState(false);
+  const [, setLoadingSlots] = useState(false);
   const [existingSlots, setExistingSlots] = useState<AvailabilitySlot[]>([]);
 
   useEffect(() => {
@@ -43,8 +42,8 @@ const AvailabilitySlotForm = ({
       try {
         const slots = await availabilitySlotsApi.getByListingId(listingId);
         setExistingSlots(slots);
-      } catch (err) {
-        console.error("Failed to fetch existing slots:", err);
+      } catch {
+        // ignore — existing slots are non-critical
       } finally {
         setLoadingSlots(false);
       }
@@ -94,7 +93,6 @@ const AvailabilitySlotForm = ({
       onOpenChange(false);
       onSuccess?.();
     } catch (err) {
-      console.error("Failed to create availability slot:", err);
       toast({
         title: t("availabilitySlots.addFailed"),
         variant: "destructive",

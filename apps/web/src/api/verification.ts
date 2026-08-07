@@ -4,7 +4,6 @@ import type {
   VerificationDocument,
   VerificationHistoryEntry,
   VerificationStatusResponse,
-  PendingVerificationListing,
 } from "@/types";
 
 export type {
@@ -12,7 +11,6 @@ export type {
   VerificationDocument,
   VerificationHistoryEntry,
   VerificationStatusResponse,
-  PendingVerificationListing,
 };
 
 export const verificationApi = {
@@ -62,23 +60,5 @@ export const verificationApi = {
     await apiClient.delete(
       `/listings/${listingId}/verification/documents/${documentId}`
     );
-  },
-
-  async reviewVerification(
-    listingId: number,
-    status: "APPROVED" | "REJECTED",
-    notes?: string
-  ): Promise<void> {
-    await apiClient.post(`/admin/verifications/${listingId}/verification/review`, {
-      status,
-      notes,
-    });
-  },
-
-  async getPendingVerifications(): Promise<PendingVerificationListing[]> {
-    const response = await apiClient.get<{ listings: PendingVerificationListing[] }>(
-      "/admin/verifications/pending"
-    );
-    return response.data.listings;
   },
 };

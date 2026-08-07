@@ -1,12 +1,11 @@
 import {
   createContext,
   useContext,
-  useEffect,
   useState,
   type ReactNode,
 } from "react";
 import { useCurrentUser, useLogin, useRegister, useLogout } from "@/hooks/useAuth";
-import { authApi, type User, type LoginRequest, type RegisterRequest } from "@/api";
+import { authApi, getApiError, type User, type LoginRequest, type RegisterRequest } from "@/api";
 
 interface AuthContextType {
   user: User | null;
@@ -42,9 +41,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       await loginMutation.mutateAsync(data);
       await refetchUser();
-    } catch (err: any) {
-      const message = err.response?.data?.message || "Login failed";
-      setError(message);
+    } catch (err) {
+      setError(getApiError(err).message || "Login failed");
       throw err;
     }
   };
@@ -54,9 +52,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       await registerMutation.mutateAsync(data);
       await refetchUser();
-    } catch (err: any) {
-      const message = err.response?.data?.message || "Registration failed";
-      setError(message);
+    } catch (err) {
+      setError(getApiError(err).message || "Registration failed");
       throw err;
     }
   };

@@ -1,9 +1,10 @@
 import { useState, useCallback, useRef } from "react";
 import { Upload, X, ImageIcon, Loader2, GripVertical } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "@/lib/toast";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { listingsApi, type PendingImage } from "@/api/listings";
+import { getApiError } from "@/api";
 import { env } from "@/config/env";
 import { cn } from "@/lib/utils";
 
@@ -28,7 +29,6 @@ export function ImageUpload({
   disabled = false,
 }: ImageUploadProps) {
   const { t } = useLanguage();
-  const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const currentSessionIdRef = useRef<string | null>(sessionId);
   const [isDragging, setIsDragging] = useState(false);
@@ -38,7 +38,7 @@ export function ImageUpload({
 
   currentSessionIdRef.current = sessionId;
 
-  const validateFile = (file: File): string | null => {
+  const validateFile = useCallback((file: File): string | null => {
     if (!ALLOWED_TYPES.includes(file.type)) {
       return t("imageUpload.invalidType");
     }
@@ -46,9 +46,9 @@ export function ImageUpload({
       return t("imageUpload.fileTooLarge");
     }
     return null;
-  };
+  }, [t]);
 
-  const uploadFile = async (file: File): Promise<PendingImage | null> => {
+  const uploadFile = useCallback(async (file: File): Promise<PendingImage | null> => {
     const error = validateFile(file);
     if (error) {
       toast({
@@ -72,17 +72,17 @@ export function ImageUpload({
       }
 
       return response.image;
-    } catch (err: any) {
+    } catch (err) {
       toast({
         title: t("imageUpload.uploadError"),
-        description: err.response?.data?.message || t("imageUpload.uploadFailed"),
+        description: getApiError(err).message || t("imageUpload.uploadFailed"),
         variant: "destructive",
       });
       return null;
     }
-  };
+  }, [validateFile, t, onSessionIdChange]);
 
-  const handleFiles = async (files: FileList | File[]) => {
+  const handleFiles = useCallback(async (files: FileList | File[]) => {
     const fileArray = Array.from(files);
     const remainingSlots = maxImages - images.length;
 
@@ -101,7 +101,7 @@ export function ImageUpload({
     setUploadingCount(fileArray.length);
 
     const successfulUploads: PendingImage[] = [];
-    
+
     for (const file of fileArray) {
       const result = await uploadFile(file);
       if (result) {
@@ -114,7 +114,7 @@ export function ImageUpload({
     }
 
     setUploadingCount(0);
-  };
+  }, [maxImages, images, t, uploadFile, onImagesChange]);
 
   const handleDragOver = useCallback(
     (e: React.DragEvent) => {
@@ -169,11 +169,10 @@ export function ImageUpload({
         title: t("imageUpload.imageRemoved"),
         description: t("imageUpload.imageRemovedDesc"),
       });
-    } catch (err: any) {
+    } catch (err) {
       toast({
         title: t("imageUpload.removeError"),
-        description:
-          err.response?.data?.message || t("imageUpload.removeFailed"),
+        description: getApiError(err).message || t("imageUpload.removeFailed"),
         variant: "destructive",
       });
     }

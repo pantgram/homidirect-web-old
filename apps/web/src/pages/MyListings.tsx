@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Plus, Building2, Pencil, Trash2 } from "lucide-react";
 import { PageLayout } from "@/components/layout/PageLayout";
-import { RequireLandlord } from "@/components/auth/RequireRole";
 import {
   Pagination,
   ErrorState,
@@ -14,17 +13,16 @@ import { formatPrice, formatArea } from "@/utils/format";
 import PropertyCard from "@/components/PropertyCard";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "@/lib/toast";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { listingsApi } from "@/api/listings";
-import type { ListingSearchResult } from "@/api/types";
+import type { ListingSearchResult } from "@/types";
 import { getLocalizedTitle } from "@/types/listing";
 import placeholderImage from "@/assets/property-1.jpg";
 
 const MyListings = () => {
   const { t, language } = useLanguage();
   const navigate = useNavigate();
-  const { toast } = useToast();
 
   const [listings, setListings] = useState<ListingSearchResult[]>([]);
   const [loading, setLoading] = useState(true);
@@ -57,7 +55,6 @@ const MyListings = () => {
         });
       } catch (err) {
         setError(t("myListings.errorLoading"));
-        console.error("Failed to fetch listings:", err);
       } finally {
         setLoading(false);
       }
@@ -93,7 +90,6 @@ const MyListings = () => {
         title: t("myListings.deleteFailed"),
         variant: "destructive",
       });
-      console.error("Failed to delete listing:", err);
     } finally {
       setIsDeleting(false);
       setDeleteDialogOpen(false);
@@ -127,8 +123,7 @@ const MyListings = () => {
   };
 
   return (
-    <RequireLandlord>
-      <PageLayout>
+    <PageLayout>
         <div className="container mx-auto px-4 py-8">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8">
             <div>
@@ -252,7 +247,6 @@ const MyListings = () => {
           isLoading={isDeleting}
         />
       </PageLayout>
-    </RequireLandlord>
   );
 };
 

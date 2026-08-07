@@ -3,7 +3,7 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage, type TranslationKey } from "@/contexts/LanguageContext";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "@/lib/toast";
 import { PageLoader } from "@/components/layout/PageLoader";
 import type { UserRole } from "@/types";
 
@@ -16,10 +16,6 @@ interface RequireRoleProps {
 
 const LANDLORD_ROLES: UserRole[] = ["LANDLORD", "BOTH", "ADMIN"];
 
-export function isLandlordRole(role?: UserRole): boolean {
-  return !!role && LANDLORD_ROLES.includes(role);
-}
-
 export function RequireRole({
   children,
   roles,
@@ -29,7 +25,6 @@ export function RequireRole({
   const { user, isLoading } = useAuth();
   const navigate = useNavigate();
   const { t } = useLanguage();
-  const { toast } = useToast();
 
   const hasRole = !!user && roles.includes(user.role);
 
@@ -41,7 +36,7 @@ export function RequireRole({
       });
       navigate(redirectTo, { replace: true });
     }
-  }, [hasRole, isLoading, navigate, redirectTo, toast, t, messageKey]);
+  }, [hasRole, isLoading, navigate, redirectTo, t, messageKey]);
 
   if (isLoading) {
     return <PageLoader />;

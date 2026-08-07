@@ -17,7 +17,7 @@ const Hero = () => {
   });
 
   useEffect(() => {
-    listingsApi.getStats().then(setStats).catch(console.error);
+    listingsApi.getStats().then(setStats).catch(() => {});
   }, []);
 
   const handleSearch = (e?: React.FormEvent) => {

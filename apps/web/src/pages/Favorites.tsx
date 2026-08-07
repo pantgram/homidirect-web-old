@@ -2,13 +2,12 @@ import { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { Heart, Search } from "lucide-react";
 import { PageLayout } from "@/components/layout/PageLayout";
-import { RequireAuth } from "@/components/auth/RequireAuth";
 import { Pagination, ErrorState, EmptyState, InlineSpinner } from "@/components/shared";
 import PropertyCard from "@/components/PropertyCard";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { favoritesApi } from "@/api/favorites";
-import type { ListingSearchResult } from "@/api/types";
+import type { ListingSearchResult } from "@/types";
 import { getLocalizedTitle } from "@/types/listing";
 import { formatPrice, formatArea } from "@/utils/format";
 import placeholderImage from "@/assets/property-1.jpg";
@@ -44,7 +43,6 @@ const Favorites = () => {
         });
       } catch (err) {
         setError(t("favorites.errorLoading"));
-        console.error("Failed to fetch favorites:", err);
       } finally {
         setLoading(false);
       }
@@ -71,8 +69,7 @@ const Favorites = () => {
   };
 
   return (
-    <RequireAuth>
-      <PageLayout>
+    <PageLayout>
         <div className="container mx-auto px-4 py-8">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8">
             <div>
@@ -142,7 +139,6 @@ const Favorites = () => {
           )}
         </div>
       </PageLayout>
-    </RequireAuth>
   );
 };
 
