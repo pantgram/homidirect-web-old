@@ -3,17 +3,11 @@
 .gitignore
 
 # Dependencies (fetched inside the image)
-**/node_modules
+node_modules
 
 # Build artifacts
-**/dist
-**/dist-ssr
-**/.turbo
-**/.ruff_cache
-
-# Python virtualenv & caches (API)
-apps/api/.venv
-**/__pycache__
+dist
+dist-ssr
 
 # Local env files
 .env
@@ -25,8 +19,11 @@ apps/api/.venv
 .idea
 .DS_Store
 
+# Docs
+*.md
+
 # Logs
-**/*.log
-**/npm-debug.log*
-**/yarn-debug.log*
-**/pnpm-debug.log*
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*

@@ -1,5 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   Calendar,
   Clock,
@@ -16,6 +17,7 @@ import { PageLayout } from "@/components/layout/PageLayout";
 import { BackButton } from "@/components/shared/BackButton";
 import { BookingStatusBadge } from "@/components/shared/BookingStatusBadge";
 import { InlineSpinner } from "@/components/shared";
+import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import { formatDateTime } from "@/utils/format";
 import AvailabilitySlotForm from "@/components/AvailabilitySlotForm";
 import { Button } from "@/components/ui/button";
@@ -23,68 +25,47 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { toast } from "@/lib/toast";
-import { bookingsApi } from "@/api/bookings";
-import { listingsApi } from "@/api/listings";
-import { availabilitySlotsApi } from "@/api/availability-slots";
-import type { Booking, AvailabilitySlot, Listing } from "@/types";
+import {
+  useListing,
+  useListingBookings,
+  useAvailabilitySlots,
+  useUpdateBooking,
+  useDeleteBooking,
+  useDeleteAvailabilitySlot,
+  availabilitySlotKeys,
+} from "@/hooks";
 import { getLocalizedTitle } from "@/types/listing";
 import placeholderImage from "@/assets/property-1.jpg";
 
 const ListingBookings = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { t, language, locale } = useLanguage();
 
-  const [listing, setListing] = useState<Listing | null>(null);
-  const [bookings, setBookings] = useState<Booking[]>([]);
-  const [availabilitySlots, setAvailabilitySlots] = useState<AvailabilitySlot[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<"bookings" | "slots">("bookings");
-  const [updating, setUpdating] = useState<number | null>(null);
-  const [showSlotForm, setShowSlotForm] = useState(false);
+  const listingId = id ? parseInt(id, 10) : 0;
+  const { data: listing, isLoading } = useListing(listingId);
+  const { data: bookings = [] } = useListingBookings(listingId);
+  const { data: availabilitySlots = [] } = useAvailabilitySlots(listingId);
 
-  const fetchSlots = async () => {
-    if (!id) return;
-    try {
-      const slotsData = await availabilitySlotsApi.getByListingId(parseInt(id));
-      setAvailabilitySlots(slotsData);
-    } catch {
-      // ignore — slots will show as empty
-    }
+  const updateMutation = useUpdateBooking();
+  const deleteBookingMutation = useDeleteBooking();
+  const deleteSlotMutation = useDeleteAvailabilitySlot(listingId);
+
+  const [activeTab, setActiveTab] = useState<"bookings" | "slots">("bookings");
+  const [showSlotForm, setShowSlotForm] = useState(false);
+  const [cancelBookingTarget, setCancelBookingTarget] = useState<number | null>(null);
+  const [deleteSlotTarget, setDeleteSlotTarget] = useState<number | null>(null);
+
+  const refreshSlots = () => {
+    queryClient.invalidateQueries({
+      queryKey: availabilitySlotKeys.byListing(listingId),
+    });
   };
 
-  useEffect(() => {
-    const fetchData = async () => {
-      if (!id) return;
-
-      setLoading(true);
-      setError(null);
-
-      try {
-        const listingData = await listingsApi.getById(parseInt(id));
-        setListing(listingData);
-
-        const bookingsData = await bookingsApi.getByListingId(parseInt(id));
-        setBookings(bookingsData);
-
-        const slotsData = await availabilitySlotsApi.getByListingId(parseInt(id));
-        setAvailabilitySlots(slotsData);
-      } catch (err) {
-        setError(t("listingBookings.errorLoading"));
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [id, t]);
-
   const handleUpdateStatus = async (bookingId: number, status: "CONFIRMED" | "DECLINED") => {
-    setUpdating(bookingId);
     try {
-      const updated = await bookingsApi.update(bookingId, { status });
-      setBookings((prev) => prev.map((b) => (b.id === bookingId ? updated : b)));
+      await updateMutation.mutateAsync({ id: bookingId, data: { status } });
       toast({
         title: status === "CONFIRMED" ? t("listingBookings.bookingConfirmed") : t("listingBookings.bookingDeclined"),
       });
@@ -93,50 +74,36 @@ const ListingBookings = () => {
         title: t("listingBookings.updateFailed"),
         variant: "destructive",
       });
+    }
+  };
+
+  const handleDeleteBooking = async () => {
+    if (cancelBookingTarget === null) return;
+    const bookingId = cancelBookingTarget;
+    try {
+      await deleteBookingMutation.mutateAsync(bookingId);
+      toast({ title: t("listingBookings.bookingCancelled") });
+    } catch (err) {
+      toast({ title: t("listingBookings.cancelFailed"), variant: "destructive" });
     } finally {
-      setUpdating(null);
+      setCancelBookingTarget(null);
     }
   };
 
-  const handleDeleteBooking = async (bookingId: number) => {
-    if (!confirm(t("listingBookings.cancelConfirm"))) {
-      return;
-    }
-
+  const handleDeleteSlot = async () => {
+    if (deleteSlotTarget === null) return;
+    const slotId = deleteSlotTarget;
     try {
-      await bookingsApi.delete(bookingId);
-      setBookings((prev) => prev.filter((b) => b.id !== bookingId));
-      toast({
-        title: t("listingBookings.bookingCancelled"),
-      });
+      await deleteSlotMutation.mutateAsync(slotId);
+      toast({ title: t("listingBookings.slotDeleted") });
     } catch (err) {
-      toast({
-        title: t("listingBookings.cancelFailed"),
-        variant: "destructive",
-      });
+      toast({ title: t("listingBookings.deleteSlotFailed"), variant: "destructive" });
+    } finally {
+      setDeleteSlotTarget(null);
     }
   };
 
-  const handleDeleteSlot = async (slotId: number) => {
-    if (!confirm(t("listingBookings.deleteSlotConfirm"))) {
-      return;
-    }
-
-    try {
-      await availabilitySlotsApi.delete(slotId);
-      setAvailabilitySlots((prev) => prev.filter((s) => s.id !== slotId));
-      toast({
-        title: t("listingBookings.slotDeleted"),
-      });
-    } catch (err) {
-      toast({
-        title: t("listingBookings.deleteSlotFailed"),
-        variant: "destructive",
-      });
-    }
-  };
-
-  if (loading) {
+  if (isLoading) {
     return (
       <PageLayout>
         <InlineSpinner />
@@ -282,7 +249,7 @@ const ListingBookings = () => {
                               <Button
                                 size="sm"
                                 onClick={() => handleUpdateStatus(booking.id, "CONFIRMED")}
-                                disabled={updating === booking.id}
+                                disabled={updateMutation.isPending && updateMutation.variables?.id === booking.id}
                               >
                                 <CheckCircle className="h-4 w-4 mr-2" />
                                 {t("listingBookings.accept")}
@@ -291,7 +258,7 @@ const ListingBookings = () => {
                                 variant="destructive"
                                 size="sm"
                                 onClick={() => handleUpdateStatus(booking.id, "DECLINED")}
-                                disabled={updating === booking.id}
+                                disabled={updateMutation.isPending && updateMutation.variables?.id === booking.id}
                               >
                                 <XCircle className="h-4 w-4 mr-2" />
                                 {t("listingBookings.decline")}
@@ -301,7 +268,7 @@ const ListingBookings = () => {
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => handleDeleteBooking(booking.id)}
+                            onClick={() => setCancelBookingTarget(booking.id)}
                           >
                             <Trash2 className="h-4 w-4 mr-2" />
                             {t("bookings.cancel")}
@@ -384,7 +351,7 @@ const ListingBookings = () => {
                           <Button
                             variant="destructive"
                             size="sm"
-                            onClick={() => handleDeleteSlot(slot.id)}
+                            onClick={() => setDeleteSlotTarget(slot.id)}
                             disabled={slot.isBooked}
                           >
                             <Trash2 className="h-4 w-4 mr-2" />
@@ -406,9 +373,31 @@ const ListingBookings = () => {
           open={showSlotForm}
           onOpenChange={setShowSlotForm}
           listingId={parseInt(id)}
-          onSuccess={fetchSlots}
+          onSuccess={refreshSlots}
         />
       )}
+
+      <ConfirmDialog
+        open={cancelBookingTarget !== null}
+        onOpenChange={(open) => !open && setCancelBookingTarget(null)}
+        title={t("listingBookings.delete")}
+        description={t("listingBookings.cancelConfirm")}
+        onConfirm={handleDeleteBooking}
+        confirmLabel={t("listingBookings.delete")}
+        destructive
+        isLoading={deleteBookingMutation.isPending}
+      />
+
+      <ConfirmDialog
+        open={deleteSlotTarget !== null}
+        onOpenChange={(open) => !open && setDeleteSlotTarget(null)}
+        title={t("listingBookings.delete")}
+        description={t("listingBookings.deleteSlotConfirm")}
+        onConfirm={handleDeleteSlot}
+        confirmLabel={t("listingBookings.delete")}
+        destructive
+        isLoading={deleteSlotMutation.isPending}
+      />
     </PageLayout>
   );
 };

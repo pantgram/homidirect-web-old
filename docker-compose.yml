@@ -1,21 +1,9 @@
 services:
-  app:
-    build:
-      context: ./apps/api
-      dockerfile: Dockerfile
-    ports:
-      - "5000:5000"
-    env_file:
-      - .env
-    command: uv run uvicorn src.main:app --host 0.0.0.0 --port 5000 --reload
-
   web:
     build:
       context: .
-      dockerfile: apps/web/Dockerfile
+      dockerfile: Dockerfile
       args:
         VITE_API_URL: ${VITE_API_URL:-http://localhost:5000}
     ports:
       - "8080:8080"
-    depends_on:
-      - app

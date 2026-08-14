@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Heart, Search } from "lucide-react";
 import { PageLayout } from "@/components/layout/PageLayout";
@@ -6,65 +6,26 @@ import { Pagination, ErrorState, EmptyState, InlineSpinner } from "@/components/
 import PropertyCard from "@/components/PropertyCard";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { favoritesApi } from "@/api/favorites";
-import type { ListingSearchResult } from "@/types";
+import { useMyFavorites, favoritesKeys } from "@/hooks";
+import { useQueryClient } from "@tanstack/react-query";
 import { getLocalizedTitle } from "@/types/listing";
 import { formatPrice, formatArea } from "@/utils/format";
 import placeholderImage from "@/assets/property-1.jpg";
 
 const Favorites = () => {
   const { t, language } = useLanguage();
+  const queryClient = useQueryClient();
+  const [page, setPage] = useState(1);
 
-  const [listings, setListings] = useState<ListingSearchResult[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [pagination, setPagination] = useState({
-    page: 1,
-    totalPages: 1,
-    total: 0,
-    hasNextPage: false,
-    hasPreviousPage: false,
-  });
+  const { data, isLoading, error, refetch } = useMyFavorites({ page, limit: 12 });
 
-  const fetchFavorites = useCallback(
-    async (page = 1) => {
-      setLoading(true);
-      setError(null);
+  const listings = data?.data ?? [];
+  const pagination = data?.pagination;
 
-      try {
-        const response = await favoritesApi.getMyFavorites({ page, limit: 12 });
-        setListings(response.data);
-        setPagination({
-          page: response.pagination.page,
-          totalPages: response.pagination.totalPages,
-          total: response.pagination.total,
-          hasNextPage: response.pagination.hasNextPage,
-          hasPreviousPage: response.pagination.hasPreviousPage,
-        });
-      } catch (err) {
-        setError(t("favorites.errorLoading"));
-      } finally {
-        setLoading(false);
-      }
-    },
-    [t]
-  );
-
-  useEffect(() => {
-    fetchFavorites();
-  }, [fetchFavorites]);
-
-  const handlePageChange = (page: number) => {
-    fetchFavorites(page);
-  };
-
-  const handleFavoriteChange = (id: number, isFavorite: boolean) => {
+  const handleFavoriteChange = (_id: number, isFavorite: boolean) => {
     if (!isFavorite) {
-      setListings((prev) => prev.filter((l) => l.id !== id));
-      setPagination((prev) => ({
-        ...prev,
-        total: prev.total - 1,
-      }));
+      // PropertyCard already removed the favorite; refresh the list.
+      queryClient.invalidateQueries({ queryKey: favoritesKeys.list() });
     }
   };
 
@@ -78,20 +39,20 @@ const Favorites = () => {
               </h1>
               <p className="text-muted-foreground">{t("favorites.subtitle")}</p>
             </div>
-            {listings.length > 0 && (
+            {listings.length > 0 && pagination && (
               <p className="text-muted-foreground mt-4 sm:mt-0">
                 {pagination.total} {pagination.total === 1 ? t("favorites.property") : t("favorites.properties")}
               </p>
             )}
           </div>
 
-          {loading && <InlineSpinner />}
+          {isLoading && <InlineSpinner />}
 
-          {error && !loading && (
-            <ErrorState message={error || ""} onRetry={() => fetchFavorites()} />
+          {error && !isLoading && (
+            <ErrorState message={t("favorites.errorLoading")} onRetry={() => refetch()} />
           )}
 
-          {!loading && !error && listings.length === 0 && (
+          {!isLoading && !error && listings.length === 0 && (
             <EmptyState
               icon={Heart}
               title={t("favorites.noFavorites")}
@@ -104,7 +65,7 @@ const Favorites = () => {
             />
           )}
 
-          {!loading && !error && listings.length > 0 && (
+          {!isLoading && !error && listings.length > 0 && (
             <>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
                 {listings.map((listing) => (
@@ -126,13 +87,13 @@ const Favorites = () => {
                 ))}
               </div>
 
-              {pagination.totalPages > 1 && (
+              {pagination && pagination.totalPages > 1 && (
                 <Pagination
                   currentPage={pagination.page}
                   totalPages={pagination.totalPages}
                   hasNextPage={pagination.hasNextPage}
                   hasPreviousPage={pagination.hasPreviousPage}
-                  onPageChange={handlePageChange}
+                  onPageChange={setPage}
                 />
               )}
             </>

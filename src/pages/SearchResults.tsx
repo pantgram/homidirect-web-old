@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Search, SlidersHorizontal } from "lucide-react";
 import PropertyCard from "@/components/PropertyCard";
@@ -12,11 +12,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { listingsApi } from "@/api/listings";
-import { useFavorites } from "@/hooks";
+import { useFavorites, useSearchListings } from "@/hooks";
 import type {
   SearchListingsParams,
-  ListingSearchResult,
   PropertyType,
 } from "@/types";
 import { getLocalizedTitle } from "@/types/listing";
@@ -28,7 +26,7 @@ import placeholderImage from "@/assets/property-1.jpg";
 const PROPERTY_TYPES = ["apartment", "house", "studio", "room"] as const;
 
 const SearchResults = () => {
-  const { t, language } = useLanguage();
+  const { t, tt, language } = useLanguage();
   const { favoriteIds, handleFavoriteChange } = useFavorites();
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -61,68 +59,25 @@ const SearchResults = () => {
     return (sort as SearchListingsParams["sortBy"]) || "featured";
   });
 
-  const [listings, setListings] = useState<ListingSearchResult[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [pagination, setPagination] = useState({
-    page: 1,
-    totalPages: 1,
-    total: 0,
-    hasNextPage: false,
-    hasPreviousPage: false,
-  });
+  const [page, setPage] = useState(1);
 
-  const fetchListings = useCallback(
-    async (page = 1) => {
-      setLoading(true);
-      setError(null);
+  const searchParamsObj: SearchListingsParams = {
+    page,
+    limit: 12,
+    sortBy,
+    available: true,
+    ...(searchQuery ? { q: searchQuery } : {}),
+    ...(propertyType !== "all" ? { propertyType } : {}),
+    ...(minBedrooms !== "all" ? { minBedrooms: parseInt(minBedrooms) } : {}),
+    ...(minBathrooms !== "all" ? { minBathrooms: parseInt(minBathrooms) } : {}),
+    ...(minPrice ? { minPrice: parseInt(minPrice) } : {}),
+    ...(maxPrice ? { maxPrice: parseInt(maxPrice) } : {}),
+  };
 
-      try {
-        const params: SearchListingsParams = {
-          page,
-          limit: 12,
-          sortBy,
-          available: true,
-        };
+  const { data, isLoading, error, refetch } = useSearchListings(searchParamsObj);
 
-        if (searchQuery) params.q = searchQuery;
-        if (propertyType !== "all") params.propertyType = propertyType;
-        if (minBedrooms !== "all") params.minBedrooms = parseInt(minBedrooms);
-        if (minBathrooms !== "all")
-          params.minBathrooms = parseInt(minBathrooms);
-        if (minPrice) params.minPrice = parseInt(minPrice);
-        if (maxPrice) params.maxPrice = parseInt(maxPrice);
-
-        const response = await listingsApi.search(params);
-        setListings(response.data);
-        setPagination({
-          page: response.pagination.page,
-          totalPages: response.pagination.totalPages,
-          total: response.pagination.total,
-          hasNextPage: response.pagination.hasNextPage,
-          hasPreviousPage: response.pagination.hasPreviousPage,
-        });
-      } catch (err) {
-        setError(t("search.errorLoading"));
-      } finally {
-        setLoading(false);
-      }
-    },
-    [
-      searchQuery,
-      propertyType,
-      minBedrooms,
-      minBathrooms,
-      minPrice,
-      maxPrice,
-      sortBy,
-      t,
-    ]
-  );
-
-  useEffect(() => {
-    fetchListings();
-  }, [fetchListings]);
+  const listings = data?.data ?? [];
+  const pagination = data?.pagination;
 
   const handleSearch = () => {
     const params = new URLSearchParams();
@@ -135,7 +90,7 @@ const SearchResults = () => {
     if (sortBy && sortBy !== "featured") params.set("sort", sortBy);
     setSearchParams(params);
 
-    fetchListings(1);
+    setPage(1);
   };
 
   return (
@@ -280,9 +235,10 @@ const SearchResults = () => {
               {t("search.results")}
             </h1>
             <p className="text-muted-foreground">
-              {t("search.foundProperties")
-                .replace("{count}", pagination.total.toString())
-                .replace("{location}", searchQuery || t("search.allLocations"))}
+              {tt("search.foundProperties", {
+                count: pagination?.total ?? 0,
+                location: searchQuery || t("search.allLocations"),
+              })}
             </p>
           </div>
           <Select
@@ -309,19 +265,19 @@ const SearchResults = () => {
           </Select>
         </div>
 
-        {loading && <InlineSpinner />}
+        {isLoading && <InlineSpinner />}
 
-        {!loading && error && (
-          <ErrorState message={error} onRetry={() => fetchListings()} />
+        {!isLoading && error && (
+          <ErrorState message={t("search.errorLoading")} onRetry={() => refetch()} />
         )}
 
-        {!loading && !error && listings.length === 0 && (
+        {!isLoading && !error && listings.length === 0 && (
           <div className="text-center py-12">
             <p className="text-muted-foreground">{t("search.noResults")}</p>
           </div>
         )}
 
-        {!loading && !error && listings.length > 0 && (
+        {!isLoading && !error && listings.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
             {listings.map((listing) => (
               <PropertyCard
@@ -343,13 +299,13 @@ const SearchResults = () => {
           </div>
         )}
 
-        {!loading && pagination.totalPages > 1 && (
+        {!isLoading && pagination && pagination.totalPages > 1 && (
           <Pagination
             currentPage={pagination.page}
             totalPages={pagination.totalPages}
             hasNextPage={pagination.hasNextPage}
             hasPreviousPage={pagination.hasPreviousPage}
-            onPageChange={(page) => fetchListings(page)}
+            onPageChange={setPage}
           />
         )}
       </main>

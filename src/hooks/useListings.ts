@@ -4,6 +4,7 @@ import {
   type UpdateListingRequest,
   type ListingsQueryParams,
   type CreateListingWithSessionRequest,
+  type SearchListingsParams,
 } from "@/api";
 
 export const listingKeys = {
@@ -11,6 +12,11 @@ export const listingKeys = {
   lists: () => [...listingKeys.all, "list"] as const,
   list: (params?: ListingsQueryParams) =>
     [...listingKeys.lists(), params] as const,
+  myListings: (params?: { page?: number; limit?: number }) =>
+    [...listingKeys.lists(), "my", params] as const,
+  search: (params?: SearchListingsParams) =>
+    [...listingKeys.lists(), "search", params] as const,
+  featured: () => [...listingKeys.lists(), "featured"] as const,
   details: () => [...listingKeys.all, "detail"] as const,
   detail: (id: number) => [...listingKeys.details(), id] as const,
   images: (listingId: number) =>
@@ -22,6 +28,32 @@ export function useListings(params?: ListingsQueryParams) {
     queryKey: listingKeys.list(params),
     queryFn: () => listingsApi.getAll(params),
     staleTime: 2 * 60 * 1000, // 2 minutes
+  });
+}
+
+export function useMyListings(params?: { page?: number; limit?: number }) {
+  return useQuery({
+    queryKey: listingKeys.myListings(params),
+    queryFn: () => listingsApi.getMyListings(params),
+  });
+}
+
+export function useSearchListings(params?: SearchListingsParams) {
+  return useQuery({
+    queryKey: listingKeys.search(params),
+    queryFn: () => listingsApi.search(params),
+  });
+}
+
+export function useFeaturedListings() {
+  return useQuery({
+    queryKey: listingKeys.featured(),
+    queryFn: async () => {
+      const featured = await listingsApi.search({ isFeatured: true, limit: 8 });
+      if (featured.data.length > 0) return featured;
+      return listingsApi.search({ sortBy: "newest", limit: 8 });
+    },
+    staleTime: 5 * 60 * 1000,
   });
 }
 
@@ -56,6 +88,18 @@ export function useUpdateListing() {
         listingKeys.detail(updatedListing.id),
         updatedListing
       );
+    },
+  });
+}
+
+export function useDeleteListing() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: number) => listingsApi.delete(id),
+    onSuccess: (_, id) => {
+      queryClient.invalidateQueries({ queryKey: listingKeys.lists() });
+      queryClient.removeQueries({ queryKey: listingKeys.detail(id) });
     },
   });
 }

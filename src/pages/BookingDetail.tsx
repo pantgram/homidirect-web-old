@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import {
   Calendar,
@@ -20,9 +20,14 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/lib/toast";
-import { bookingsApi } from "@/api/bookings";
-import { listingsApi } from "@/api/listings";
-import type { Booking, Listing, ListingImage } from "@/types";
+import {
+  useBooking,
+  useListing,
+  useListingImages,
+  useUpdateBooking,
+  useDeleteBooking,
+} from "@/hooks";
+import type { Listing, ListingImage } from "@/types";
 import { getLocalizedTitle } from "@/types/listing";
 import placeholderImage from "@/assets/property-1.jpg";
 
@@ -33,52 +38,28 @@ interface ListingWithImages extends Listing {
 const BookingDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { t, language, locale } = useLanguage();
+  const { t, tt, language, locale } = useLanguage();
   const { user } = useAuth();
 
-  const [booking, setBooking] = useState<Booking | null>(null);
-  const [listing, setListing] = useState<ListingWithImages | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [updating, setUpdating] = useState(false);
+  const bookingId = id ? parseInt(id, 10) : 0;
+  const { data: booking, isLoading, error } = useBooking(bookingId);
+  const listingId = booking?.listingId ?? 0;
+  const { data: listingData } = useListing(listingId);
+  const { data: images } = useListingImages(listingId);
+
+  const listing: ListingWithImages | null = listingData
+    ? { ...listingData, images: images ?? [] }
+    : null;
+
+  const updateMutation = useUpdateBooking();
+  const deleteMutation = useDeleteBooking();
   const [showCancelDialog, setShowCancelDialog] = useState(false);
-
-  useEffect(() => {
-    const fetchBooking = async () => {
-      if (!id) return;
-
-      setLoading(true);
-      setError(null);
-
-      try {
-        const bookingData = await bookingsApi.getById(parseInt(id));
-        setBooking(bookingData);
-
-        try {
-          const listingData = await listingsApi.getById(bookingData.listingId);
-          const images = await listingsApi.getImages(bookingData.listingId);
-          setListing({ ...listingData, images });
-        } catch (listingErr) {
-          // Failed to fetch listing details
-        }
-      } catch (err) {
-        // Failed to fetch booking
-        setError(t("bookingDetail.errorLoading"));
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchBooking();
-  }, [id, t]);
 
   const handleUpdateStatus = async (status: "CONFIRMED" | "DECLINED") => {
     if (!booking) return;
 
-    setUpdating(true);
     try {
-      const updated = await bookingsApi.update(booking.id, { status });
-      setBooking(updated);
+      await updateMutation.mutateAsync({ id: booking.id, data: { status } });
       toast({
         title:
           status === "CONFIRMED"
@@ -90,8 +71,6 @@ const BookingDetail = () => {
         title: t("bookingDetail.updateFailed"),
         variant: "destructive",
       });
-    } finally {
-      setUpdating(false);
     }
   };
 
@@ -100,7 +79,7 @@ const BookingDetail = () => {
 
     setShowCancelDialog(false);
     try {
-      await bookingsApi.delete(booking.id);
+      await deleteMutation.mutateAsync(booking.id);
       toast({
         title: t("bookingDetail.bookingCancelled"),
       });
@@ -113,7 +92,7 @@ const BookingDetail = () => {
     }
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <PageLayout>
         <InlineSpinner />
@@ -126,7 +105,7 @@ const BookingDetail = () => {
       <PageLayout>
         <div className="container mx-auto px-4 py-16 text-center">
           <h1 className="text-2xl font-bold mb-4">
-            {error || t("bookingDetail.notFound")}
+            {error ? t("bookingDetail.errorLoading") : t("bookingDetail.notFound")}
           </h1>
           <Button onClick={() => navigate("/bookings")}>
             {t("bookingDetail.backToBookings")}
@@ -186,7 +165,7 @@ const BookingDetail = () => {
                       </div>
                       <div className="flex items-center gap-1">
                         <Home className="h-4 w-4" />
-                        <span>{t("common.pricePerMonth").replace("{price}", String(listing?.price))}</span>
+                        <span>{tt("common.pricePerMonth", { price: listing?.price ?? 0 })}</span>
                       </div>
                     </div>
                   </div>
@@ -243,7 +222,7 @@ const BookingDetail = () => {
                 <div className="flex gap-4">
                   <Button
                     onClick={() => handleUpdateStatus("CONFIRMED")}
-                    disabled={updating}
+                    disabled={updateMutation.isPending}
                     className="flex items-center gap-2"
                   >
                     <CheckCircle className="h-4 w-4" />
@@ -252,7 +231,7 @@ const BookingDetail = () => {
                   <Button
                     variant="destructive"
                     onClick={() => handleUpdateStatus("DECLINED")}
-                    disabled={updating}
+                    disabled={updateMutation.isPending}
                     className="flex items-center gap-2"
                   >
                     <XCircle className="h-4 w-4" />

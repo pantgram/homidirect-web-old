@@ -1,14 +1,13 @@
 # ---- Build stage ----
 FROM node:20-alpine AS builder
 
-# Enable pnpm via corepack (version pinned by root package.json `packageManager`)
+# Enable pnpm via corepack (version pinned by package.json `packageManager`)
 RUN corepack enable
 
 WORKDIR /app
 
-# Copy workspace manifests first for a cache-friendly install layer
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
-COPY apps/web/package.json apps/web/
+# Copy manifests first for a cache-friendly install layer
+COPY package.json pnpm-lock.yaml .npmrc ./
 
 RUN pnpm install --frozen-lockfile
 
@@ -16,17 +15,15 @@ RUN pnpm install --frozen-lockfile
 ARG VITE_API_URL=http://localhost:5000
 ENV VITE_API_URL=$VITE_API_URL
 
-# Copy the web app source and build it
-COPY apps/web/ apps/web/
+COPY . .
 
-WORKDIR /app/apps/web
 RUN pnpm build
 
 # ---- Runner stage ----
 FROM nginx:alpine AS runner
 
-COPY --from=builder /app/apps/web/dist /usr/share/nginx/html
-COPY apps/web/nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=builder /app/dist /usr/share/nginx/html
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 EXPOSE 8080
 

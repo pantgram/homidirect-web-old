@@ -288,7 +288,7 @@ export function VerificationUpload({ listingId, listingTitle }: VerificationUplo
   const [isDragging, setIsDragging] = useState(false);
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { t, language } = useLanguage();
+  const { t, tt, language } = useLanguage();
 
   const { data: verificationStatus, isLoading, error, refetch } = useVerificationStatus(listingId);
   const uploadMutation = useUploadVerificationDocument(listingId);
@@ -584,7 +584,7 @@ export function VerificationUpload({ listingId, listingTitle }: VerificationUplo
               <div className="space-y-2">
                 <Progress value={uploadProgress} className="h-2" />
                 <p className="text-xs text-center text-muted-foreground">
-                  {t("verification.uploading").replace("{progress}", String(uploadProgress))}
+                  {tt("verification.uploading", { progress: uploadProgress })}
                 </p>
               </div>
             )}
@@ -618,7 +618,7 @@ export function VerificationUpload({ listingId, listingTitle }: VerificationUplo
           <CardHeader>
             <CardTitle className="text-lg">{t("verification.uploadedDocs")}</CardTitle>
             <CardDescription>
-              {t("verification.docCount").replace("{count}", String(documents.length))}
+              {tt("verification.docCount", { count: documents.length })}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">

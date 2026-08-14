@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Plus, Building2, Pencil, Trash2 } from "lucide-react";
 import { PageLayout } from "@/components/layout/PageLayout";
@@ -15,8 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/lib/toast";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { listingsApi } from "@/api/listings";
-import type { ListingSearchResult } from "@/types";
+import { useMyListings, useDeleteListing } from "@/hooks";
 import { getLocalizedTitle } from "@/types/listing";
 import placeholderImage from "@/assets/property-1.jpg";
 
@@ -24,47 +23,15 @@ const MyListings = () => {
   const { t, language } = useLanguage();
   const navigate = useNavigate();
 
-  const [listings, setListings] = useState<ListingSearchResult[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [pagination, setPagination] = useState({
-    page: 1,
-    totalPages: 1,
-    total: 0,
-    hasNextPage: false,
-    hasPreviousPage: false,
-  });
+  const [page, setPage] = useState(1);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [listingToDelete, setListingToDelete] = useState<number | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
 
-  const fetchListings = useCallback(
-    async (page = 1) => {
-      setLoading(true);
-      setError(null);
+  const { data, isLoading, error, refetch } = useMyListings({ page, limit: 12 });
+  const deleteMutation = useDeleteListing();
 
-      try {
-        const response = await listingsApi.getMyListings({ page, limit: 12 });
-        setListings(response.data);
-        setPagination({
-          page: response.pagination.page,
-          totalPages: response.pagination.totalPages,
-          total: response.pagination.total,
-          hasNextPage: response.pagination.hasNextPage,
-          hasPreviousPage: response.pagination.hasPreviousPage,
-        });
-      } catch (err) {
-        setError(t("myListings.errorLoading"));
-      } finally {
-        setLoading(false);
-      }
-    },
-    [t],
-  );
-
-  useEffect(() => {
-    fetchListings();
-  }, [fetchListings]);
+  const listings = data?.data ?? [];
+  const pagination = data?.pagination;
 
   const handleDeleteClick = (listingId: number) => {
     setListingToDelete(listingId);
@@ -74,24 +41,12 @@ const MyListings = () => {
   const handleDeleteConfirm = async () => {
     if (!listingToDelete) return;
 
-    setIsDeleting(true);
     try {
-      await listingsApi.delete(listingToDelete);
-      toast({
-        title: t("myListings.deleteSuccess"),
-      });
-      setListings((prev) => prev.filter((l) => l.id !== listingToDelete));
-      setPagination((prev) => ({
-        ...prev,
-        total: prev.total - 1,
-      }));
+      await deleteMutation.mutateAsync(listingToDelete);
+      toast({ title: t("myListings.deleteSuccess") });
     } catch (err) {
-      toast({
-        title: t("myListings.deleteFailed"),
-        variant: "destructive",
-      });
+      toast({ title: t("myListings.deleteFailed"), variant: "destructive" });
     } finally {
-      setIsDeleting(false);
       setDeleteDialogOpen(false);
       setListingToDelete(null);
     }
@@ -142,16 +97,16 @@ const MyListings = () => {
             </Link>
           </div>
 
-          {loading && <InlineSpinner />}
+          {isLoading && <InlineSpinner />}
 
-          {error && !loading && (
+          {error && !isLoading && (
             <ErrorState
-              message={error || ""}
-              onRetry={() => fetchListings()}
+              message={t("myListings.errorLoading")}
+              onRetry={() => refetch()}
             />
           )}
 
-          {!loading && !error && listings.length === 0 && (
+          {!isLoading && !error && listings.length === 0 && (
             <EmptyState
               icon={Building2}
               title={t("myListings.noListings")}
@@ -166,7 +121,7 @@ const MyListings = () => {
             />
           )}
 
-          {!loading && !error && listings.length > 0 && (
+          {!isLoading && !error && listings.length > 0 && (
             <>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
                 {listings.map((listing) => (
@@ -225,13 +180,15 @@ const MyListings = () => {
                 ))}
               </div>
 
-              <Pagination
-                currentPage={pagination.page}
-                totalPages={pagination.totalPages}
-                hasNextPage={pagination.hasNextPage}
-                hasPreviousPage={pagination.hasPreviousPage}
-                onPageChange={(page) => fetchListings(page)}
-              />
+              {pagination && (
+                <Pagination
+                  currentPage={pagination.page}
+                  totalPages={pagination.totalPages}
+                  hasNextPage={pagination.hasNextPage}
+                  hasPreviousPage={pagination.hasPreviousPage}
+                  onPageChange={setPage}
+                />
+              )}
             </>
           )}
         </div>
@@ -244,7 +201,7 @@ const MyListings = () => {
           onConfirm={handleDeleteConfirm}
           confirmLabel={t("myListings.delete")}
           destructive
-          isLoading={isDeleting}
+          isLoading={deleteMutation.isPending}
         />
       </PageLayout>
   );

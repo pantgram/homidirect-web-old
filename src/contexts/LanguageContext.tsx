@@ -13,6 +13,8 @@ interface LanguageContextType {
   locale: string;
   setLanguage: (lang: Language) => void;
   t: (key: TranslationKey) => string;
+  /** Translate and interpolate `{placeholder}` tokens. */
+  tt: (key: TranslationKey, params?: Record<string, string | number>) => string;
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(
@@ -42,10 +44,23 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({
     [language],
   );
 
+  const tt = useCallback(
+    (key: TranslationKey, params?: Record<string, string | number>): string => {
+      let str = translations[language][key] || key;
+      if (params) {
+        for (const [token, value] of Object.entries(params)) {
+          str = str.replace(new RegExp(`\\{${token}\\}`, "g"), String(value));
+        }
+      }
+      return str;
+    },
+    [language],
+  );
+
   const locale = language === "el" ? "el-GR" : "en-US";
 
   return (
-    <LanguageContext.Provider value={{ language, locale, setLanguage, t }}>
+    <LanguageContext.Provider value={{ language, locale, setLanguage, t, tt }}>
       {children}
     </LanguageContext.Provider>
   );

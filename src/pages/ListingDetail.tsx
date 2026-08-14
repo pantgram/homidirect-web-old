@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import {
   MapPin,
@@ -32,17 +32,17 @@ import { Separator } from "@/components/ui/separator";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/lib/toast";
-import { listingsApi } from "@/api/listings";
 import { favoritesApi } from "@/api/favorites";
-import { availabilitySlotsApi } from "@/api/availability-slots";
+import {
+  useListing,
+  useListingImages,
+  useAvailableSlots,
+  useFavorites,
+  useDeleteListing,
+} from "@/hooks";
 import { getImageUrl } from "@/utils/image";
 import { formatPrice, formatArea, formatDate } from "@/utils/format";
 import { getPropertyTypeLabel } from "@/utils/property";
-import type {
-  Listing,
-  ListingImage,
-  AvailabilitySlot,
-} from "@/types";
 import { getLocalizedTitle, getLocalizedDescription } from "@/types/listing";
 import placeholderImage from "@/assets/property-1.jpg";
 
@@ -51,21 +51,21 @@ const ListingDetail = () => {
   const navigate = useNavigate();
   const { t, language, locale } = useLanguage();
   const { user, isAuthenticated } = useAuth();
+  const { isFavorite: checkIsFavorite, handleFavoriteChange } = useFavorites();
 
-  const [listing, setListing] = useState<Listing | null>(null);
-  const [images, setImages] = useState<ListingImage[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [isFavorite, setIsFavorite] = useState(false);
   const [favoriteLoading, setFavoriteLoading] = useState(false);
   const [contactDialogOpen, setContactDialogOpen] = useState(false);
   const [bookingDialogOpen, setBookingDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [deleting, setDeleting] = useState(false);
-  const [availableSlots, setAvailableSlots] = useState<AvailabilitySlot[]>([]);
 
   const listingId = id ? parseInt(id, 10) : 0;
+  const { data: listing, isLoading, error } = useListing(listingId);
+  const { data: images = [] } = useListingImages(listingId);
+  const { data: availableSlots = [] } = useAvailableSlots(listingId);
+  const deleteMutation = useDeleteListing();
+
+  const isFavorite = checkIsFavorite(listingId);
 
   const formatSlotDate = (startTime: string) => {
     const date = new Date(startTime);
@@ -88,46 +88,6 @@ const ListingDetail = () => {
       });
     }
   };
-
-  const fetchListing = useCallback(async () => {
-    if (!listingId) return;
-
-    setLoading(true);
-    setError(null);
-
-    try {
-      const [listingData, imagesData] = await Promise.all([
-        listingsApi.getById(listingId),
-        listingsApi.getImages(listingId),
-      ]);
-      setListing(listingData);
-      setImages(imagesData);
-
-      if (isAuthenticated) {
-        try {
-          const isFav = await favoritesApi.checkFavorite(listingId);
-          setIsFavorite(isFav);
-        } catch {
-          // Ignore favorite check errors
-        }
-      }
-
-      try {
-        const slots = await availabilitySlotsApi.getAvailableSlotsByListingId(listingId);
-        setAvailableSlots(slots);
-      } catch {
-        // Ignore availability slot errors
-      }
-    } catch (err) {
-      setError(t("listingDetail.notFoundDesc"));
-    } finally {
-      setLoading(false);
-    }
-  }, [listingId, isAuthenticated, t]);
-
-  useEffect(() => {
-    fetchListing();
-  }, [fetchListing]);
 
   const handlePrevImage = () => {
     setCurrentImageIndex((prev) =>
@@ -153,7 +113,7 @@ const ListingDetail = () => {
         listing.id,
         isFavorite
       );
-      setIsFavorite(newFavoriteState);
+      handleFavoriteChange(listing.id, newFavoriteState);
       toast({
         title: newFavoriteState
           ? t("favorites.added")
@@ -208,9 +168,8 @@ const ListingDetail = () => {
 
   const handleDeleteListing = async () => {
     if (!listing) return;
-    setDeleting(true);
     try {
-      await listingsApi.delete(listing.id);
+      await deleteMutation.mutateAsync(listing.id);
       toast({ title: t("myListings.deleteSuccess") });
       navigate("/my-listings");
     } catch {
@@ -219,7 +178,6 @@ const ListingDetail = () => {
         variant: "destructive",
       });
     } finally {
-      setDeleting(false);
       setDeleteDialogOpen(false);
     }
   };
@@ -238,7 +196,7 @@ const ListingDetail = () => {
         ];
   const currentImage = displayImages[currentImageIndex];
 
-  if (loading) {
+  if (isLoading) {
     return (
       <PageLayout>
         <InlineSpinner />
@@ -254,7 +212,7 @@ const ListingDetail = () => {
             {t("listingDetail.notFound")}
           </h1>
           <p className="text-muted-foreground mb-8">
-            {error || t("listingDetail.notFoundDesc")}
+            {t("listingDetail.notFoundDesc")}
           </p>
           <Button onClick={() => navigate("/search")}>
             {t("listingDetail.backToSearch")}
@@ -698,7 +656,7 @@ const ListingDetail = () => {
         onConfirm={handleDeleteListing}
         confirmLabel={t("listingDetail.deleteListing")}
         destructive
-        isLoading={deleting}
+        isLoading={deleteMutation.isPending}
       />
     </PageLayout>
   );

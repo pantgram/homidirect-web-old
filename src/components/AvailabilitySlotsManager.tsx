@@ -1,12 +1,17 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Calendar } from "@/components/ui/calendar";
 import { toast } from "@/lib/toast";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { availabilitySlotsApi } from "@/api/availability-slots";
-import type { AvailabilitySlot } from "@/types";
+import {
+  useAvailabilitySlots,
+  useDeleteAvailabilitySlot,
+  availabilitySlotKeys,
+} from "@/hooks";
+import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import AvailabilitySlotForm from "@/components/AvailabilitySlotForm";
 import { Calendar as CalendarIcon, Clock, Trash2, Plus, Loader2, List } from "lucide-react";
 import { format, isPast, isSameDay, addMonths, subMonths } from "date-fns";
@@ -19,51 +24,24 @@ const AvailabilitySlotsManager = ({
   listingId,
 }: AvailabilitySlotsManagerProps) => {
   const { t } = useLanguage();
-  const [slots, setSlots] = useState<AvailabilitySlot[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
+  const { data: slots = [], isLoading: loading } = useAvailabilitySlots(listingId);
+  const deleteMutation = useDeleteAvailabilitySlot(listingId);
   const [showForm, setShowForm] = useState(false);
-  const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<number | null>(null);
   const [view, setView] = useState<"list" | "calendar">("list");
   const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
 
-  const fetchSlots = useCallback(async () => {
-    setLoading(true);
+  const handleConfirmDelete = async () => {
+    if (deleteTarget === null) return;
+    const id = deleteTarget;
     try {
-      const data = await availabilitySlotsApi.getByListingId(listingId);
-      setSlots(data);
+      await deleteMutation.mutateAsync(id);
+      toast({ title: t("availabilitySlots.deleted") });
     } catch (err) {
-      toast({
-        title: t("availabilitySlots.loadingSlots"),
-        variant: "destructive",
-      });
+      toast({ title: t("availabilitySlots.deleteFailed"), variant: "destructive" });
     } finally {
-      setLoading(false);
-    }
-  }, [listingId, t]);
-
-  useEffect(() => {
-    fetchSlots();
-  }, [fetchSlots]);
-
-  const handleDelete = async (id: number) => {
-    if (!confirm("Are you sure you want to delete this slot?")) {
-      return;
-    }
-
-    setDeletingId(id);
-    try {
-      await availabilitySlotsApi.delete(id);
-      setSlots((prev) => prev.filter((s) => s.id !== id));
-      toast({
-        title: t("availabilitySlots.deleted"),
-      });
-    } catch (err) {
-      toast({
-        title: t("availabilitySlots.deleteFailed"),
-        variant: "destructive",
-      });
-    } finally {
-      setDeletingId(null);
+      setDeleteTarget(null);
     }
   };
 
@@ -211,10 +189,10 @@ const AvailabilitySlotsManager = ({
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => handleDelete(slot.id)}
-                        disabled={deletingId === slot.id || slot.isBooked}
+                        onClick={() => setDeleteTarget(slot.id)}
+                        disabled={(deleteMutation.isPending && deleteMutation.variables === slot.id) || slot.isBooked}
                       >
-                        {deletingId === slot.id ? (
+                        {deleteMutation.isPending && deleteMutation.variables === slot.id ? (
                           <Loader2 className="h-4 w-4 animate-spin" />
                         ) : (
                           <Trash2 className="h-4 w-4" />
@@ -263,10 +241,10 @@ const AvailabilitySlotsManager = ({
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => handleDelete(slot.id)}
-                            disabled={deletingId === slot.id || slot.isBooked}
+                            onClick={() => setDeleteTarget(slot.id)}
+                            disabled={(deleteMutation.isPending && deleteMutation.variables === slot.id) || slot.isBooked}
                           >
-                            {deletingId === slot.id ? (
+                            {deleteMutation.isPending && deleteMutation.variables === slot.id ? (
                               <Loader2 className="h-4 w-4 animate-spin" />
                             ) : (
                               <Trash2 className="h-4 w-4" />
@@ -328,9 +306,24 @@ const AvailabilitySlotsManager = ({
           open={showForm}
           onOpenChange={setShowForm}
           listingId={listingId}
-          onSuccess={fetchSlots}
+          onSuccess={() => {
+            queryClient.invalidateQueries({
+              queryKey: availabilitySlotKeys.byListing(listingId),
+            });
+          }}
         />
       )}
+
+      <ConfirmDialog
+        open={deleteTarget !== null}
+        onOpenChange={(open) => !open && setDeleteTarget(null)}
+        title={t("listingBookings.delete")}
+        description={t("listingBookings.deleteSlotConfirm")}
+        onConfirm={handleConfirmDelete}
+        confirmLabel={t("listingBookings.delete")}
+        destructive
+        isLoading={deleteMutation.isPending}
+      />
     </Card>
   );
 };

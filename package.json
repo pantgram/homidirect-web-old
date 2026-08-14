@@ -1,15 +1,18 @@
 {
-  "name": "@homidirect/web",
-  "version": "0.0.0",
+  "name": "homidirect",
+  "version": "1.0.0",
   "private": true,
   "type": "module",
+  "description": "Homidirect - Real estate platform frontend",
   "scripts": {
     "dev": "vite",
     "build": "tsc -p tsconfig.app.json --noEmit && vite build",
     "preview": "vite preview",
     "type-check": "tsc -p tsconfig.app.json --noEmit",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "clean": "rm -rf dist node_modules .turbo"
+    "clean": "rm -rf dist node_modules",
+    "docker": "docker compose up -d",
+    "docker:down": "docker compose down"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.7.1",
@@ -64,5 +67,10 @@
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.38.0",
     "vite": "^5.4.19"
-  }
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=8.0.0"
+  },
+  "packageManager": "pnpm@8.15.0"
 }

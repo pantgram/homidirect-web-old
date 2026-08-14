@@ -1,4 +1,3 @@
-import { useQuery } from "@tanstack/react-query";
 import Hero from "@/components/Hero";
 import PropertyCard from "@/components/PropertyCard";
 import { PageLayout } from "@/components/layout/PageLayout";
@@ -7,8 +6,7 @@ import { ArrowRight, Shield, Users, TrendingDown } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { formatArea } from "@/utils/format";
-import { listingsApi } from "@/api/listings";
-import { useFavorites } from "@/hooks";
+import { useFavorites, useFeaturedListings } from "@/hooks";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getLocalizedTitle } from "@/types/listing";
 import placeholderImage from "@/assets/property-1.jpg";
@@ -32,18 +30,7 @@ const Index = () => {
   const { t, language } = useLanguage();
   const { favoriteIds, handleFavoriteChange } = useFavorites();
 
-  const { data: listingsResponse, isLoading } = useQuery({
-    queryKey: ["featuredListings"],
-    queryFn: async () => {
-      // First try to get featured listings
-      const featured = await listingsApi.search({ isFeatured: true, limit: 8 });
-      if (featured.data.length > 0) {
-        return featured;
-      }
-      // Fall back to newest listings if no featured ones
-      return listingsApi.search({ sortBy: "newest", limit: 8 });
-    },
-  });
+  const { data: listingsResponse, isLoading } = useFeaturedListings();
 
   const properties = listingsResponse?.data || [];
 

@@ -1,8 +1,9 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { CalendarClock, Clock, MapPin, Home, Trash2, Video } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 import { PageLayout } from "@/components/layout/PageLayout";
-import { InlineSpinner, BookingStatusBadge } from "@/components/shared";
+import { InlineSpinner, BookingStatusBadge, ConfirmDialog } from "@/components/shared";
 import { formatDateTime } from "@/utils/format";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -10,72 +11,50 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { toast } from "@/lib/toast";
 import { bookingsApi } from "@/api/bookings";
 import { listingsApi } from "@/api/listings";
-import type { Booking, Listing } from "@/types";
+import { bookingKeys, useDeleteBooking } from "@/hooks";
+import type { Listing } from "@/types";
 import { getLocalizedTitle } from "@/types/listing";
 import placeholderImage from "@/assets/property-1.jpg";
 
 const Bookings = () => {
-  const { t, language, locale } = useLanguage();
+  const { t, tt, language, locale } = useLanguage();
 
-  const [bookings, setBookings] = useState<Booking[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [listings, setListings] = useState<Record<number, Listing>>({});
-
-  const fetchBookings = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-
-    try {
+  const { data, isLoading, error } = useQuery({
+    queryKey: bookingKeys.lists(),
+    queryFn: async () => {
       const allBookings = await bookingsApi.getAll();
-      setBookings(allBookings);
-
       const listingIds = [...new Set(allBookings.map((b) => b.listingId))];
-      const listingsData: Record<number, Listing> = {};
-
-      await Promise.all(
-        listingIds.map(async (id) => {
-          try {
-            const listing = await listingsApi.getById(id);
-            listingsData[id] = listing;
-          } catch {
-            // skip listings that fail to load
-          }
-        }),
+      const listingResults = await Promise.allSettled(
+        listingIds.map((id) => listingsApi.getById(id)),
       );
+      const listings: Record<number, Listing> = {};
+      listingIds.forEach((id, i) => {
+        const result = listingResults[i];
+        if (result.status === "fulfilled") listings[id] = result.value;
+      });
+      return { bookings: allBookings, listings };
+    },
+  });
 
-      setListings(listingsData);
-    } catch (err) {
-      setError(t("bookings.errorLoading"));
-    } finally {
-      setLoading(false);
-    }
-  }, [t]);
+  const deleteMutation = useDeleteBooking();
+  const [cancelTarget, setCancelTarget] = useState<number | null>(null);
 
-  useEffect(() => {
-    fetchBookings();
-  }, [fetchBookings]);
+  const bookings = data?.bookings ?? [];
+  const listings = data?.listings ?? {};
 
-  const handleDeleteBooking = async (bookingId: number) => {
-    if (!confirm(t("bookings.cancelConfirm"))) {
-      return;
-    }
-
+  const handleConfirmCancel = async () => {
+    if (!cancelTarget) return;
     try {
-      await bookingsApi.delete(bookingId);
-      setBookings((prev) => prev.filter((b) => b.id !== bookingId));
-      toast({
-        title: t("bookings.cancelled"),
-      });
+      await deleteMutation.mutateAsync(cancelTarget);
+      toast({ title: t("bookings.cancelled") });
     } catch (err) {
-      toast({
-        title: t("bookings.cancelFailed"),
-        variant: "destructive",
-      });
+      toast({ title: t("bookings.cancelFailed"), variant: "destructive" });
+    } finally {
+      setCancelTarget(null);
     }
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <PageLayout>
         <InlineSpinner />
@@ -95,7 +74,7 @@ const Bookings = () => {
           {error && (
             <Card className="mb-6 border-red-200 bg-red-50">
               <CardContent className="p-4">
-                <p className="text-red-600">{error}</p>
+                <p className="text-red-600">{t("bookings.errorLoading")}</p>
               </CardContent>
             </Card>
           )}
@@ -146,7 +125,7 @@ const Bookings = () => {
                                 </div>
                                 <div className="flex items-center gap-1">
                                   <Home className="h-4 w-4" />
-                                  <span>{t("common.pricePerMonth").replace("{price}", String(listing?.price))}</span>
+                                  <span>{tt("common.pricePerMonth", { price: listing?.price ?? 0 })}</span>
                                 </div>
                               </div>
                             </div>
@@ -184,7 +163,7 @@ const Bookings = () => {
                             <Button
                               variant="destructive"
                               size="sm"
-                              onClick={() => handleDeleteBooking(booking.id)}
+                              onClick={() => setCancelTarget(booking.id)}
                               className="flex items-center gap-2"
                             >
                               <Trash2 className="h-4 w-4" />
@@ -206,6 +185,17 @@ const Bookings = () => {
           )}
         </div>
       </div>
+
+      <ConfirmDialog
+        open={cancelTarget !== null}
+        onOpenChange={(open) => !open && setCancelTarget(null)}
+        title={t("bookings.cancel")}
+        description={t("bookings.cancelConfirm")}
+        onConfirm={handleConfirmCancel}
+        confirmLabel={t("bookings.cancel")}
+        destructive
+        isLoading={deleteMutation.isPending}
+      />
     </PageLayout>
   );
 };
