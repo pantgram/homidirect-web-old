@@ -15,11 +15,11 @@ import {
 } from "lucide-react";
 import { PageLayout } from "@/components/layout/PageLayout";
 import { BackButton } from "@/components/shared/BackButton";
-import { BookingStatusBadge } from "@/components/shared/BookingStatusBadge";
+import { TimeSlotStatusBadge } from "@/components/shared/TimeSlotStatusBadge";
 import { InlineSpinner } from "@/components/shared";
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import { formatDateTime } from "@/utils/format";
-import AvailabilitySlotForm from "@/components/AvailabilitySlotForm";
+import TimeSlotForm from "@/components/TimeSlotForm";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -28,13 +28,15 @@ import { toast } from "@/lib/toast";
 import {
   useListing,
   useListingBookings,
-  useAvailabilitySlots,
-  useUpdateBooking,
-  useDeleteBooking,
-  useDeleteAvailabilitySlot,
-  availabilitySlotKeys,
+  useListingCoverImage,
+  useListingTimeSlots,
+  useUpdateTimeSlot,
+  useDeleteTimeSlot,
+  timeSlotKeys,
 } from "@/hooks";
+import type { TimeSlotStatus } from "@/types";
 import { getLocalizedTitle } from "@/types/listing";
+import { getImageUrl } from "@/utils/image";
 import placeholderImage from "@/assets/property-1.jpg";
 
 const ListingBookings = () => {
@@ -45,12 +47,12 @@ const ListingBookings = () => {
 
   const listingId = id ? parseInt(id, 10) : 0;
   const { data: listing, isLoading } = useListing(listingId);
+  const { data: coverImage } = useListingCoverImage(listingId);
   const { data: bookings = [] } = useListingBookings(listingId);
-  const { data: availabilitySlots = [] } = useAvailabilitySlots(listingId);
+  const { data: timeSlots = [] } = useListingTimeSlots(listingId);
 
-  const updateMutation = useUpdateBooking();
-  const deleteBookingMutation = useDeleteBooking();
-  const deleteSlotMutation = useDeleteAvailabilitySlot(listingId);
+  const updateMutation = useUpdateTimeSlot();
+  const deleteSlotMutation = useDeleteTimeSlot();
 
   const [activeTab, setActiveTab] = useState<"bookings" | "slots">("bookings");
   const [showSlotForm, setShowSlotForm] = useState(false);
@@ -59,13 +61,19 @@ const ListingBookings = () => {
 
   const refreshSlots = () => {
     queryClient.invalidateQueries({
-      queryKey: availabilitySlotKeys.byListing(listingId),
+      queryKey: timeSlotKeys.byListing(listingId),
+    });
+    queryClient.invalidateQueries({
+      queryKey: timeSlotKeys.bookings(listingId),
     });
   };
 
-  const handleUpdateStatus = async (bookingId: number, status: "CONFIRMED" | "DECLINED") => {
+  const handleUpdateStatus = async (
+    slotId: number,
+    status: Extract<TimeSlotStatus, "CONFIRMED" | "DECLINED">
+  ) => {
     try {
-      await updateMutation.mutateAsync({ id: bookingId, data: { status } });
+      await updateMutation.mutateAsync({ id: slotId, data: { status } });
       toast({
         title: status === "CONFIRMED" ? t("listingBookings.bookingConfirmed") : t("listingBookings.bookingDeclined"),
       });
@@ -79,9 +87,9 @@ const ListingBookings = () => {
 
   const handleDeleteBooking = async () => {
     if (cancelBookingTarget === null) return;
-    const bookingId = cancelBookingTarget;
+    const slotId = cancelBookingTarget;
     try {
-      await deleteBookingMutation.mutateAsync(bookingId);
+      await deleteSlotMutation.mutateAsync(slotId);
       toast({ title: t("listingBookings.bookingCancelled") });
     } catch (err) {
       toast({ title: t("listingBookings.cancelFailed"), variant: "destructive" });
@@ -141,7 +149,7 @@ const ListingBookings = () => {
               <CardContent className="p-4">
                 <div className="flex items-center gap-4">
                   <img
-                    src={listing.images?.[0]?.url || placeholderImage}
+                    src={coverImage ? getImageUrl(coverImage) : placeholderImage}
                     alt={getLocalizedTitle(listing, language)}
                     className="w-16 h-16 object-cover rounded-lg"
                   />
@@ -176,7 +184,7 @@ const ListingBookings = () => {
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
-              {t("listingBookings.timeSlotsTab")} ({availabilitySlots.length})
+              {t("listingBookings.timeSlotsTab")} ({timeSlots.length})
             </button>
           </div>
 
@@ -199,7 +207,7 @@ const ListingBookings = () => {
                       <div className="flex items-start justify-between">
                         <div className="flex gap-6">
                           <img
-                            src={listing?.images?.[0]?.url || placeholderImage}
+                            src={coverImage ? getImageUrl(coverImage) : placeholderImage}
                             alt={getLocalizedTitle(listing, language)}
                             className="w-32 h-32 object-cover rounded-lg"
                           />
@@ -207,7 +215,12 @@ const ListingBookings = () => {
                           <div className="space-y-3">
                             <div className="flex items-center gap-4">
                               <h3 className="font-semibold">{listing ? getLocalizedTitle(listing, language) : ""}</h3>
-                              <BookingStatusBadge status={booking.status} />
+                              <TimeSlotStatusBadge status={booking.status} />
+                              <Badge variant="outline">
+                                {booking.type === "REMOTE"
+                                  ? t("availabilitySlots.typeRemote")
+                                  : t("availabilitySlots.typeOnSite")}
+                              </Badge>
                             </div>
 
                             <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -218,11 +231,21 @@ const ListingBookings = () => {
                             <div className="flex items-center gap-2 text-sm">
                               <Clock className="h-4 w-4 text-primary" />
                               <span className="font-medium">
-                                {formatDateTime(booking.scheduledAt, locale, {
+                                {formatDateTime(booking.startTime, locale, {
                                   weekday: "short",
                                   year: "numeric",
                                   month: "short",
                                   day: "numeric",
+                                })}{" "}
+                                ·{" "}
+                                {new Date(booking.startTime).toLocaleTimeString(locale, {
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                })}{" "}
+                                -{" "}
+                                {new Date(booking.endTime).toLocaleTimeString(locale, {
+                                  hour: "2-digit",
+                                  minute: "2-digit",
                                 })}
                               </span>
                             </div>
@@ -265,14 +288,16 @@ const ListingBookings = () => {
                               </Button>
                             </>
                           )}
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => setCancelBookingTarget(booking.id)}
-                          >
-                            <Trash2 className="h-4 w-4 mr-2" />
-                            {t("bookings.cancel")}
-                          </Button>
+                          {(booking.status === "PENDING" || booking.status === "CONFIRMED") && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => setCancelBookingTarget(booking.id)}
+                            >
+                              <Trash2 className="h-4 w-4 mr-2" />
+                              {t("bookings.cancel")}
+                            </Button>
+                          )}
                         </div>
                       </div>
                     </CardContent>
@@ -299,7 +324,7 @@ const ListingBookings = () => {
                 </CardContent>
               </Card>
 
-              {availabilitySlots.length === 0 ? (
+              {timeSlots.length === 0 ? (
                 <Card>
                   <CardContent className="p-12 text-center">
                     <Clock className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
@@ -314,7 +339,7 @@ const ListingBookings = () => {
                   </CardContent>
                 </Card>
               ) : (
-                availabilitySlots.map((slot) => (
+                timeSlots.map((slot) => (
                   <Card key={slot.id}>
                     <CardContent className="p-6">
                       <div className="flex items-center justify-between">
@@ -340,6 +365,12 @@ const ListingBookings = () => {
                               })}
                             </p>
                             <div className="flex items-center gap-2 mt-1">
+                              <Badge variant="outline" className="gap-1">
+                                {slot.type === "REMOTE" && <Video className="h-3 w-3" />}
+                                {slot.type === "REMOTE"
+                                  ? t("availabilitySlots.typeRemote")
+                                  : t("availabilitySlots.typeOnSite")}
+                              </Badge>
                               <Badge className={slot.isBooked ? "bg-red-500/10 text-red-600" : "bg-green-500/10 text-green-600"}>
                                 {slot.isBooked ? t("listingBookings.booked") : t("listingBookings.available")}
                               </Badge>
@@ -369,7 +400,7 @@ const ListingBookings = () => {
       </div>
 
       {id && (
-        <AvailabilitySlotForm
+        <TimeSlotForm
           open={showSlotForm}
           onOpenChange={setShowSlotForm}
           listingId={parseInt(id)}
@@ -385,7 +416,7 @@ const ListingBookings = () => {
         onConfirm={handleDeleteBooking}
         confirmLabel={t("listingBookings.delete")}
         destructive
-        isLoading={deleteBookingMutation.isPending}
+        isLoading={deleteSlotMutation.isPending}
       />
 
       <ConfirmDialog

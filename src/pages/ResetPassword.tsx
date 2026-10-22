@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link, useSearchParams, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { PageLayout } from "@/components/layout/PageLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,28 +9,40 @@ import { toast } from "@/lib/toast";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { authApi } from "@/api/auth";
 import { getApiError } from "@/api";
+import { supabase } from "@/lib/supabase";
 import { ArrowLeft, CheckCircle } from "lucide-react";
 
 const ResetPassword = () => {
   const { t } = useLanguage();
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const token = searchParams.get("token");
 
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [hasRecoverySession, setHasRecoverySession] = useState<boolean | null>(
+    null
+  );
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const checkSession = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!cancelled) {
+        setHasRecoverySession(!!session);
+      }
+    };
+
+    checkSession();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
-    if (!token) {
-      toast({
-        title: t("auth.error") || "Error",
-        description: t("auth.invalidResetLink") || "Invalid reset link",
-        variant: "destructive",
-      });
-      return;
-    }
 
     const formData = new FormData(e.currentTarget);
     const password = formData.get("password") as string;
@@ -57,7 +69,7 @@ const ResetPassword = () => {
     setIsLoading(true);
 
     try {
-      await authApi.resetPassword({ token, password });
+      await authApi.resetPassword(password);
       setIsSuccess(true);
       toast({
         title: t("auth.passwordResetSuccess"),
@@ -74,7 +86,7 @@ const ResetPassword = () => {
     }
   };
 
-  if (!token) {
+  if (hasRecoverySession === false) {
     return (
       <PageLayout>
         <div className="container mx-auto px-4 py-16">
@@ -162,7 +174,11 @@ const ResetPassword = () => {
                       required
                     />
                   </div>
-                  <Button type="submit" className="w-full" disabled={isLoading}>
+                  <Button
+                    type="submit"
+                    className="w-full"
+                    disabled={isLoading || hasRecoverySession !== true}
+                  >
                     {isLoading ? t("auth.resetting") : t("auth.resetPasswordButton")}
                   </Button>
                 </form>

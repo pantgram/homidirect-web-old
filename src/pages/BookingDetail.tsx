@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import { PageLayout } from "@/components/layout/PageLayout";
 import { BackButton } from "@/components/shared/BackButton";
-import { BookingStatusBadge } from "@/components/shared/BookingStatusBadge";
+import { TimeSlotStatusBadge } from "@/components/shared/TimeSlotStatusBadge";
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import { InlineSpinner } from "@/components/shared";
 import { formatDateTime } from "@/utils/format";
@@ -21,13 +21,13 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/lib/toast";
 import {
-  useBooking,
+  useTimeSlot,
   useListing,
   useListingImages,
-  useUpdateBooking,
-  useDeleteBooking,
+  useUpdateTimeSlot,
+  useDeleteTimeSlot,
 } from "@/hooks";
-import type { Listing, ListingImage } from "@/types";
+import type { Listing, ListingImage, TimeSlotStatus } from "@/types";
 import { getLocalizedTitle } from "@/types/listing";
 import placeholderImage from "@/assets/property-1.jpg";
 
@@ -41,9 +41,9 @@ const BookingDetail = () => {
   const { t, tt, language, locale } = useLanguage();
   const { user } = useAuth();
 
-  const bookingId = id ? parseInt(id, 10) : 0;
-  const { data: booking, isLoading, error } = useBooking(bookingId);
-  const listingId = booking?.listingId ?? 0;
+  const slotId = id ? parseInt(id, 10) : 0;
+  const { data: slot, isLoading, error } = useTimeSlot(slotId);
+  const listingId = slot?.listingId ?? 0;
   const { data: listingData } = useListing(listingId);
   const { data: images } = useListingImages(listingId);
 
@@ -51,15 +51,15 @@ const BookingDetail = () => {
     ? { ...listingData, images: images ?? [] }
     : null;
 
-  const updateMutation = useUpdateBooking();
-  const deleteMutation = useDeleteBooking();
+  const updateMutation = useUpdateTimeSlot();
+  const deleteMutation = useDeleteTimeSlot();
   const [showCancelDialog, setShowCancelDialog] = useState(false);
 
-  const handleUpdateStatus = async (status: "CONFIRMED" | "DECLINED") => {
-    if (!booking) return;
+  const handleUpdateStatus = async (status: Extract<TimeSlotStatus, "CONFIRMED" | "DECLINED">) => {
+    if (!slot) return;
 
     try {
-      await updateMutation.mutateAsync({ id: booking.id, data: { status } });
+      await updateMutation.mutateAsync({ id: slot.id, data: { status } });
       toast({
         title:
           status === "CONFIRMED"
@@ -75,11 +75,11 @@ const BookingDetail = () => {
   };
 
   const handleDelete = async () => {
-    if (!booking) return;
+    if (!slot) return;
 
     setShowCancelDialog(false);
     try {
-      await deleteMutation.mutateAsync(booking.id);
+      await deleteMutation.mutateAsync(slot.id);
       toast({
         title: t("bookingDetail.bookingCancelled"),
       });
@@ -100,7 +100,7 @@ const BookingDetail = () => {
     );
   }
 
-  if (error || !booking) {
+  if (error || !slot) {
     return (
       <PageLayout>
         <div className="container mx-auto px-4 py-16 text-center">
@@ -115,8 +115,8 @@ const BookingDetail = () => {
     );
   }
 
-  const isLandlord = user?.id === booking.landlordId;
-  const canCancel = booking.status === "PENDING";
+  const isLandlord = user?.id === slot.landlordId;
+  const canCancel = slot.status === "PENDING" || slot.status === "CONFIRMED";
 
   return (
     <PageLayout>
@@ -127,7 +127,7 @@ const BookingDetail = () => {
           <div className="flex items-start justify-between">
             <div>
               <h1 className="text-3xl font-bold mb-2">{t("bookingDetail.title")}</h1>
-              <BookingStatusBadge status={booking.status} />
+              <TimeSlotStatusBadge status={slot.status} />
             </div>
             {canCancel && (
               <Button
@@ -183,21 +183,48 @@ const BookingDetail = () => {
                   <div>
                     <p className="text-sm text-muted-foreground">{t("bookingDetail.dateAndTime")}</p>
                     <p className="text-lg font-medium">
-                      {formatDateTime(booking.scheduledAt, locale, {
+                      {formatDateTime(slot.startTime, locale, {
                         weekday: "long",
                         year: "numeric",
                         month: "long",
                         day: "numeric",
                       })}
                     </p>
+                    <p className="text-sm text-muted-foreground">
+                      {new Date(slot.startTime).toLocaleTimeString(locale, {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}{" "}
+                      -{" "}
+                      {new Date(slot.endTime).toLocaleTimeString(locale, {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </p>
                   </div>
                 </div>
 
-                {booking.meetLink && booking.status === "CONFIRMED" && (
+                <div className="flex items-center gap-3">
+                  {slot.type === "REMOTE" ? (
+                    <Video className="h-5 w-5 text-primary" />
+                  ) : (
+                    <MapPin className="h-5 w-5 text-primary" />
+                  )}
+                  <div>
+                    <p className="text-sm text-muted-foreground">{t("availabilitySlots.slotType")}</p>
+                    <p className="font-medium">
+                      {slot.type === "REMOTE"
+                        ? t("availabilitySlots.typeRemote")
+                        : t("availabilitySlots.typeOnSite")}
+                    </p>
+                  </div>
+                </div>
+
+                {slot.meetLink && slot.status === "CONFIRMED" && (
                   <div className="mt-6">
                     <Button asChild className="w-full sm:w-auto">
                       <a
-                        href={booking.meetLink}
+                        href={slot.meetLink}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="flex items-center gap-2"
@@ -212,7 +239,7 @@ const BookingDetail = () => {
             </CardContent>
           </Card>
 
-          {isLandlord && booking.status === "PENDING" && (
+          {isLandlord && slot.status === "PENDING" && (
             <Card>
               <CardContent className="p-6">
                 <h2 className="text-xl font-semibold mb-4">{t("bookingDetail.actions")}</h2>

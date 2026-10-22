@@ -1,18 +1,19 @@
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { Upload, X, ImageIcon, Loader2, GripVertical } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/lib/toast";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { listingsApi, type PendingImage } from "@/api/listings";
-import { getApiError } from "@/api";
-import { env } from "@/config/env";
 import { cn } from "@/lib/utils";
 
+export interface StagedImage {
+  id: string;
+  file: File;
+  previewUrl: string;
+}
+
 interface ImageUploadProps {
-  sessionId: string | null;
-  onSessionIdChange: (sessionId: string) => void;
-  images: PendingImage[];
-  onImagesChange: (images: PendingImage[]) => void;
+  images: StagedImage[];
+  onImagesChange: (images: StagedImage[]) => void;
   maxImages?: number;
   disabled?: boolean;
 }
@@ -21,8 +22,6 @@ const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
 export function ImageUpload({
-  sessionId,
-  onSessionIdChange,
   images,
   onImagesChange,
   maxImages = 10,
@@ -30,91 +29,79 @@ export function ImageUpload({
 }: ImageUploadProps) {
   const { t } = useLanguage();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const currentSessionIdRef = useRef<string | null>(sessionId);
   const [isDragging, setIsDragging] = useState(false);
   const [uploadingCount, setUploadingCount] = useState(0);
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
 
-  currentSessionIdRef.current = sessionId;
+  useEffect(() => {
+    return () => {
+      images.forEach((image) => URL.revokeObjectURL(image.previewUrl));
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  const validateFile = useCallback((file: File): string | null => {
-    if (!ALLOWED_TYPES.includes(file.type)) {
-      return t("imageUpload.invalidType");
-    }
-    if (file.size > MAX_FILE_SIZE) {
-      return t("imageUpload.fileTooLarge");
-    }
-    return null;
-  }, [t]);
-
-  const uploadFile = useCallback(async (file: File): Promise<PendingImage | null> => {
-    const error = validateFile(file);
-    if (error) {
-      toast({
-        title: t("imageUpload.uploadError"),
-        description: `${file.name}: ${error}`,
-        variant: "destructive",
-      });
+  const validateFile = useCallback(
+    (file: File): string | null => {
+      if (!ALLOWED_TYPES.includes(file.type)) {
+        return t("imageUpload.invalidType");
+      }
+      if (file.size > MAX_FILE_SIZE) {
+        return t("imageUpload.fileTooLarge");
+      }
       return null;
-    }
+    },
+    [t]
+  );
 
-    try {
-      const currentSessionId = currentSessionIdRef.current || "new";
-      const response = await listingsApi.uploadPendingImage(
-        currentSessionId,
-        file
-      );
+  const handleFiles = useCallback(
+    async (files: FileList | File[]) => {
+      const fileArray = Array.from(files);
+      const remainingSlots = maxImages - images.length;
 
-      if (!currentSessionIdRef.current) {
-        onSessionIdChange(response.uploadSessionId);
-        currentSessionIdRef.current = response.uploadSessionId;
+      if (fileArray.length > remainingSlots) {
+        toast({
+          title: t("imageUpload.tooManyImages"),
+          description: t("imageUpload.maxImagesReached").replace(
+            "{max}",
+            String(maxImages)
+          ),
+          variant: "destructive",
+        });
+        return;
       }
 
-      return response.image;
-    } catch (err) {
-      toast({
-        title: t("imageUpload.uploadError"),
-        description: getApiError(err).message || t("imageUpload.uploadFailed"),
-        variant: "destructive",
-      });
-      return null;
-    }
-  }, [validateFile, t, onSessionIdChange]);
+      setUploadingCount(fileArray.length);
 
-  const handleFiles = useCallback(async (files: FileList | File[]) => {
-    const fileArray = Array.from(files);
-    const remainingSlots = maxImages - images.length;
+      const staged: StagedImage[] = [];
 
-    if (fileArray.length > remainingSlots) {
-      toast({
-        title: t("imageUpload.tooManyImages"),
-        description: t("imageUpload.maxImagesReached").replace(
-          "{max}",
-          String(maxImages)
-        ),
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setUploadingCount(fileArray.length);
-
-    const successfulUploads: PendingImage[] = [];
-
-    for (const file of fileArray) {
-      const result = await uploadFile(file);
-      if (result) {
-        successfulUploads.push(result);
+      for (const file of fileArray) {
+        const error = validateFile(file);
+        if (error) {
+          toast({
+            title: t("imageUpload.uploadError"),
+            description: `${file.name}: ${error}`,
+            variant: "destructive",
+          });
+          continue;
+        }
+        staged.push({
+          id: `${file.name}-${file.lastModified}-${Math.random()
+            .toString(36)
+            .slice(2)}`,
+          file,
+          previewUrl: URL.createObjectURL(file),
+        });
       }
-    }
 
-    if (successfulUploads.length > 0) {
-      onImagesChange([...images, ...successfulUploads]);
-    }
+      if (staged.length > 0) {
+        onImagesChange([...images, ...staged]);
+      }
 
-    setUploadingCount(0);
-  }, [maxImages, images, t, uploadFile, onImagesChange]);
+      setUploadingCount(0);
+    },
+    [maxImages, images, t, validateFile, onImagesChange]
+  );
 
   const handleDragOver = useCallback(
     (e: React.DragEvent) => {
@@ -159,23 +146,16 @@ export function ImageUpload({
     }
   };
 
-  const handleRemoveImage = async (imageId: number) => {
-    if (!sessionId) return;
-
-    try {
-      await listingsApi.deletePendingImage(sessionId, imageId);
-      onImagesChange(images.filter((img) => img.id !== imageId));
-      toast({
-        title: t("imageUpload.imageRemoved"),
-        description: t("imageUpload.imageRemovedDesc"),
-      });
-    } catch (err) {
-      toast({
-        title: t("imageUpload.removeError"),
-        description: getApiError(err).message || t("imageUpload.removeFailed"),
-        variant: "destructive",
-      });
+  const handleRemoveImage = (imageId: string) => {
+    const image = images.find((img) => img.id === imageId);
+    if (image) {
+      URL.revokeObjectURL(image.previewUrl);
     }
+    onImagesChange(images.filter((img) => img.id !== imageId));
+    toast({
+      title: t("imageUpload.imageRemoved"),
+      description: t("imageUpload.imageRemovedDesc"),
+    });
   };
 
   const handleImageDragStart = (e: React.DragEvent, index: number) => {
@@ -199,7 +179,7 @@ export function ImageUpload({
   const handleImageDrop = (e: React.DragEvent, dropIndex: number) => {
     e.preventDefault();
     e.stopPropagation();
-    
+
     if (draggedIndex === null || draggedIndex === dropIndex) {
       setDraggedIndex(null);
       setDragOverIndex(null);
@@ -218,11 +198,6 @@ export function ImageUpload({
   const handleImageDragEnd = () => {
     setDraggedIndex(null);
     setDragOverIndex(null);
-  };
-
-  const getImageUrl = (url: string) => {
-    if (url.startsWith("http")) return url;
-    return `${env.apiUrl}${url}`;
   };
 
   const isUploading = uploadingCount > 0;
@@ -315,7 +290,7 @@ export function ImageUpload({
                 </div>
               )}
               <img
-                src={getImageUrl(image.url)}
+                src={image.previewUrl}
                 alt={`Property image ${index + 1}`}
                 className="w-full h-full object-cover pointer-events-none"
               />

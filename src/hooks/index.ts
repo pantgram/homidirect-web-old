@@ -18,30 +18,26 @@ export {
   useUpdateListing,
   useDeleteListing,
   useListingImages,
+  useListingCoverImage,
   useUploadListingImage,
   useDeleteListingImage,
   listingKeys,
 } from "./useListings";
 
-// Bookings hooks
+// Time slots hooks (a booking is a claimed slot)
 export {
-  useBookings,
-  useBooking,
+  useMyTimeSlots,
+  useListingTimeSlots,
+  useAvailableTimeSlots,
   useListingBookings,
-  useCreateBooking,
-  useUpdateBooking,
-  useDeleteBooking,
-  bookingKeys,
-} from "./useBookings";
-
-// Availability slots hooks
-export {
-  useAvailabilitySlots,
-  useAvailableSlots,
-  useCreateAvailabilitySlot,
-  useDeleteAvailabilitySlot,
-  availabilitySlotKeys,
-} from "./useAvailabilitySlots";
+  useTimeSlot,
+  useCreateTimeSlot,
+  useProposeTimeSlot,
+  useClaimTimeSlot,
+  useUpdateTimeSlot,
+  useDeleteTimeSlot,
+  timeSlotKeys,
+} from "./useTimeSlots";
 
 // Verification hooks
 export {

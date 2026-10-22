@@ -20,6 +20,7 @@ const Auth = lazy(() => import("./pages/Auth"));
 const OAuthCallback = lazy(() => import("./pages/OAuthCallback"));
 const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
+const VerifyEmail = lazy(() => import("./pages/VerifyEmail"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
 const TermsOfService = lazy(() => import("./pages/TermsOfService"));
 const Contact = lazy(() => import("./pages/Contact"));
@@ -89,6 +90,7 @@ const App = () => (
               <Route path="/auth/callback" element={withSuspense(OAuthCallback)} />
               <Route path="/forgot-password" element={withSuspense(ForgotPassword)} />
               <Route path="/reset-password" element={withSuspense(ResetPassword)} />
+              <Route path="/verify-email" element={withSuspense(VerifyEmail)} />
               <Route path="/privacy-policy" element={withSuspense(PrivacyPolicy)} />
               <Route path="/terms-of-service" element={withSuspense(TermsOfService)} />
               <Route path="/contact" element={withSuspense(Contact)} />

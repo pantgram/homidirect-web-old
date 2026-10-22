@@ -1,13 +1,11 @@
 import { useEffect, useRef } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { toast } from "@/lib/toast";
-import { tokenStorage } from "@/api/client";
+import { supabase } from "@/lib/supabase";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { apiClient } from "@/api/client";
 
 const OAuthCallback = () => {
   const navigate = useNavigate();
-  const location = useLocation();
   const { t } = useLanguage();
   const processed = useRef(false);
 
@@ -15,35 +13,26 @@ const OAuthCallback = () => {
     if (processed.current) return;
     processed.current = true;
 
-    const searchParams = new URLSearchParams(location.search);
-    const code = searchParams.get("code");
+    const finish = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
 
-    if (code) {
-      apiClient
-        .post("/auth/google/exchange", { code })
-        .then((response) => {
-          const { token } = response.data;
-          tokenStorage.setToken(token.access_token);
-          tokenStorage.setRefreshToken(token.refresh_token);
-          window.location.replace("/");
-        })
-        .catch(() => {
-          toast({
-            title: t("auth.error"),
-            description: t("auth.loginFailed"),
-            variant: "destructive",
-          });
-          navigate("/auth", { replace: true });
+      if (!session) {
+        toast({
+          title: t("auth.error"),
+          description: t("auth.loginFailed"),
+          variant: "destructive",
         });
-    } else {
-      toast({
-        title: t("auth.error"),
-        description: t("auth.loginFailed"),
-        variant: "destructive",
-      });
-      navigate("/auth", { replace: true });
-    }
-  }, [navigate, location.search, t]);
+        navigate("/auth", { replace: true });
+        return;
+      }
+
+      window.location.replace("/");
+    };
+
+    finish();
+  }, [navigate, t]);
 
   return (
     <div className="min-h-screen flex items-center justify-center">

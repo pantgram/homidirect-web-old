@@ -22,14 +22,15 @@ import {
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from "@/lib/toast";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { ImageUpload } from "@/components/listing/ImageUpload";
+import { ImageUpload, type StagedImage } from "@/components/listing/ImageUpload";
 import { useCreateListing } from "@/hooks/useListings";
+import { useAuth } from "@/contexts/AuthContext";
+import { listingsApi } from "@/api/listings";
 import { LocationSearch } from "@/components/ui/location-search";
 import { LocationMap } from "@/components/ui/location-map";
 import { reverseGeocode } from "@/api/geocoding";
 import { PageLayout } from "@/components/layout/PageLayout";
 import { PageHeader } from "@/components/shared";
-import type { PendingImage } from "@/api/listings";
 import type { PropertyType, CreateListingRequest } from "@/api";
 import { getApiError } from "@/api";
 import type { LocationResult } from "@/api/geocoding";
@@ -69,11 +70,12 @@ const initialFormData: ListingFormData = {
 const ListProperty = () => {
   const navigate = useNavigate();
   const { t, language } = useLanguage();
+  const { user } = useAuth();
   const createListing = useCreateListing();
 
   const [formData, setFormData] = useState<ListingFormData>(initialFormData);
-  const [uploadSessionId, setUploadSessionId] = useState<string | null>(null);
-  const [images, setImages] = useState<PendingImage[]>([]);
+  const [images, setImages] = useState<StagedImage[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formErrors, setFormErrors] = useState<
     Partial<Record<keyof ListingFormData, string>>
   >({});
@@ -130,6 +132,11 @@ const ListProperty = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (!user) {
+      navigate("/auth", { state: { returnTo: "/list-property" } });
+      return;
+    }
+
     if (!validateForm()) {
       toast({
         title: t("listForm.validation.error"),
@@ -148,9 +155,12 @@ const ListProperty = () => {
       return;
     }
 
-    const listingData: CreateListingRequest & { uploadSessionId?: string } = {
+    setIsSubmitting(true);
+
+    const listingData: CreateListingRequest = {
+      landlordId: user.id,
       titleEl: formData.titleEl.trim(),
-      descriptionEl: formData.descriptionEl.trim(),
+      descriptionEl: formData.descriptionEl.trim() || undefined,
       propertyType: formData.propertyType as PropertyType,
       price: parseFloat(formData.price),
       address: formData.address.trim(),
@@ -162,11 +172,15 @@ const ListProperty = () => {
       bedrooms: parseInt(formData.bedrooms, 10),
       bathrooms: parseInt(formData.bathrooms, 10),
       area: parseFloat(formData.area),
-      uploadSessionId: uploadSessionId || undefined,
     };
 
     try {
       const newListing = await createListing.mutateAsync(listingData);
+
+      for (const image of images) {
+        await listingsApi.uploadImage(newListing.id, image.file);
+      }
+
       toast({
         title: t("listForm.listed"),
         description: t("listForm.listedDesc"),
@@ -178,6 +192,8 @@ const ListProperty = () => {
         description: getApiError(err).message || t("listForm.errorDesc"),
         variant: "destructive",
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -427,12 +443,10 @@ const ListProperty = () => {
                     </p>
                   </div>
                   <ImageUpload
-                    sessionId={uploadSessionId}
-                    onSessionIdChange={setUploadSessionId}
                     images={images}
                     onImagesChange={setImages}
                     maxImages={10}
-                    disabled={createListing.isPending}
+                    disabled={isSubmitting}
                   />
                 </div>
 
@@ -446,9 +460,9 @@ const ListProperty = () => {
                   type="submit"
                   className="w-full"
                   size="lg"
-                  disabled={createListing.isPending}
+                  disabled={isSubmitting || createListing.isPending}
                 >
-                  {createListing.isPending ? (
+                  {isSubmitting || createListing.isPending ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       {t("listForm.submitting")}

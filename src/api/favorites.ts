@@ -3,7 +3,7 @@ import type { ListingSearchResult, PaginatedResponse } from "@/types";
 
 export interface FavoriteToggleResponse {
   success: boolean;
-  added?: boolean;
+  added: boolean;
   message: string;
 }
 
@@ -22,7 +22,7 @@ export const favoritesApi = {
   }): Promise<PaginatedResponse<ListingSearchResult>> {
     const response = await apiClient.get<
       PaginatedResponse<ListingSearchResult>
-    >("/favorites", { params });
+    >("/favorites/", { params });
     return response.data;
   },
 
@@ -47,8 +47,11 @@ export const favoritesApi = {
     return response.data;
   },
 
-  async removeFavorite(listingId: number): Promise<void> {
-    await apiClient.delete(`/favorites/${listingId}`);
+  async removeFavorite(listingId: number): Promise<{ removed: boolean }> {
+    const response = await apiClient.delete<{ removed: boolean }>(
+      `/favorites/${listingId}`,
+    );
+    return response.data;
   },
 
   async toggleFavorite(
@@ -56,11 +59,10 @@ export const favoritesApi = {
     isFavorited: boolean,
   ): Promise<boolean> {
     if (isFavorited) {
-      await this.removeFavorite(listingId);
-      return false;
-    } else {
-      await this.addFavorite(listingId);
-      return true;
+      const { removed } = await this.removeFavorite(listingId);
+      return !removed;
     }
+    const { added } = await this.addFavorite(listingId);
+    return added;
   },
 };

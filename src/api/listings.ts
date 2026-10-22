@@ -3,28 +3,11 @@ import type {
   Listing,
   CreateListingRequest,
   UpdateListingRequest,
-  ListingsQueryParams,
   ListingImage,
   SearchListingsParams,
   ListingSearchResult,
   PaginatedResponse,
 } from "@/types";
-
-export interface PendingImage {
-  id: number;
-  url: string;
-  uploadSessionId: string;
-  createdAt: string;
-}
-
-export interface UploadPendingImageResponse {
-  image: PendingImage;
-  uploadSessionId: string;
-}
-
-export interface CreateListingWithSessionRequest extends CreateListingRequest {
-  uploadSessionId?: string;
-}
 
 export interface PlatformStats {
   activeListingsCount: number;
@@ -44,8 +27,13 @@ export const listingsApi = {
     return response.data;
   },
 
-  async getAll(params?: ListingsQueryParams): Promise<Listing[]> {
-    const response = await apiClient.get<{ listings: Listing[] }>("/listings", { params });
+  async getCities(): Promise<string[]> {
+    const response = await apiClient.get<string[]>("/listings/cities");
+    return response.data;
+  },
+
+  async getAll(): Promise<Listing[]> {
+    const response = await apiClient.get<{ listings: Listing[] }>("/listings/");
     return response.data.listings;
   },
 
@@ -75,9 +63,9 @@ export const listingsApi = {
     return response.data.listing;
   },
 
-  async create(data: CreateListingWithSessionRequest): Promise<Listing> {
+  async create(data: CreateListingRequest): Promise<Listing> {
     const response = await apiClient.post<{ listing: Listing }>(
-      "/listings",
+      "/listings/",
       data
     );
     return response.data.listing;
@@ -121,40 +109,11 @@ export const listingsApi = {
     await apiClient.delete(`/listings/${listingId}/images/${imageId}`);
   },
 
-  async uploadPendingImage(
-    sessionId: string | "new",
-    file: File
-  ): Promise<UploadPendingImageResponse> {
-    const formData = new FormData();
-    formData.append("file", file);
-    const response = await apiClient.post<UploadPendingImageResponse>(
-      `/uploads/${sessionId}`,
-      formData,
-      {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      }
-    );
-    return response.data;
-  },
-
-  async getPendingImages(sessionId: string): Promise<PendingImage[]> {
-    const response = await apiClient.get<{ images: PendingImage[] }>(
-      `/uploads/${sessionId}`
-    );
-    return response.data.images;
-  },
-
-  async deletePendingImage(sessionId: string, imageId: number): Promise<void> {
-    await apiClient.delete(`/uploads/${sessionId}/${imageId}`);
-  },
-
   async contactOwner(
     listingId: number,
     data: ContactOwnerRequest
-  ): Promise<{ success: boolean; message: string }> {
-    const response = await apiClient.post<{ success: boolean; message: string }>(
+  ): Promise<{ message: string }> {
+    const response = await apiClient.post<{ message: string }>(
       `/listings/${listingId}/contact`,
       data
     );

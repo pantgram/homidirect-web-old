@@ -42,7 +42,7 @@ export const verificationApi = {
   ): Promise<VerificationDocument> {
     const formData = new FormData();
     formData.append("file", file);
-    formData.append("document_type", documentType);
+    formData.append("documentType", documentType);
 
     const response = await apiClient.post<{ document: VerificationDocument }>(
       `/listings/${listingId}/verification/documents`,

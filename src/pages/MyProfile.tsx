@@ -29,6 +29,8 @@ import { toast } from "@/lib/toast";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { usersApi } from "@/api/users";
+import { authApi } from "@/api/auth";
+import { supabase } from "@/lib/supabase";
 import { getApiError } from "@/api/client";
 import type { UserRole } from "@/types";
 
@@ -39,7 +41,6 @@ const MyProfile = () => {
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
-  const [email, setEmail] = useState("");
   const [isTenant, setIsTenant] = useState(false);
   const [isLandlord, setIsLandlord] = useState(false);
   const [isEditingRole, setIsEditingRole] = useState(false);
@@ -51,7 +52,6 @@ const MyProfile = () => {
     if (user) {
       setFirstName(user.firstName);
       setLastName(user.lastName);
-      setEmail(user.email);
       setIsTenant(user.role === "TENANT" || user.role === "BOTH");
       setIsLandlord(user.role === "LANDLORD" || user.role === "BOTH");
     }
@@ -92,12 +92,17 @@ const MyProfile = () => {
     const selectedRole = getSelectedRole();
     setIsSaving(true);
     try {
-      await usersApi.update(user.id, {
-        firstName,
-        lastName,
-        email,
-        role: user.role !== "ADMIN" ? selectedRole : undefined,
+      // Supabase auth.users is the source of truth; the backend only mirrors
+      // it via POST /auth/sync (reads snake_case claims from user_metadata).
+      const { error } = await supabase.auth.updateUser({
+        data: {
+          first_name: firstName,
+          last_name: lastName,
+          ...(user.role !== "ADMIN" ? { role: selectedRole } : {}),
+        },
       });
+      if (error) throw error;
+      await authApi.syncProfile();
       setIsEditingRole(false);
       toast({
         title: t("profile.updateSuccess"),
@@ -105,20 +110,11 @@ const MyProfile = () => {
       window.location.reload();
     } catch (err) {
       const apiError = getApiError(err);
-      if (
-        apiError.statusCode === 409 ||
-        (apiError.message && apiError.message.toLowerCase().includes("email"))
-      ) {
-        toast({
-          title: t("profile.emailExists"),
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: t("profile.updateError"),
-          variant: "destructive",
-        });
-      }
+      toast({
+        title: t("profile.updateError"),
+        description: apiError.message || undefined,
+        variant: "destructive",
+      });
     } finally {
       setIsSaving(false);
     }
@@ -150,7 +146,6 @@ const MyProfile = () => {
     user &&
     (firstName !== user.firstName ||
       lastName !== user.lastName ||
-      email !== user.email ||
       getSelectedRole() !== user.role);
 
   return (
@@ -222,8 +217,8 @@ const MyProfile = () => {
                 <Input
                   id="email"
                   type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  value={user?.email ?? ""}
+                  disabled
                   placeholder={t("profile.email")}
                 />
               </div>

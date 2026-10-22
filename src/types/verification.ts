@@ -1,4 +1,4 @@
-import type { VerificationStatus } from "./listing";
+import type { VerificationStatus, PublicationStatus } from "./listing";
 
 export type DocumentType =
   | "UTILITY_BILL"
@@ -38,10 +38,22 @@ export interface VerificationStatusResponse {
 
 export interface PendingVerificationListing {
   id: number;
-  title: string;
+  titleEl: string;
   city: string;
   landlordId: number;
   verificationStatus: VerificationStatus;
   createdAt: string;
   documents: VerificationDocument[];
 }
+
+export interface ReviewVerificationRequest {
+  status: string;
+  notes?: string;
+}
+
+export interface ReviewVerificationResponse {
+  message: string;
+  verificationStatus: string;
+}
+
+export type { PublicationStatus };

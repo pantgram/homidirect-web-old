@@ -7,30 +7,36 @@ import { Calendar } from "@/components/ui/calendar";
 import { toast } from "@/lib/toast";
 import { useLanguage } from "@/contexts/LanguageContext";
 import {
-  useAvailabilitySlots,
-  useDeleteAvailabilitySlot,
-  availabilitySlotKeys,
+  useListingTimeSlots,
+  useDeleteTimeSlot,
+  timeSlotKeys,
 } from "@/hooks";
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
-import AvailabilitySlotForm from "@/components/AvailabilitySlotForm";
-import { Calendar as CalendarIcon, Clock, Trash2, Plus, Loader2, List } from "lucide-react";
+import TimeSlotForm from "@/components/TimeSlotForm";
+import { Calendar as CalendarIcon, Clock, Trash2, Plus, Loader2, List, Video } from "lucide-react";
 import { format, isPast, isSameDay, addMonths, subMonths } from "date-fns";
 
-interface AvailabilitySlotsManagerProps {
+interface TimeSlotsManagerProps {
   listingId: number;
 }
 
-const AvailabilitySlotsManager = ({
+const TimeSlotsManager = ({
   listingId,
-}: AvailabilitySlotsManagerProps) => {
+}: TimeSlotsManagerProps) => {
   const { t } = useLanguage();
   const queryClient = useQueryClient();
-  const { data: slots = [], isLoading: loading } = useAvailabilitySlots(listingId);
-  const deleteMutation = useDeleteAvailabilitySlot(listingId);
+  const { data: slots = [], isLoading: loading } = useListingTimeSlots(listingId);
+  const deleteMutation = useDeleteTimeSlot();
   const [showForm, setShowForm] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<number | null>(null);
   const [view, setView] = useState<"list" | "calendar">("list");
   const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
+
+  const refreshSlots = () => {
+    queryClient.invalidateQueries({
+      queryKey: timeSlotKeys.byListing(listingId),
+    });
+  };
 
   const handleConfirmDelete = async () => {
     if (deleteTarget === null) return;
@@ -69,6 +75,15 @@ const AvailabilitySlotsManager = ({
       time: `${format(start, "HH:mm")} - ${format(end, "HH:mm")}`,
     };
   };
+
+  const renderSlotType = (type: string) => (
+    <Badge variant="outline" className="gap-1">
+      {type === "REMOTE" && <Video className="h-3 w-3" />}
+      {type === "REMOTE"
+        ? t("availabilitySlots.typeRemote")
+        : t("availabilitySlots.typeOnSite")}
+    </Badge>
+  );
 
   const pastSlots = slots.filter((slot) => isPast(new Date(slot.endTime)));
   const upcomingSlots = slots.filter((slot) => !isPast(new Date(slot.endTime)));
@@ -137,11 +152,6 @@ const AvailabilitySlotsManager = ({
                 {t("availabilitySlots.next")}
               </Button>
             </div>
-            <div className="grid grid-cols-7 gap-1 text-center text-xs font-medium mb-2">
-              {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
-                <div key={day}>{day}</div>
-              ))}
-            </div>
             <Calendar
               mode="single"
               month={currentMonth}
@@ -176,6 +186,7 @@ const AvailabilitySlotsManager = ({
                       </div>
                     </div>
                         <div className="flex items-center gap-2">
+                          {renderSlotType(slot.type)}
                           {slot.isBooked && (
                             <Badge className="bg-yellow-500/10 text-yellow-600">
                               {t("availabilitySlots.booked")}
@@ -228,6 +239,7 @@ const AvailabilitySlotsManager = ({
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
+                          {renderSlotType(slot.type)}
                           {slot.isBooked && (
                             <Badge className="bg-yellow-500/10 text-yellow-600">
                               {t("availabilitySlots.booked")}
@@ -280,6 +292,7 @@ const AvailabilitySlotsManager = ({
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
+                          {renderSlotType(slot.type)}
                           {slot.isBooked && (
                             <Badge className="bg-yellow-500/10 text-yellow-600">
                               {t("availabilitySlots.booked")}
@@ -302,15 +315,11 @@ const AvailabilitySlotsManager = ({
       </CardContent>
 
       {showForm && (
-        <AvailabilitySlotForm
+        <TimeSlotForm
           open={showForm}
           onOpenChange={setShowForm}
           listingId={listingId}
-          onSuccess={() => {
-            queryClient.invalidateQueries({
-              queryKey: availabilitySlotKeys.byListing(listingId),
-            });
-          }}
+          onSuccess={refreshSlots}
         />
       )}
 
@@ -328,4 +337,4 @@ const AvailabilitySlotsManager = ({
   );
 };
 
-export default AvailabilitySlotsManager;
+export default TimeSlotsManager;

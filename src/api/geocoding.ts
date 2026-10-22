@@ -1,15 +1,16 @@
 import { apiClient } from "./client";
 
 export interface LocationResult {
-  placeId: string;
+  placeId: string | null;
   formatted: string;
   address: string;
   city: string;
+  municipality: string;
   country: string;
-  suburb?: string;
-  neighbourhood?: string;
-  quarter?: string;
-  postalCode?: string;
+  suburb: string;
+  neighbourhood: string;
+  quarter: string;
+  postalCode: string;
   resultType: string;
   lat: number;
   lon: number;
@@ -18,8 +19,10 @@ export interface LocationResult {
 export interface ReverseGeocodeResult {
   address: string;
   city: string;
+  municipality: string;
   country: string;
-  postalCode?: string;
+  suburb: string;
+  postalCode: string;
   lat: number;
   lon: number;
 }
@@ -30,6 +33,7 @@ export async function searchLocations(
     countryCode?: string;
     limit?: number;
     lang?: string;
+    type?: string;
   }
 ): Promise<LocationResult[]> {
   if (!query || query.length < 2) {
@@ -37,18 +41,22 @@ export async function searchLocations(
   }
 
   try {
-    const params = new URLSearchParams({
+    const params: Record<string, string | number> = {
       text: query,
-      limit: String(options?.limit || 10),
+      limit: options?.limit ?? 10,
       lang: options?.lang || "el",
-    });
+    };
 
     if (options?.countryCode) {
-      params.append("countryCode", options.countryCode);
+      params.country_code = options.countryCode;
+    }
+    if (options?.type) {
+      params.type = options.type;
     }
 
     const response = await apiClient.get<{ results: LocationResult[] }>(
-      `/geocoding/search?${params}`
+      `/geocoding/search`,
+      { params }
     );
 
     return response.data.results || [];
@@ -63,19 +71,61 @@ export async function reverseGeocode(
   lang?: string
 ): Promise<ReverseGeocodeResult | null> {
   try {
-    const params = new URLSearchParams({
-      lat: String(lat),
-      lon: String(lon),
-      lang: lang || "el",
-    });
-
     const response = await apiClient.get<{ result: ReverseGeocodeResult | null }>(
-      `/geocoding/reverse?${params}`
+      `/geocoding/reverse`,
+      { params: { lat, lon, lang: lang || "el" } }
     );
 
     return response.data.result;
   } catch (error) {
     return null;
+  }
+}
+
+export async function searchAddresses(
+  query: string,
+  options?: {
+    countryCode?: string;
+    limit?: number;
+    lang?: string;
+    type?: string;
+  }
+): Promise<
+  Array<{
+    requestId?: string;
+    address: string;
+    context: string;
+    formattedAddress?: string;
+    formatted_address?: string;
+    geometry: { location: { lat: number; lng: number } };
+    type: string;
+  }>
+> {
+  if (!query || query.length < 2) {
+    return [];
+  }
+
+  try {
+    const params: Record<string, string | number> = {
+      text: query,
+      limit: options?.limit ?? 10,
+      lang: options?.lang || "el",
+    };
+
+    if (options?.countryCode) {
+      params.country_code = options.countryCode;
+    }
+    if (options?.type) {
+      params.type = options.type;
+    }
+
+    const response = await apiClient.get("/geocoding/address-search", {
+      params,
+    });
+
+    return response.data.results || [];
+  } catch (error) {
+    return [];
   }
 }
 

@@ -1,6 +1,7 @@
 import { Badge } from "@/components/ui/badge";
-import type { BookingStatus } from "@/types";
+import type { TimeSlotStatus } from "@/types";
 import {
+  CalendarClock,
   Clock,
   CheckCircle2,
   XCircle,
@@ -16,6 +17,12 @@ interface StatusConfig {
 }
 
 const statusConfigs: Record<string, StatusConfig> = {
+  OPEN: {
+    label: "Available",
+    variant: "outline",
+    icon: CalendarClock,
+    className: "bg-green-100 text-green-800 hover:bg-green-100",
+  },
   PENDING: {
     label: "Pending",
     variant: "secondary",
@@ -42,15 +49,19 @@ const statusConfigs: Record<string, StatusConfig> = {
   },
 };
 
-interface BookingStatusBadgeProps {
-  status: BookingStatus | string;
+interface TimeSlotStatusBadgeProps {
+  status: TimeSlotStatus | string | null;
   showIcon?: boolean;
   className?: string;
 }
 
-export function BookingStatusBadge({ status, showIcon = true, className }: BookingStatusBadgeProps) {
-  const config = statusConfigs[status] || {
-    label: status,
+export function TimeSlotStatusBadge({
+  status,
+  showIcon = true,
+  className,
+}: TimeSlotStatusBadgeProps) {
+  const config = (status && statusConfigs[status]) || {
+    label: status ?? "Unknown",
     variant: "outline" as const,
     icon: Clock,
     className: "",

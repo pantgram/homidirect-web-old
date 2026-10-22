@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { Loader2, Upload, X, ImageIcon } from "lucide-react";
 import { PageLayout } from "@/components/layout/PageLayout";
 import { InlineSpinner, BackButton } from "@/components/shared";
-import AvailabilitySlotsManager from "@/components/AvailabilitySlotsManager";
+import TimeSlotsManager from "@/components/TimeSlotsManager";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -55,7 +55,6 @@ interface ListingFormData {
   bedrooms: string;
   bathrooms: string;
   area: string;
-  available: boolean;
 }
 
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
@@ -91,7 +90,6 @@ const EditListing = () => {
     bedrooms: "",
     bathrooms: "",
     area: "",
-    available: true,
   });
   const [formErrors, setFormErrors] = useState<
     Partial<Record<keyof ListingFormData, string>>
@@ -109,7 +107,7 @@ const EditListing = () => {
       setFormData({
         titleEl: listing.titleEl || "",
         descriptionEl: listing.descriptionEl || "",
-        propertyType: listing.propertyType || "",
+        propertyType: (listing.propertyType as PropertyType) || "",
         price: listing.price?.toString() || "",
         address: listing.address || "",
         city: listing.city || "",
@@ -120,7 +118,6 @@ const EditListing = () => {
         bedrooms: listing.bedrooms?.toString() || "",
         bathrooms: listing.bathrooms?.toString() || "",
         area: listing.area?.toString() || "",
-        available: listing.available ?? true,
       });
     }
   }, [listing]);
@@ -217,7 +214,6 @@ const EditListing = () => {
       bedrooms: parseInt(formData.bedrooms, 10),
       bathrooms: parseInt(formData.bathrooms, 10),
       area: parseFloat(formData.area),
-      available: formData.available,
     };
 
     try {
@@ -602,33 +598,6 @@ const EditListing = () => {
                         className="min-h-[120px]"
                       />
                     </div>
-
-                    <div className="flex items-center gap-3">
-                      <Label htmlFor="available">
-                        {t("editListing.availability")}
-                      </Label>
-                      <Select
-                        value={formData.available ? "available" : "unavailable"}
-                        onValueChange={(value) =>
-                          setFormData((prev) => ({
-                            ...prev,
-                            available: value === "available",
-                          }))
-                        }
-                      >
-                        <SelectTrigger id="available" className="w-[180px]">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="available">
-                            {t("editListing.available")}
-                          </SelectItem>
-                          <SelectItem value="unavailable">
-                            {t("editListing.unavailable")}
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
                   </div>
 
                   <div className="space-y-4">
@@ -772,7 +741,7 @@ const EditListing = () => {
 
             {listing && user && (
               <div className="max-w-3xl mx-auto mt-8">
-                <AvailabilitySlotsManager listingId={listingId} />
+                <TimeSlotsManager listingId={listingId} />
               </div>
             )}
           </div>

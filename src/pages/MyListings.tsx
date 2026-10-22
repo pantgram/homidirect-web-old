@@ -142,14 +142,14 @@ const MyListings = () => {
                       {getVerificationBadge(listing.verificationStatus)}
                       <Badge
                         className={
-                          listing.available
-                            ? "bg-green-500 text-white"
-                            : "bg-gray-500 text-white"
+                          listing.publicationStatus === "DRAFT"
+                            ? "bg-gray-500 text-white"
+                            : "bg-green-500 text-white"
                         }
                       >
-                        {listing.available
-                          ? t("myListings.available")
-                          : t("myListings.unavailable")}
+                        {listing.publicationStatus === "DRAFT"
+                          ? t("myListings.unavailable")
+                          : t("myListings.available")}
                       </Badge>
                     </div>
                     <div className="absolute bottom-4 right-4 flex gap-2 transition-opacity z-10">

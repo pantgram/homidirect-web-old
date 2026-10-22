@@ -3,15 +3,15 @@ import { Link } from "react-router-dom";
 import { CalendarClock, Clock, MapPin, Home, Trash2, Video } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { PageLayout } from "@/components/layout/PageLayout";
-import { InlineSpinner, BookingStatusBadge, ConfirmDialog } from "@/components/shared";
+import { InlineSpinner, TimeSlotStatusBadge, ConfirmDialog, ListingThumbnail } from "@/components/shared";
 import { formatDateTime } from "@/utils/format";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { toast } from "@/lib/toast";
-import { bookingsApi } from "@/api/bookings";
+import { timeSlotsApi } from "@/api/time-slots";
 import { listingsApi } from "@/api/listings";
-import { bookingKeys, useDeleteBooking } from "@/hooks";
+import { timeSlotKeys, useDeleteTimeSlot } from "@/hooks";
 import type { Listing } from "@/types";
 import { getLocalizedTitle } from "@/types/listing";
 import placeholderImage from "@/assets/property-1.jpg";
@@ -20,10 +20,10 @@ const Bookings = () => {
   const { t, tt, language, locale } = useLanguage();
 
   const { data, isLoading, error } = useQuery({
-    queryKey: bookingKeys.lists(),
+    queryKey: timeSlotKeys.mine(),
     queryFn: async () => {
-      const allBookings = await bookingsApi.getAll();
-      const listingIds = [...new Set(allBookings.map((b) => b.listingId))];
+      const allSlots = await timeSlotsApi.getMySlots();
+      const listingIds = [...new Set(allSlots.map((s) => s.listingId))];
       const listingResults = await Promise.allSettled(
         listingIds.map((id) => listingsApi.getById(id)),
       );
@@ -32,14 +32,14 @@ const Bookings = () => {
         const result = listingResults[i];
         if (result.status === "fulfilled") listings[id] = result.value;
       });
-      return { bookings: allBookings, listings };
+      return { slots: allSlots, listings };
     },
   });
 
-  const deleteMutation = useDeleteBooking();
+  const deleteMutation = useDeleteTimeSlot();
   const [cancelTarget, setCancelTarget] = useState<number | null>(null);
 
-  const bookings = data?.bookings ?? [];
+  const slots = data?.slots ?? [];
   const listings = data?.listings ?? {};
 
   const handleConfirmCancel = async () => {
@@ -79,7 +79,7 @@ const Bookings = () => {
             </Card>
           )}
 
-          {bookings.length === 0 ? (
+          {slots.length === 0 ? (
             <Card>
               <CardContent className="p-12 text-center">
                 <CalendarClock className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
@@ -94,17 +94,18 @@ const Bookings = () => {
             </Card>
           ) : (
             <div className="space-y-4">
-              {bookings.map((booking) => {
-                const listing = listings[booking.listingId];
+              {slots.map((slot) => {
+                const listing = listings[slot.listingId];
                 return (
                   <Card
-                    key={booking.id}
+                    key={slot.id}
                     className="hover:shadow-md transition-shadow"
                   >
                     <CardContent className="p-6">
                       <div className="flex gap-6">
-                        <img
-                          src={listing?.images?.[0]?.url || placeholderImage}
+                        <ListingThumbnail
+                          listingId={slot.listingId}
+                          fallbackUrl={placeholderImage}
                           alt={listing ? getLocalizedTitle(listing, language) : ""}
                           className="w-32 h-32 object-cover rounded-lg"
                         />
@@ -113,7 +114,7 @@ const Bookings = () => {
                           <div className="flex items-start justify-between">
                             <div>
                               <Link
-                                to={`/listings/${booking.listingId}`}
+                                to={`/listings/${slot.listingId}`}
                                 className="text-lg font-semibold hover:text-primary transition-colors"
                               >
                                 {listing ? getLocalizedTitle(listing, language) : t("bookings.unknownListing")}
@@ -129,23 +130,36 @@ const Bookings = () => {
                                 </div>
                               </div>
                             </div>
-                            <BookingStatusBadge status={booking.status} />
+                            <TimeSlotStatusBadge status={slot.status} />
                           </div>
 
                           <div className="flex items-center gap-6 text-sm">
                             <div className="flex items-center gap-2">
                               <Clock className="h-4 w-4 text-primary" />
                               <span className="font-medium">
-                                {formatDateTime(booking.scheduledAt, locale)}
+                                {formatDateTime(slot.startTime, locale)}
                               </span>
+                            </div>
+                            <div className="flex items-center gap-1 text-muted-foreground">
+                              {slot.type === "REMOTE" ? (
+                                <>
+                                  <Video className="h-4 w-4" />
+                                  <span>{t("availabilitySlots.typeRemote")}</span>
+                                </>
+                              ) : (
+                                <>
+                                  <MapPin className="h-4 w-4" />
+                                  <span>{t("availabilitySlots.typeOnSite")}</span>
+                                </>
+                              )}
                             </div>
                           </div>
 
-                          {booking.meetLink && (
+                          {slot.meetLink && (
                             <div>
                               <Button variant="outline" size="sm" asChild>
                                 <a
-                                  href={booking.meetLink}
+                                  href={slot.meetLink}
                                   target="_blank"
                                   rel="noopener noreferrer"
                                   className="flex items-center gap-2"
@@ -159,18 +173,18 @@ const Bookings = () => {
                         </div>
 
                         <div className="flex flex-col gap-2">
-                          {booking.status === "PENDING" && (
+                          {(slot.status === "PENDING" || slot.status === "CONFIRMED") && (
                             <Button
                               variant="destructive"
                               size="sm"
-                              onClick={() => setCancelTarget(booking.id)}
+                              onClick={() => setCancelTarget(slot.id)}
                               className="flex items-center gap-2"
                             >
                               <Trash2 className="h-4 w-4" />
                               {t("bookings.cancel")}
                             </Button>
                           )}
-                          <Link to={`/bookings/${booking.id}`}>
+                          <Link to={`/bookings/${slot.id}`}>
                             <Button variant="ghost" size="sm">
                               {t("bookings.viewDetails")}
                             </Button>

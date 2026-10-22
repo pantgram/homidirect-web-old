@@ -1,22 +1,6 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
 import { env } from "@/config/env";
-
-const TOKEN_KEY = "auth_token";
-const REFRESH_TOKEN_KEY = "refresh_token";
-
-function toSnakeCase(str: string): string {
-  return str.replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`);
-}
-
-function convertParamsToSnakeCase(
-  params: Record<string, unknown>,
-): Record<string, unknown> {
-  const result: Record<string, unknown> = {};
-  for (const [key, value] of Object.entries(params)) {
-    result[toSnakeCase(key)] = value;
-  }
-  return result;
-}
+import { supabase } from "@/lib/supabase";
 
 export const apiClient = axios.create({
   baseURL: `${env.apiUrl}/api/v1`,
@@ -24,18 +8,6 @@ export const apiClient = axios.create({
     "Content-Type": "application/json",
   },
 });
-
-export const tokenStorage = {
-  getToken: () => localStorage.getItem(TOKEN_KEY),
-  setToken: (token: string) => localStorage.setItem(TOKEN_KEY, token),
-  getRefreshToken: () => localStorage.getItem(REFRESH_TOKEN_KEY),
-  setRefreshToken: (token: string) =>
-    localStorage.setItem(REFRESH_TOKEN_KEY, token),
-  clearTokens: () => {
-    localStorage.removeItem(TOKEN_KEY);
-    localStorage.removeItem(REFRESH_TOKEN_KEY);
-  },
-};
 
 type AuthExpiredHandler = () => void;
 
@@ -45,8 +17,14 @@ export function setAuthExpiredHandler(handler: AuthExpiredHandler): void {
   authExpiredHandler = handler;
 }
 
+async function getAccessToken(): Promise<string | null> {
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  return session?.access_token ?? null;
+}
+
 function handleAuthExpired(): void {
-  tokenStorage.clearTokens();
   if (authExpiredHandler) {
     authExpiredHandler();
   } else {
@@ -55,19 +33,14 @@ function handleAuthExpired(): void {
 }
 
 apiClient.interceptors.request.use(
-  (config: InternalAxiosRequestConfig) => {
-    const token = tokenStorage.getToken();
+  async (config: InternalAxiosRequestConfig) => {
+    const token = await getAccessToken();
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
-    if (config.params) {
-      config.params = convertParamsToSnakeCase(
-        config.params as Record<string, unknown>,
-      );
-    }
     return config;
   },
-  (error) => Promise.reject(error),
+  (error) => Promise.reject(error)
 );
 
 let isRefreshing = false;
@@ -94,12 +67,10 @@ apiClient.interceptors.response.use(
       _retry?: boolean;
     };
 
-    const isAuthEndpoint = originalRequest.url?.startsWith("/auth/");
-
     if (
       error.response?.status === 401 &&
-      !originalRequest._retry &&
-      !isAuthEndpoint
+      originalRequest &&
+      !originalRequest._retry
     ) {
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
@@ -115,24 +86,20 @@ apiClient.interceptors.response.use(
       originalRequest._retry = true;
       isRefreshing = true;
 
-      const refreshToken = tokenStorage.getRefreshToken();
-      if (!refreshToken) {
-        handleAuthExpired();
-        return Promise.reject(error);
-      }
-
       try {
-        const response = await axios.post(`${env.apiUrl}/api/v1/auth/refresh`, {
-          refreshToken,
-        });
-        const { tokens } = response.data;
-        tokenStorage.setToken(tokens.accessToken);
-        tokenStorage.setRefreshToken(tokens.refreshToken);
-        processQueue(null, tokens.accessToken);
-        originalRequest.headers.Authorization = `Bearer ${tokens.accessToken}`;
+        const { data, error: refreshError } =
+          await supabase.auth.refreshSession();
+        if (refreshError || !data.session) {
+          throw refreshError ?? new Error("No session after refresh");
+        }
+
+        const token = data.session.access_token;
+        processQueue(null, token);
+        originalRequest.headers.Authorization = `Bearer ${token}`;
         return apiClient(originalRequest);
       } catch (refreshError) {
         processQueue(refreshError, null);
+        await supabase.auth.signOut();
         handleAuthExpired();
         return Promise.reject(refreshError);
       } finally {
@@ -141,7 +108,7 @@ apiClient.interceptors.response.use(
     }
 
     return Promise.reject(error);
-  },
+  }
 );
 
 export interface ApiError {
@@ -151,9 +118,31 @@ export interface ApiError {
 }
 
 export const getApiError = (error: unknown): ApiError => {
-  if (axios.isAxiosError(error) && error.response?.data) {
-    return error.response.data as ApiError;
+  if (axios.isAxiosError(error)) {
+    if (error.response?.data) {
+      const data = error.response.data as Partial<ApiError>;
+      if (data.message) {
+        return {
+          message: data.message,
+          statusCode: error.response.status,
+          error: data.error,
+        };
+      }
+    }
+    return {
+      message: error.message || "An unexpected error occurred",
+      statusCode: error.response?.status ?? 500,
+    };
   }
+
+  if (error instanceof Error && error.message) {
+    const status = (error as Error & { status?: number }).status;
+    return {
+      message: error.message,
+      statusCode: typeof status === "number" ? status : 500,
+    };
+  }
+
   return {
     message: "An unexpected error occurred",
     statusCode: 500,

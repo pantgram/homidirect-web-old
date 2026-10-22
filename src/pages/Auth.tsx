@@ -17,7 +17,7 @@ import { toast } from "@/lib/toast";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { getApiError } from "@/api";
-import { env } from "@/config/env";
+import { supabase } from "@/lib/supabase";
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -48,7 +48,12 @@ const Auth = () => {
   }, [location.search, t, navigate]);
 
   const handleGoogleSignIn = () => {
-    window.location.href = `${env.apiUrl}/api/v1/auth/google`;
+    supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+      },
+    });
   };
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -140,13 +145,21 @@ const Auth = () => {
     const role = isTenant && isPropertyOwner ? "BOTH" : isPropertyOwner ? "LANDLORD" : "TENANT";
 
     try {
-      await register({
+      const sessionCreated = await register({
         firstName,
         lastName,
         email,
         password,
         role,
       });
+
+      if (!sessionCreated) {
+        // Email confirmation is enabled: the user must verify before
+        // signing in, so don't treat them as logged in.
+        navigate("/verify-email", { state: { email }, replace: true });
+        return;
+      }
+
       toast({
         title: t("auth.accountCreated"),
         description: t("auth.welcomeMsg"),

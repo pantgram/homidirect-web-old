@@ -14,7 +14,6 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/lib/toast";
 import { favoritesApi } from "@/api/favorites";
-import type { PropertyType } from "@/types";
 
 interface PropertyCardProps {
   id?: number;
@@ -25,7 +24,7 @@ interface PropertyCardProps {
   bedrooms: number;
   bathrooms: number;
   area: string;
-  propertyType: PropertyType;
+  propertyType: string;
   featured?: boolean;
   isFavorite?: boolean;
   onFavoriteChange?: (id: number, isFavorite: boolean) => void;
@@ -47,8 +46,8 @@ const PropertyCard = ({
 }: PropertyCardProps) => {
   const { t } = useLanguage();
 
-  const getPropertyTypeLabel = (type: PropertyType): string => {
-    const labels: Record<PropertyType, string> = {
+  const getPropertyTypeLabel = (type: string): string => {
+    const labels: Record<string, string> = {
       apartment: t("search.apartment"),
       house: t("search.house"),
       studio: t("search.studio"),

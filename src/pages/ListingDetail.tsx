@@ -36,7 +36,7 @@ import { favoritesApi } from "@/api/favorites";
 import {
   useListing,
   useListingImages,
-  useAvailableSlots,
+  useAvailableTimeSlots,
   useFavorites,
   useDeleteListing,
 } from "@/hooks";
@@ -62,7 +62,7 @@ const ListingDetail = () => {
   const listingId = id ? parseInt(id, 10) : 0;
   const { data: listing, isLoading, error } = useListing(listingId);
   const { data: images = [] } = useListingImages(listingId);
-  const { data: availableSlots = [] } = useAvailableSlots(listingId);
+  const { data: availableSlots = [] } = useAvailableTimeSlots(listingId);
   const deleteMutation = useDeleteListing();
 
   const isFavorite = checkIsFavorite(listingId);
@@ -190,7 +190,6 @@ const ListingDetail = () => {
             id: 0,
             listingId: listing?.id ?? 0,
             url: placeholderImage,
-            uploadSessionId: null,
             createdAt: "",
           },
         ];
@@ -313,7 +312,7 @@ const ListingDetail = () => {
                 <Badge className="bg-primary/10 text-primary hover:bg-primary/20">
                   {getPropertyTypeLabel(listing.propertyType, t)}
                 </Badge>
-                {listing.available ? (
+                {listing.publicationStatus !== "DRAFT" ? (
                   <Badge className="bg-green-500/10 text-green-600 hover:bg-green-500/20">
                     <CheckCircle className="h-3 w-3 mr-1" />
                     {t("listingDetail.available")}

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,56 +6,38 @@ import { Label } from "@/components/ui/label";
 import { Calendar } from "@/components/ui/calendar";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { toast } from "@/lib/toast";
-import { availabilitySlotsApi } from "@/api/availability-slots";
+import { useCreateTimeSlot, useListingTimeSlots } from "@/hooks";
 import { Loader2, Clock } from "lucide-react";
 import { format, isSameDay } from "date-fns";
 
-import type { AvailabilitySlot } from "@/types";
+import type { TimeSlotType } from "@/types";
 
-interface AvailabilitySlotFormProps {
+interface TimeSlotFormProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   listingId: number;
   onSuccess?: () => void;
 }
 
-const AvailabilitySlotForm = ({
+const TimeSlotForm = ({
   open,
   onOpenChange,
   listingId,
   onSuccess,
-}: AvailabilitySlotFormProps) => {
+}: TimeSlotFormProps) => {
   const { t, language } = useLanguage();
   const [date, setDate] = useState("");
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [startTime, setStartTime] = useState("");
-  const [endTime, setEndTime] = useState("");
-  const [submitting, setSubmitting] = useState(false);
-  const [, setLoadingSlots] = useState(false);
-  const [existingSlots, setExistingSlots] = useState<AvailabilitySlot[]>([]);
-
-  useEffect(() => {
-    const fetchSlots = async () => {
-      if (!listingId || !open) return;
-
-      setLoadingSlots(true);
-      try {
-        const slots = await availabilitySlotsApi.getByListingId(listingId);
-        setExistingSlots(slots);
-      } catch {
-        // ignore — existing slots are non-critical
-      } finally {
-        setLoadingSlots(false);
-      }
-    };
-
-    fetchSlots();
-  }, [listingId, open]);
+  const [slotType, setSlotType] = useState<TimeSlotType>("ON_SITE");
+  const [meetLink, setMeetLink] = useState("");
+  const { data: existingSlots = [] } = useListingTimeSlots(listingId);
+  const createMutation = useCreateTimeSlot();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!date || !startTime || !endTime) {
+    if (!date || !startTime) {
       toast({
         title: t("availabilitySlots.fillAll"),
         variant: "destructive",
@@ -64,22 +46,14 @@ const AvailabilitySlotForm = ({
     }
 
     const startDateTime = new Date(`${date}T${startTime}`);
-    const endDateTime = new Date(`${date}T${endTime}`);
 
-    if (endDateTime <= startDateTime) {
-      toast({
-        title: t("availabilitySlots.endAfterStart"),
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setSubmitting(true);
     try {
-      await availabilitySlotsApi.create({
+      // The API only takes the start time; the end time is derived server-side.
+      await createMutation.mutateAsync({
         listingId,
         startTime: startDateTime.toISOString(),
-        endTime: endDateTime.toISOString(),
+        type: slotType,
+        meetLink: slotType === "REMOTE" && meetLink ? meetLink : null,
       });
 
       toast({
@@ -88,7 +62,7 @@ const AvailabilitySlotForm = ({
 
       setDate("");
       setStartTime("");
-      setEndTime("");
+      setMeetLink("");
       setSelectedDate(new Date());
       onOpenChange(false);
       onSuccess?.();
@@ -97,8 +71,6 @@ const AvailabilitySlotForm = ({
         title: t("availabilitySlots.addFailed"),
         variant: "destructive",
       });
-    } finally {
-      setSubmitting(false);
     }
   };
 
@@ -126,6 +98,7 @@ const AvailabilitySlotForm = ({
   };
 
   const slotsForSelectedDate = getSlotsForDate(selectedDate);
+  const submitting = createMutation.isPending;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -181,6 +154,28 @@ const AvailabilitySlotForm = ({
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
+                <Label>{t("availabilitySlots.slotType")}</Label>
+                <div className="flex gap-2 mt-1">
+                  <Button
+                    type="button"
+                    variant={slotType === "ON_SITE" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setSlotType("ON_SITE")}
+                  >
+                    {t("availabilitySlots.typeOnSite")}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={slotType === "REMOTE" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setSlotType("REMOTE")}
+                  >
+                    {t("availabilitySlots.typeRemote")}
+                  </Button>
+                </div>
+              </div>
+
+              <div>
                 <Label htmlFor="date">{t("availabilitySlots.date")}</Label>
                 <Input
                   id="date"
@@ -192,29 +187,32 @@ const AvailabilitySlotForm = ({
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="startTime">{t("availabilitySlots.startTime")}</Label>
-                  <Input
-                    id="startTime"
-                    type="time"
-                    value={startTime}
-                    onChange={(e) => setStartTime(e.target.value)}
-                    required
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="endTime">{t("availabilitySlots.endTime")}</Label>
-                  <Input
-                    id="endTime"
-                    type="time"
-                    value={endTime}
-                    onChange={(e) => setEndTime(e.target.value)}
-                    required
-                  />
-                </div>
+              <div>
+                <Label htmlFor="startTime">{t("availabilitySlots.startTime")}</Label>
+                <Input
+                  id="startTime"
+                  type="time"
+                  value={startTime}
+                  onChange={(e) => setStartTime(e.target.value)}
+                  required
+                />
               </div>
+
+              {slotType === "REMOTE" && (
+                <div>
+                  <Label htmlFor="meetLink">{t("availabilitySlots.meetLink")}</Label>
+                  <Input
+                    id="meetLink"
+                    type="url"
+                    value={meetLink}
+                    onChange={(e) => setMeetLink(e.target.value)}
+                    placeholder="https://meet.google.com/..."
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {t("availabilitySlots.meetLinkHint")}
+                  </p>
+                </div>
+              )}
             </form>
           </div>
         </div>
@@ -237,4 +235,4 @@ const AvailabilitySlotForm = ({
   );
 };
 
-export default AvailabilitySlotForm;
+export default TimeSlotForm;

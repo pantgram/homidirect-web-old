@@ -1,20 +1,21 @@
-export { apiClient, tokenStorage, getApiError, type ApiError } from "./client";
+export {
+  apiClient,
+  getApiError,
+  setAuthExpiredHandler,
+  type ApiError,
+} from "./client";
 
 export { authApi } from "./auth";
 export { listingsApi } from "./listings";
 export { usersApi } from "./users";
 export { verificationApi } from "./verification";
+export { adminVerificationsApi } from "./admin";
 export { favoritesApi } from "./favorites";
-export { bookingsApi } from "./bookings";
-export { availabilitySlotsApi } from "./availability-slots";
+export { timeSlotsApi } from "./time-slots";
 
 export * from "@/types";
 
-export type {
-  PendingImage,
-  UploadPendingImageResponse,
-  CreateListingWithSessionRequest,
-} from "./listings";
+export type { PlatformStats, ContactOwnerRequest } from "./listings";
 
 export type {
   FavoriteToggleResponse,

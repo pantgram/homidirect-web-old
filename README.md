@@ -6,20 +6,23 @@ A modern real estate platform connecting landlords and tenants. Built with React
 
 - **React 18** with Vite and SWC
 - **TailwindCSS** with shadcn/ui components
+- **Supabase** for authentication (email/password + Google OAuth)
 - **React Query** for server state management
 - **React Hook Form** with Zod validation
 - **React Router** for navigation
+- **Leaflet** (react-leaflet) for interactive maps
 - **Docker** (nginx) for containerized serving
 
 ## Features
 
 - **Property Listings** - Create, edit, search, and filter properties
-- **User Authentication** - JWT-based auth with Google OAuth and password reset
+- **User Authentication** - Supabase auth with Google OAuth and password reset
 - **Image Management** - Multi-image uploads with Cloudflare R2
 - **Favorites** - Save and manage favorite listings
 - **Bookings** - Schedule property viewings with availability slots
 - **Verification** - Document upload and admin verification workflow
-- **Geocoding** - Location search with caching (Photon/Nominatim)
+- **Interactive Maps** - Property location display and picker via Leaflet
+- **Geocoding** - Location search and reverse geocoding via backend API
 - **Search & Filters** - Full-text search, 20+ filters, sorting, pagination
 - **Internationalization** - English and Greek language support
 - **Role-Based Access** - LANDLORD, TENANT, BOTH, ADMIN roles
@@ -43,7 +46,7 @@ pnpm install
 cp .env.example .env
 ```
 
-Set `VITE_API_URL` to the URL of the HomiDirect API backend the frontend should talk to.
+Fill in the Supabase credentials (`VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`) — the app validates them at startup and will not run without them. Then set `VITE_API_URL` to the URL of the HomiDirect API backend the frontend should talk to.
 
 ### 3. Start Development Server
 
@@ -69,15 +72,28 @@ Frontend runs at http://localhost:8080
 ## Project Structure
 
 ```
-homidirect/
+homidirect-web/
 ├── public/                  # Static assets
 ├── src/
-│   ├── pages/               # Route components
+│   ├── api/                 # API modules (Axios): auth, listings, bookings,
+│   │                        #   availability-slots, favorites, verification,
+│   │                        #   admin, geocoding, users, shared client
+│   ├── assets/              # Images
 │   ├── components/          # Reusable components
+│   │   ├── auth/            # Route guards (ProtectedRoute, RequireAuth, RequireRole)
+│   │   ├── layout/          # Page layout, loader, user menu
+│   │   ├── listing/         # Image upload
+│   │   ├── shared/          # Pagination, badges, empty/error states
+│   │   ├── verification/    # Document upload
 │   │   └── ui/              # shadcn/ui primitives
-│   ├── contexts/            # React contexts
+│   ├── config/              # Env validation (Zod)
+│   ├── contexts/            # Auth and language contexts
 │   ├── hooks/               # Custom hooks
-│   └── api/                 # API client (Axios)
+│   ├── lib/                 # Toast, validation, utilities
+│   ├── locales/             # i18n translations (en, el)
+│   ├── pages/               # Route components
+│   ├── types/               # TypeScript type definitions
+│   └── utils/               # Formatting, image, property helpers
 ├── Dockerfile               # Build + nginx runner stages
 ├── nginx.conf               # SPA fallback + asset caching
 ├── docker-compose.yml
@@ -90,6 +106,10 @@ homidirect/
 | Variable | Description | Default |
 |----------|-------------|---------|
 | `VITE_API_URL` | Backend API base URL | `http://localhost:5000` |
+| `VITE_SUPABASE_URL` | Supabase project URL (required) | — |
+| `VITE_SUPABASE_PUBLISHABLE_KEY` | Supabase publishable key (required) | — |
+
+All `VITE_*` variables are inlined at build time. For Docker builds, pass `VITE_API_URL` as a build arg (see `Dockerfile`).
 
 ## User Roles
 

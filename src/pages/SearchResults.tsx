@@ -65,7 +65,6 @@ const SearchResults = () => {
     page,
     limit: 12,
     sortBy,
-    available: true,
     ...(searchQuery ? { q: searchQuery } : {}),
     ...(propertyType !== "all" ? { propertyType } : {}),
     ...(minBedrooms !== "all" ? { minBedrooms: parseInt(minBedrooms) } : {}),

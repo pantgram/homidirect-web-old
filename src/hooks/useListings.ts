@@ -2,16 +2,14 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   listingsApi,
   type UpdateListingRequest,
-  type ListingsQueryParams,
-  type CreateListingWithSessionRequest,
+  type CreateListingRequest,
   type SearchListingsParams,
 } from "@/api";
 
 export const listingKeys = {
   all: ["listings"] as const,
   lists: () => [...listingKeys.all, "list"] as const,
-  list: (params?: ListingsQueryParams) =>
-    [...listingKeys.lists(), params] as const,
+  list: () => [...listingKeys.lists()] as const,
   myListings: (params?: { page?: number; limit?: number }) =>
     [...listingKeys.lists(), "my", params] as const,
   search: (params?: SearchListingsParams) =>
@@ -23,10 +21,10 @@ export const listingKeys = {
     [...listingKeys.detail(listingId), "images"] as const,
 };
 
-export function useListings(params?: ListingsQueryParams) {
+export function useListings() {
   return useQuery({
-    queryKey: listingKeys.list(params),
-    queryFn: () => listingsApi.getAll(params),
+    queryKey: listingKeys.list(),
+    queryFn: () => listingsApi.getAll(),
     staleTime: 2 * 60 * 1000, // 2 minutes
   });
 }
@@ -69,7 +67,7 @@ export function useCreateListing() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: CreateListingWithSessionRequest) => listingsApi.create(data),
+    mutationFn: (data: CreateListingRequest) => listingsApi.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: listingKeys.lists() });
     },
@@ -110,6 +108,18 @@ export function useListingImages(listingId: number) {
     queryKey: listingKeys.images(listingId),
     queryFn: () => listingsApi.getImages(listingId),
     enabled: !!listingId,
+  });
+}
+
+export function useListingCoverImage(listingId: number) {
+  return useQuery({
+    queryKey: [...listingKeys.images(listingId), "cover"] as const,
+    queryFn: async () => {
+      const images = await listingsApi.getImages(listingId);
+      return images[0]?.url ?? null;
+    },
+    enabled: !!listingId,
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 }
 

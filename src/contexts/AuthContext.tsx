@@ -13,7 +13,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isLandlord: boolean;
   login: (data: LoginRequest) => Promise<void>;
-  register: (data: RegisterRequest) => Promise<void>;
+  register: (data: RegisterRequest) => Promise<boolean>;
   logout: () => void;
   error: string | null;
 }
@@ -33,7 +33,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const registerMutation = useRegister();
   const logoutMutation = useLogout();
 
-  const isAuthenticated = authApi.isAuthenticated() && !!user;
+  const isAuthenticated = !!user;
   const isLandlord = !!user && (user.role === "LANDLORD" || user.role === "BOTH" || user.role === "ADMIN");
 
   const login = async (data: LoginRequest) => {
@@ -50,8 +50,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const register = async (data: RegisterRequest) => {
     setError(null);
     try {
-      await registerMutation.mutateAsync(data);
-      await refetchUser();
+      // True when the user is signed in right away (email confirmation
+      // disabled); false when a verification email was sent.
+      const sessionCreated = await registerMutation.mutateAsync(data);
+      if (sessionCreated) {
+        // Mirror the fresh profile into the backend (best-effort).
+        try {
+          await authApi.syncProfile();
+        } catch {
+          // ignore — the profile row can be synced on the next update
+        }
+        await refetchUser();
+      }
+      return sessionCreated;
     } catch (err) {
       setError(getApiError(err).message || "Registration failed");
       throw err;
