@@ -1,0 +1,29 @@
+# Version control
+.git
+.gitignore
+
+# Dependencies (fetched inside the image)
+node_modules
+
+# Build artifacts
+dist
+dist-ssr
+
+# Local env files
+.env
+.env.*
+!.env.example
+
+# Editor / OS
+.vscode
+.idea
+.DS_Store
+
+# Docs
+*.md
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*

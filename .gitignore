@@ -32,11 +32,6 @@ pnpm-debug.log*
 # Testing
 coverage/
 
-# Python
-__pycache__/
-*.pyc
-.venv/
-
 # Misc
 .cache/
 tmp/
